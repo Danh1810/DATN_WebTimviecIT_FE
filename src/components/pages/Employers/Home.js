@@ -1,32 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import {Logout} from "../../services/auth/logout";
-import {logout} from "../../slice/authSlice";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const dispatch =useDispatch();
-  const location =useLocation();
-  const auth = useSelector((state) => state.auth);
-  const handleLogout = async () => {
-    const res = await Logout();
-    console.log("db",res)
-    if (+res.code === 0) {
-      localStorage.removeItem("token");
-      localStorage.setItem("isAuth", false);
-      localStorage.setItem("prePath", location.pathname);
-      localStorage.setItem("username", "");
-      localStorage.setItem("group_id", "");
-      localStorage.setItem("role", "");
-      localStorage.setItem("preRole", auth.role);
-      dispatch(logout());
-      navigate("/login")
-  
-
-
-    }
-  };
   // State để quản lý mục được chọn (ví dụ: "Analytics")
   const [selectedMenu, setSelectedMenu] = useState('Overview');
 
@@ -36,7 +10,7 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-gray-800 text-white">
         <div className="p-4">
-          <h2 className="text-2xl font-bold">ADmin</h2>
+          <h2 className="text-2xl font-bold">Nhà Tuyển Dụng</h2>
         </div>
         <nav className="mt-6">
           <a
@@ -76,10 +50,8 @@ const Dashboard = () => {
         <header className="bg-white shadow p-4">
           <div className="flex justify-between">
             <h1 className="text-xl font-bold">{selectedMenu}</h1>
-            <button
-            onClick={handleLogout}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md">
-              Đăng xuất
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
+              Add New Item
             </button>
           </div>
         </header>
@@ -89,44 +61,28 @@ const Dashboard = () => {
           {/* Hiển thị bảng khi chọn Analytics */}
           {selectedMenu === 'Analytics' && (
             <div className="bg-white shadow-lg rounded-lg p-4">
-              <div className="flex items-center">
-        <input
-          className="block w-full appearance-none bg-transparent text-base text-gray-700 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 border border-gray-300 rounded-l-md px-4 py-2"
-          placeholder="Tìm kiếm công việc"
-          aria-label="Search components"
-          type="text"
-          // value={searchQuery}
-          // onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <button
-          // onClick={handleClick}
-          className="bg-blue-500 text-white px-4 py-2 rounded-r-md"
-        >
-          Submit
-        </button>
-      </div>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-md mt-6" >
+                <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
               Add New Item
             </button>
               <h2 className="text-lg font-semibold mb-4">Analytics Data</h2>
-              <table className="min-w-full bg-white ">
+              <table className="min-w-full bg-white">
                 <thead>
                   <tr>
-                    <th className="py-2 border border-gray-300">Metric</th>
-                    <th className="py-2 border border-gray-300">Value</th>
-                    <th className="py-2 border border-gray-300">Change</th>
+                    <th className="py-2">Metric</th>
+                    <th className="py-2">Value</th>
+                    <th className="py-2">Change</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="py-2  border border-gray-900">Visitors</td>
-                    <td className="py-2  border border-gray-900">5,432</td>
-                    <td className="py-2 border text-green-500">+12%</td>
+                    <td className="py-2">Visitors</td>
+                    <td className="py-2">5,432</td>
+                    <td className="py-2 text-green-500">+12%</td>
                   </tr>
                   <tr>
-                    <td className="py-2 border border-gray-300">Revenue</td>
-                    <td className="py-2 border border-gray-300">$9,876</td>
-                    <td className="py-2 text-green-500 border border-gray-300">+8%</td>
+                    <td className="py-2">Revenue</td>
+                    <td className="py-2">$9,876</td>
+                    <td className="py-2 text-green-500">+8%</td>
                   </tr>
                   <tr>
                     <td className="py-2">Signups</td>

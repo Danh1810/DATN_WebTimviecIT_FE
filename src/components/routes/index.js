@@ -6,12 +6,18 @@ import {
   Navigate,
 } from "react-router-dom";
 import { authRoutes } from "./authRoutes";
+import Home from "../pages/Employers/Home";
+import DashboardPage from "../pages/Dashboard/DashboardPage";
 // import { publicRoutes } from "./publicRoutes";
 // import { privateRoutes } from "./privateRoutes";
 // import { studentRoutes } from "./studentRoutes";
 // import { parentRoutes } from "./parentRoutes";
 // import { teacherRoutes } from "./teacherRoutes";
 // import { commonRoutes } from "./commonRoutes";
+import {AdminRoutes} from "./AdminRoutes"
+import {EmployersRoutes} from "./EmployersRoutes"
+
+import AdminLayout from "../layouts/AdminLayout";
 
 import { useSelector, useDispatch } from "react-redux";
 import { accountUser } from "../slice/authSlice";
@@ -19,6 +25,8 @@ function App() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
   const isAuth = localStorage.getItem("isAuth");
+  console.log("route",isAuth);
+//  const isAuth ="false";
   const role = localStorage.getItem("role");
   useEffect(() => {
     dispatch(accountUser()).then((res) => {});
@@ -30,6 +38,7 @@ function App() {
         {authRoutes.map((route, index) => {
           const previousRole = localStorage.getItem("preRole");
           const currentPath = localStorage.getItem("prePath");
+          console.log("route",isAuth);
           if (isAuth === "true") {
             if (role !== previousRole) {
               // Redirect to home page if current role is different from the previous role
@@ -62,24 +71,7 @@ function App() {
           }
         })}
 
-        {/* {privateRoutes.map((route, index) => {
-          if (isAuth === "true") {
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <route.layout>
-                    <route.component />
-                  </route.layout>
-                }
-              />
-            );
-          }
-          return (
-            <Route key={index} path="*" element={<Navigate to={"/login"} />} />
-          );
-        })} */}
+
         {/* {isAuth === "true" && role === "admin" ? (
           privateRoutes.map((route, index) => {
             return (
@@ -96,9 +88,9 @@ function App() {
           })
         ) : (
           <Route path="*" element={<Navigate to={"/login"} />} />
-        )}
-        {isAuth === "true" && role === "student" ? (
-          studentRoutes.map((route, index) => {
+        )} */}
+        {/* {isAuth === "true" && role === "ntv" ? (
+          SeekerRoutes.map((route, index) => {
             return (
               <Route
                 key={index}
@@ -113,9 +105,9 @@ function App() {
           })
         ) : (
           <Route path="*" element={<Navigate to={"/login"} />} />
-        )}
-        {isAuth === "true" && role === "parent" ? (
-          parentRoutes.map((route, index) => {
+        )} */}
+        {/* {isAuth === "true" && role === "ntd" ? (
+          EmployersRoutes.map((route, index) => {
             return (
               <Route
                 key={index}
@@ -125,14 +117,15 @@ function App() {
                     <route.component />
                   </route.layout>
                 }
+                
               />
             );
           })
         ) : (
           <Route path="*" element={<Navigate to={"/login"} />} />
         )}
-        {isAuth === "true" && role === "teacher" ? (
-          teacherRoutes.map((route, index) => {
+        {isAuth === "true" && role === "admin" ? (
+          AdminRoutes.map((route, index) => {
             return (
               <Route
                 key={index}
@@ -142,13 +135,15 @@ function App() {
                     <route.component />
                   </route.layout>
                 }
+                // path= "/dashboardadmin" element={<DashboardPage />}
               />
             );
-          })
+          }
+        )
         ) : (
           <Route path="*" element={<Navigate to={"/login"} />} />
-        )}
-        {isAuth === "true" ? (
+        )} */}
+        {/* {isAuth === "true" ? (
           commonRoutes.map((route, index) => {
             return (
               <Route
@@ -164,8 +159,8 @@ function App() {
           })
         ) : (
           <Route path="*" element={<Navigate to={"/login"} />} />
-        )}
-        {publicRoutes.map((route, index) => {
+        )} */}
+        {/* {publicRoutes.map((route, index) => {
           return (
             <Route
               key={index}
@@ -178,6 +173,30 @@ function App() {
             />
           );
         })} */}
+            {isAuth === "true" && role === "admin" ? (
+      <>
+        <Route path="/dashboardadmin" element={
+          <AdminLayout>
+            <DashboardPage/>
+          </AdminLayout>
+        } />
+        {AdminRoutes.map((route, index) => {
+          return (
+            <Route
+              key={index}
+              path={route.path}
+              element={
+                <route.layout>
+                  <route.component />
+                </route.layout>
+              }
+            />
+          );
+        })}
+      </>
+    ) : (
+      <Route path="*" element={<Navigate to={"/login"} />} />
+    )}
       </Routes>
     </Router>
   );

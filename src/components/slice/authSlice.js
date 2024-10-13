@@ -16,9 +16,11 @@ const initialState = {
 // Define the initial state using that type
 
 export const accountUser = createAsyncThunk("/account", async () => {
+  console.log("dkjadkak")
   const response = await axios.get("/account", {
     withCredentials: true,
   });
+  console.log("redux",response)
   if (+response?.code === 0) {
     localStorage.setItem("isAuth", response.data.isAuth);
     localStorage.setItem("prePath", window.location.pathname);
@@ -39,6 +41,7 @@ export const authSlice = createSlice({
       return { ...state, ...action.payload };
     },
     logout: (state) => {
+      console.log("jsdjj")
       return {
         ...initialState,
       };
