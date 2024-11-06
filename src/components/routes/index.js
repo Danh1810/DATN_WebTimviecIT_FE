@@ -14,8 +14,8 @@ import DashboardPage from "../pages/Dashboard/DashboardPage";
 // import { parentRoutes } from "./parentRoutes";
 // import { teacherRoutes } from "./teacherRoutes";
 // import { commonRoutes } from "./commonRoutes";
-import {AdminRoutes} from "./AdminRoutes"
-import {EmployersRoutes} from "./EmployersRoutes"
+import { AdminRoutes } from "./AdminRoutes";
+import { EmployersRoutes } from "./EmployersRoutes";
 
 import AdminLayout from "../layouts/AdminLayout";
 
@@ -25,8 +25,8 @@ function App() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
   const isAuth = localStorage.getItem("isAuth");
-  console.log("route",isAuth);
-//  const isAuth ="false";
+  console.log("route", isAuth);
+  //  const isAuth ="false";
   const role = localStorage.getItem("role");
   useEffect(() => {
     dispatch(accountUser()).then((res) => {});
@@ -38,12 +38,12 @@ function App() {
         {authRoutes.map((route, index) => {
           const previousRole = localStorage.getItem("preRole");
           const currentPath = localStorage.getItem("prePath");
-          console.log("route",isAuth);
+          console.log("route", isAuth);
           if (isAuth === "true") {
             if (role !== previousRole) {
               // Redirect to home page if current role is different from the previous role
               return (
-                <Route key={index} path="*" element={<Navigate to="/" />} />
+                <Route key={index} path="*" element={<Navigate to="/home" />} />
               );
             } else {
               // Redirect to the previously stored path if roles match
@@ -70,7 +70,6 @@ function App() {
             );
           }
         })}
-
 
         {/* {isAuth === "true" && role === "admin" ? (
           privateRoutes.map((route, index) => {
@@ -173,30 +172,33 @@ function App() {
             />
           );
         })} */}
-            {isAuth === "true" && role === "admin" ? (
-      <>
-        <Route path="/dashboardadmin" element={
-          <AdminLayout>
-            <DashboardPage/>
-          </AdminLayout>
-        } />
-        {AdminRoutes.map((route, index) => {
-          return (
+        {isAuth === "true" && role === "admin" ? (
+          <>
             <Route
-              key={index}
-              path={route.path}
+              path="/dashboardadmin"
               element={
-                <route.layout>
-                  <route.component />
-                </route.layout>
+                <AdminLayout>
+                  <DashboardPage />
+                </AdminLayout>
               }
             />
-          );
-        })}
-      </>
-    ) : (
-      <Route path="*" element={<Navigate to={"/login"} />} />
-    )}
+            {AdminRoutes.map((route, index) => {
+              return (
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={
+                    <route.layout>
+                      <route.component />
+                    </route.layout>
+                  }
+                />
+              );
+            })}
+          </>
+        ) : (
+          <Route path="*" element={<Navigate to={"/login"} />} />
+        )}
       </Routes>
     </Router>
   );
