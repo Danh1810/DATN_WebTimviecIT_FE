@@ -8,14 +8,10 @@ import {
 import { authRoutes } from "./authRoutes";
 import Home from "../pages/Employers/Home";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
-// import { publicRoutes } from "./publicRoutes";
-// import { privateRoutes } from "./privateRoutes";
-// import { studentRoutes } from "./studentRoutes";
-// import { parentRoutes } from "./parentRoutes";
-// import { teacherRoutes } from "./teacherRoutes";
-// import { commonRoutes } from "./commonRoutes";
+import { Link } from "react-router-dom"; // Import Link for routing
 import { AdminRoutes } from "./AdminRoutes";
 import { EmployersRoutes } from "./EmployersRoutes";
+import FilePreview from "../pages/FilePreivew";
 
 import AdminLayout from "../layouts/AdminLayout";
 
@@ -51,7 +47,7 @@ function App() {
                 <Route
                   key={index}
                   path="*"
-                  element={<Navigate to={currentPath || "/"} />}
+                  element={<Navigate to={currentPath || "/home"} />}
                 />
               );
             }
@@ -71,107 +67,6 @@ function App() {
           }
         })}
 
-        {/* {isAuth === "true" && role === "admin" ? (
-          privateRoutes.map((route, index) => {
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <route.layout>
-                    <route.component />
-                  </route.layout>
-                }
-              />
-            );
-          })
-        ) : (
-          <Route path="*" element={<Navigate to={"/login"} />} />
-        )} */}
-        {/* {isAuth === "true" && role === "ntv" ? (
-          SeekerRoutes.map((route, index) => {
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <route.layout>
-                    <route.component />
-                  </route.layout>
-                }
-              />
-            );
-          })
-        ) : (
-          <Route path="*" element={<Navigate to={"/login"} />} />
-        )} */}
-        {/* {isAuth === "true" && role === "ntd" ? (
-          EmployersRoutes.map((route, index) => {
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <route.layout>
-                    <route.component />
-                  </route.layout>
-                }
-                
-              />
-            );
-          })
-        ) : (
-          <Route path="*" element={<Navigate to={"/login"} />} />
-        )}
-        {isAuth === "true" && role === "admin" ? (
-          AdminRoutes.map((route, index) => {
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <route.layout>
-                    <route.component />
-                  </route.layout>
-                }
-                // path= "/dashboardadmin" element={<DashboardPage />}
-              />
-            );
-          }
-        )
-        ) : (
-          <Route path="*" element={<Navigate to={"/login"} />} />
-        )} */}
-        {/* {isAuth === "true" ? (
-          commonRoutes.map((route, index) => {
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <route.layout>
-                    <route.component />
-                  </route.layout>
-                }
-              />
-            );
-          })
-        ) : (
-          <Route path="*" element={<Navigate to={"/login"} />} />
-        )} */}
-        {/* {publicRoutes.map((route, index) => {
-          return (
-            <Route
-              key={index}
-              path={route.path}
-              element={
-                <route.layout>
-                  <route.component />
-                </route.layout>
-              }
-            />
-          );
-        })} */}
         {isAuth === "true" && role === "admin" ? (
           <>
             <Route
@@ -182,6 +77,7 @@ function App() {
                 </AdminLayout>
               }
             />
+
             {AdminRoutes.map((route, index) => {
               return (
                 <Route
@@ -197,7 +93,7 @@ function App() {
             })}
           </>
         ) : (
-          <Route path="*" element={<Navigate to={"/login"} />} />
+          <Route path="*" element={<Navigate to={"/home"} />} />
         )}
       </Routes>
     </Router>

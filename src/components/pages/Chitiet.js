@@ -5,21 +5,21 @@ function JobDetails() {
 
   const similarJobs = [
     {
-      title: "Kế toán viên",
+      title: "Front end ",
       company: "Công ty TNHH ABC",
       location: "Hà Nội",
       salary: "8 - 12 triệu",
       deadline: "10/11/2024",
     },
     {
-      title: "Nhân viên kế toán",
+      title: "Front end",
       company: "Công ty XYZ",
       location: "Đà Nẵng",
       salary: "10 - 15 triệu",
       deadline: "15/11/2024",
     },
     {
-      title: "Kế toán tổng hợp",
+      title: "Front endp",
       company: "Công ty TNHH DEF",
       location: "TP. HCM",
       salary: "12 - 18 triệu",
@@ -71,7 +71,7 @@ function JobDetails() {
                 {/* Info Entries */}
                 {[
                   { icon: "calendar", text: "Ngày đăng: 04/10/2024" },
-                  { icon: "badge", text: "Cấp bậc: Chuyên viên - nhân viên" },
+                  { icon: "badge", text: "Cấp bậc: Intern" },
                   { icon: "user-group", text: "Số lượng tuyển: 2" },
                   {
                     icon: "briefcase",
@@ -81,7 +81,7 @@ function JobDetails() {
                   { icon: "star", text: "Yêu cầu kinh nghiệm: 2 năm" },
                   {
                     icon: "office-building",
-                    text: "Ngành nghề: Kế toán / Kiểm toán / Hành chính - Thư ký",
+                    text: "Ngành nghề: Kỹ sư ITý",
                     colSpan: 2,
                   },
                 ].map((entry, index) => (
@@ -129,6 +129,14 @@ function JobDetails() {
                   <br />- Tham gia thực hiện hồ sơ nghiệm thu, quyết toán.
                 </p>
               </div>
+              <div className="flex justify-end space-x-4 mt-6">
+                <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300">
+                  Nộp hồ sơ
+                </button>
+                <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-400">
+                  Lưu
+                </button>
+              </div>
             </>
           ) : (
             <>
@@ -138,20 +146,12 @@ function JobDetails() {
               </h2>
               <p className="text-gray-700">
                 Công ty TNHH Kế Toán Cát Tường là một công ty hàng đầu trong
-                lĩnh vực kế toán, kiểm toán và tư vấn thuế tại TP.HCM.
+                lĩnh vực IT tại TP.HCM.
               </p>
             </>
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-4 mt-6">
-            <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300">
-              Nộp hồ sơ
-            </button>
-            <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-400">
-              Lưu
-            </button>
-          </div>
         </div>
 
         {/* Similar Jobs Sidebar */}

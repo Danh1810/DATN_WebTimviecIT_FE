@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import App from "./ThemTin";
 
 const Dashboard = () => {
-  // State để quản lý mục được chọn (ví dụ: "Analytics")
-  const [selectedMenu, setSelectedMenu] = useState('Overview');
+  const [selectedMenu, setSelectedMenu] = useState("Overview");
+  const [showAnalyticsSubNav, setShowAnalyticsSubNav] = useState(false);
+  const [showReportsSubNav, setShowReportsSubNav] = useState(false);
+
+  const handleMenuClick = (menu) => {
+    setSelectedMenu(menu);
+
+    // Toggle sub-navigation for specific menus
+    if (menu === "Analytics") {
+      setShowAnalyticsSubNav(!showAnalyticsSubNav);
+      setShowReportsSubNav(false); // Close other sub-menus
+    } else if (menu === "Reports") {
+      setShowReportsSubNav(!showReportsSubNav);
+      setShowAnalyticsSubNav(false); // Close other sub-menus
+    } else {
+      setShowAnalyticsSubNav(false);
+      setShowReportsSubNav(false);
+    }
+  };
 
   return (
-    
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-800 text-white">
@@ -15,29 +32,83 @@ const Dashboard = () => {
         <nav className="mt-6">
           <a
             href="#"
-            onClick={() => setSelectedMenu('Overview')}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${selectedMenu === 'Overview' ? 'bg-gray-700' : ''}`}
+            onClick={() => handleMenuClick("Overview")}
+            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+              selectedMenu === "Overview" ? "bg-gray-700" : ""
+            }`}
           >
-            Overview
+            Thông tin
           </a>
           <a
             href="#"
-            onClick={() => setSelectedMenu('Analytics')}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${selectedMenu === 'Analytics' ? 'bg-gray-700' : ''}`}
+            onClick={() => handleMenuClick("Analytics")}
+            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+              selectedMenu === "Analytics" ? "bg-gray-700" : ""
+            }`}
           >
-            Analytics
+            Quản lý tin tuyển dụng
           </a>
+          {/* Sub-navigation for Analytics */}
+          {showAnalyticsSubNav && (
+            <div className="ml-4">
+              <a
+                href="#"
+                onClick={() => setSelectedMenu("Traffic")}
+                className={`block py-2 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+                  selectedMenu === "Traffic" ? "bg-gray-700" : ""
+                }`}
+              >
+                Tạo bài đăng
+              </a>
+              <a
+                href="#"
+                onClick={() => setSelectedMenu("Sales")}
+                className={`block py-2 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+                  selectedMenu === "Sales" ? "bg-gray-700" : ""
+                }`}
+              >
+                Các bài đăng
+              </a>
+            </div>
+          )}
           <a
             href="#"
-            onClick={() => setSelectedMenu('Reports')}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${selectedMenu === 'Reports' ? 'bg-gray-700' : ''}`}
+            onClick={() => handleMenuClick("Reports")}
+            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+              selectedMenu === "Reports" ? "bg-gray-700" : ""
+            }`}
           >
-            Reports
+            Quản lý ứng viên
           </a>
+          {/* Sub-navigation for Reports */}
+          {showReportsSubNav && (
+            <div className="ml-4">
+              <a
+                href="#"
+                onClick={() => setSelectedMenu("Monthly Report")}
+                className={`block py-2 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+                  selectedMenu === "Monthly Report" ? "bg-gray-700" : ""
+                }`}
+              >
+                Hồ sơ ứng tuyển
+              </a>
+              <a
+                href="#"
+                onClick={() => setSelectedMenu("Yearly Report")}
+                className={`block py-2 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+                  selectedMenu === "Yearly Report" ? "bg-gray-700" : ""
+                }`}
+              >
+                ứng viên
+              </a>
+            </div>
+          )}
           <a
             href="#"
-            onClick={() => setSelectedMenu('Settings')}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${selectedMenu === 'Settings' ? 'bg-gray-700' : ''}`}
+            onClick={() => handleMenuClick("Settings")}
+            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+              selectedMenu === "Settings" ? "bg-gray-700" : ""
+            }`}
           >
             Settings
           </a>
@@ -49,83 +120,82 @@ const Dashboard = () => {
         {/* Header */}
         <header className="bg-white shadow p-4">
           <div className="flex justify-between">
-            <h1 className="text-xl font-bold">{selectedMenu}</h1>
+            <h1 className="text-xl font-bold">Nhà tuyển dụng</h1>
             <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
-              Add New Item
+              Đăng xuất
             </button>
           </div>
         </header>
 
         {/* Content */}
         <main className="p-6">
-          {/* Hiển thị bảng khi chọn Analytics */}
-          {selectedMenu === 'Analytics' && (
+          {/* Conditional content based on selected menu */}
+          {selectedMenu === "Analytics" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
-              Add New Item
-            </button>
               <h2 className="text-lg font-semibold mb-4">Analytics Data</h2>
-              <table className="min-w-full bg-white">
+              {/* Content for Analytics */}
+            </div>
+          )}
+          {selectedMenu === "Traffic" && (
+            <div className="bg-white shadow-lg rounded-lg p-4">
+              <App />
+            </div>
+          )}
+          {selectedMenu === "Sales" && (
+            <div className="bg-white shadow-lg rounded-lg p-4">
+              <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
                 <thead>
-                  <tr>
-                    <th className="py-2">Metric</th>
-                    <th className="py-2">Value</th>
-                    <th className="py-2">Change</th>
+                  <tr className="border-b">
+                    <th className="px-4 py-2">Tiêu đề</th>
+                    <th className="px-4 py-2">Mô tả</th>
+                    <th className="px-4 py-2">Mức lương</th>
+                    <th className="px-4 py-2">Ngày hết hạn</th>
+                    <th className="px-4 py-2">Trạng thái</th>
+                    <th className="px-4 py-2">Nhà tuyển dụng</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td className="py-2">Visitors</td>
-                    <td className="py-2">5,432</td>
-                    <td className="py-2 text-green-500">+12%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2">Revenue</td>
-                    <td className="py-2">$9,876</td>
-                    <td className="py-2 text-green-500">+8%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2">Signups</td>
-                    <td className="py-2">432</td>
-                    <td className="py-2 text-red-500">-3%</td>
-                  </tr>
-                </tbody>
+                {/* <tbody>
+                  {jobPosts.map((post) => (
+                    <tr key={post.MaTTD} className="border-b">
+                      <td className="px-4 py-2">{post.tieude}</td>
+                      <td className="px-4 py-2">{post.mota}</td>
+                      <td className="px-4 py-2">{post.mucluong}</td>
+                      <td className="px-4 py-2">
+                        {new Date(post.Ngayhethan).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-2">{post.trangthai}</td>
+                      <td className="px-4 py-2">
+                        {recruiters.find((rec) => rec.id === post.MaNTD)
+                          ?.name || "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody> */}
               </table>
             </div>
           )}
-
-          {/* Hiển thị các thẻ thông tin khi chọn Overview */}
-          {selectedMenu === 'Overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-white shadow-lg rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-2">Users</h3>
-                <p className="text-2xl font-bold">1,245</p>
-                <p className="text-green-500">+12% from last month</p>
-              </div>
-              <div className="bg-white shadow-lg rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-2">Revenue</h3>
-                <p className="text-2xl font-bold">$12,456</p>
-                <p className="text-green-500">+5% from last month</p>
-              </div>
-              <div className="bg-white shadow-lg rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-2">Orders</h3>
-                <p className="text-2xl font-bold">345</p>
-                <p className="text-red-500">-3% from last month</p>
-              </div>
-            </div>
-          )}
-
-          {/* Hiển thị các nội dung khác dựa trên state */}
-          {selectedMenu === 'Reports' && (
+          {selectedMenu === "Reports" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Reports Data</h2>
-              <p>Hiển thị dữ liệu báo cáo tại đây...</p>
+              {/* Content for Reports */}
             </div>
           )}
-          {selectedMenu === 'Settings' && (
+          {selectedMenu === "Monthly Report" && (
+            <div className="bg-white shadow-lg rounded-lg p-4">
+              <h2 className="text-lg font-semibold mb-4">Hồ sơ ứng viên</h2>
+              {/* Content for Monthly Report */}
+            </div>
+          )}
+          {selectedMenu === "Yearly Report" && (
+            <div className="bg-white shadow-lg rounded-lg p-4">
+              <h2 className="text-lg font-semibold mb-4">Yearly Report Data</h2>
+              {/* Content for Yearly Report */}
+            </div>
+          )}
+          {selectedMenu === "Settings" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Settings</h2>
-              <p>Hiển thị cài đặt tại đây...</p>
+              {/* Content for Settings */}
             </div>
           )}
         </main>

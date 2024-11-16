@@ -9,6 +9,13 @@
 .custom-sider:hover {
   @apply overflow-y-auto; /* Show the scrollbar when hovering */
 }
+.overflow-x-auto::-webkit-scrollbar {
+  display: none; /* Hides scrollbar on Webkit browsers */
+}
+.overflow-x-auto {
+  -ms-overflow-style: none; /* Hides scrollbar on IE and Edge */
+  scrollbar-width: none; /* Hides scrollbar on Firefox */
+}
 
 .custom-sider::-webkit-scrollbar {
   width: 5px; /* Make the scrollbar narrower */

@@ -89,105 +89,20 @@ function Login() {
         {/* Left side (Logo) */}
         <div className="flex items-center space-x-4">
           <img
-            src="https://example.com/logo.png"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREfsesMJwwXL8130hzXhA8LtGBG1HMN6lKLA&s"
             alt="Company Logo"
             className="h-8"
           />
-          <span className="text-xl font-bold">việc làm 24h</span>
+          <span className="text-xl font-bold">việc làm IT</span>
         </div>
 
         {/* Center (Menu Items) */}
-        <div className="hidden md:flex space-x-8">
-          {/* Menu Item 1 */}
-          <div className="relative">
-            <button
-              onClick={() => setIsOpportunityOpen(!isOpportunityOpen)}
-              className="flex items-center space-x-1"
-            >
-              <span>Cơ hội việc làm</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            {isOpportunityOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Job Opportunity 1
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Job Opportunity 2
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Menu Item 2 */}
-          <div className="relative">
-            <button
-              onClick={() => setIsToolOpen(!isToolOpen)}
-              className="flex items-center space-x-1"
-            >
-              <span>Công cụ</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            {isToolOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Tool 1
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Tool 2
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Additional Menu Item 3 */}
-          <div className="relative">
-            <button className="flex items-center space-x-1">
-              <span>Thư viện</span>
-            </button>
-          </div>
-
-          {/* Additional Menu Item 4 */}
-          <div className="relative">
-            <button className="flex items-center space-x-1">
-              <span>Liên hệ</span>
-            </button>
-          </div>
-        </div>
 
         {/* Right side (Icons and Region Selector) */}
         <div className="flex items-center space-x-6">
           {/* Region Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsRegionOpen(!isRegionOpen)}
-              className="flex items-center space-x-1"
-            >
-              <span>Miền Nam</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            {isRegionOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Miền Bắc
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Miền Trung
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Miền Nam
-                </a>
-              </div>
-            )}
-          </div>
 
           {/* Notification Icon */}
-          <div className="relative">
-            <BellIcon className="h-6 w-6" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-xs font-bold px-1.5 py-0.5 rounded-full">
-              8
-            </span>
-          </div>
 
           {/* User Role Selector */}
           <div className="flex items-center space-x-1">
@@ -196,13 +111,6 @@ function Login() {
               <span className="font-semibold">Nhà Tuyển Dụng</span>
             </span>
           </div>
-
-          {/* Language Selector */}
-          <img
-            src="https://example.com/flag.png" // Replace with your flag image URL
-            alt="English"
-            className="h-6 w-6"
-          />
         </div>
       </nav>
       <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center items-center">
