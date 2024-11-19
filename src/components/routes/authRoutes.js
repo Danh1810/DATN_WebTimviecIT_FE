@@ -16,7 +16,7 @@ export const authRoutes = [
   { path: "/profile", component: Pro, layout: AuthLayout },
   { path: "/db", component: db, layout: AuthLayout },
   { path: "/se", component: singupe, layout: AuthLayout },
-  { path: "/ct", component: chitiet, layout: AuthLayout },
+  { path: "/tintuyendung/:id", component: chitiet, layout: AuthLayout },
   { path: "/dl", component: dl, layout: AuthLayout },
 
   // { path: "/forgotpassword", component: ForgotPassword, layout: AuthLayout },

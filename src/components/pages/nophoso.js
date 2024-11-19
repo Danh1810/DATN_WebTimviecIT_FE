@@ -2,37 +2,37 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../services/axios";
 import { Modal, Button } from "antd";
-import { getTintdbyID } from "../services/jb.service";
 
 function JobDetails() {
   const [activeTab, setActiveTab] = useState("details");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [notify, setNotify] = useState(false);
+  const { id } = useParams(); // Lấy id từ URL
   const [job, setJob] = useState(null);
-  const { id } = useParams(); // Get the job ID from URL
-  console.log("🚀 ~ JobDetails ~ id:", id);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  console.log("🚀 ~ Tintuyendungid ~ id:", id);
   const similarJobs = [
     {
-      title: "Front-end Developer",
+      title: "Front end",
       company: "Công ty TNHH ABC",
       location: "Hà Nội",
       salary: "8 - 12 triệu",
       deadline: "10/11/2024",
     },
     {
-      title: "Front-end Developer",
+      title: "Front end",
       company: "Công ty XYZ",
       location: "Đà Nẵng",
       salary: "10 - 15 triệu",
       deadline: "15/11/2024",
     },
     {
-      title: "Front-end Developer",
+      title: "Front end",
       company: "Công ty TNHH DEF",
       location: "TP. HCM",
       salary: "12 - 18 triệu",
@@ -40,40 +40,56 @@ function JobDetails() {
     },
   ];
 
-  // Fetch job details by ID
-  const fetchJobDetails = async () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log({ name, email, phone, notify });
+    // Close modal after submission
+    setIsModalOpen(false);
+  };
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    console.log("Hồ sơ đã được nộp thành công!");
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+  const Tintuyendungid = async (id, setJob) => {
+    if (!id) {
+      console.log("ID is undefined or null. Skipping API call.");
+      return;
+    }
+
     try {
-      setLoading(true); // Start loading
-      const response = await getTintdbyID(id); // Make API call
-      // const response = await axios.get("/tintd/details", {
-      //   params: { id: id },
-      // });
-      console.log("🚀 ~ fetchJobDetails ~ response:", response.data);
-      setJob(response.data); // Set job details
-    } catch (err) {
-      console.error("Error fetching job details:", err);
-      setError("Không thể tải thông tin tuyển dụng."); // Set error message
-    } finally {
-      setLoading(false); // Stop loading
+      const response = await axios.get("/tintd/details", { params: { id } });
+      console.log("API Response:", response);
+      if (response.data) {
+        setJob(response.data);
+        console.log("Job data:", response.data);
+      } else {
+        console.warn("No data received from the API.");
+      }
+    } catch (error) {
+      console.error("Error fetching employer details:", error);
     }
   };
 
   useEffect(() => {
-    fetchJobDetails(); // Fetch job details on component mount or id change
+    // Call the function only when `id` is defined
+    Tintuyendungid(id, setJob);
   }, [id]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({ name, email, phone });
-    setIsModalOpen(false);
-  };
 
   return (
     <div className="p-6 bg-gray-50">
       <div className="max-w-7xl mx-auto flex gap-8">
         {/* Main Content */}
         <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
-          {/* Tabs */}
+          {/* Navigation Tabs */}
           <div className="border-b border-gray-200 mb-4">
             <nav className="flex space-x-6">
               <button
@@ -99,87 +115,78 @@ function JobDetails() {
             </nav>
           </div>
 
-          {loading ? (
-            <p>Đang tải thông tin...</p>
-          ) : error ? (
-            <p className="text-red-500">{error}</p>
-          ) : (
+          {activeTab === "details" ? (
             <>
-              {activeTab === "details" ? (
-                <>
-                  {/* Job Details */}
-                  <h1 className="text-2xl font-bold mb-4">
-                    {job?.title || "Thông tin tuyển dụng"}
-                  </h1>
-                  <div className="grid grid-cols-2 gap-4 bg-purple-50 p-4 rounded-lg">
-                    <div>
-                      <strong>Ngày đăng:</strong> {job?.tieude || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Cấp bậc:</strong> {job?.level || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Số lượng tuyển:</strong> {job?.quantity || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Hình thức làm việc:</strong>{" "}
-                      {job?.workType || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Độ tuổi:</strong> {job?.ageRequirement || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Yêu cầu bằng cấp:</strong>{" "}
-                      {job?.education || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Yêu cầu kinh nghiệm:</strong>{" "}
-                      {job?.experience || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Ngành nghề:</strong> {job?.industry || "N/A"}
-                    </div>
-                  </div>
-
-                  {/* Job Description */}
-                  <div className="mt-6">
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                      Mô tả công việc
-                    </h2>
-                    <p className="text-gray-700">
-                      {job?.description || "Thông tin không có sẵn."}
-                    </p>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end space-x-4 mt-6">
-                    <button
-                      className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none"
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Nộp hồ sơ
-                    </button>
-                    <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
-                      Lưu
-                    </button>
-                  </div>
-                </>
-              ) : (
+              {/* Job Details */}
+              <h1 className="text-2xl font-bold mb-4">Thông tin chung</h1>
+              <div className="grid grid-cols-2 gap-4 bg-purple-50 p-4 rounded-lg">
                 <div>
-                  {/* Company Info */}
-                  <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                    Thông tin công ty
-                  </h2>
-                  <p className="text-gray-700">
-                    {job?.companyInfo || "Thông tin không có sẵn."}
-                  </p>
+                  <strong>Ngày đăng:</strong>
+                  {job.title}
                 </div>
-              )}
+                <div>
+                  <strong>Cấp bậc:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div>
+                  <strong>Số lượng tuyển:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div>
+                  <strong>Hình thức làm việc:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div>
+                  <strong>Độ tuổi:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div>
+                  <strong>Yêu cầu bằng cấp:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div>
+                  <strong>Yêu cầu kinh nghiệm:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+                <div>
+                  <strong>Ngành nghề:</strong>
+                  <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+                </div>
+              </div>
+
+              {/* Job Description */}
+              <div className="mt-6">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                  Mô tả công việc
+                </h2>
+                <p className="text-gray-700">Lorem ipsum dolor .</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none"
+                  onClick={showModal}
+                >
+                  Nộp hồ sơ
+                </button>
+                <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
+                  Lưu
+                </button>
+              </div>
             </>
+          ) : (
+            <div>
+              {/* Company Info */}
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Thông tin công ty
+              </h2>
+              <p className="text-gray-700">Lorem ipsum dolor sit amet.</p>
+            </div>
           )}
         </div>
 
-        {/* Similar Jobs */}
+        {/* Similar Jobs Sidebar */}
         <aside className="w-64 bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">
             Việc làm tương tự
@@ -204,12 +211,12 @@ function JobDetails() {
       <Modal
         title="Nộp hồ sơ"
         open={isModalOpen}
-        onOk={handleSubmit}
-        onCancel={() => setIsModalOpen(false)}
+        onOk={handleOk}
+        onCancel={handleCancel}
         okText="Nộp hồ sơ"
         cancelText="Hủy"
       >
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block font-medium text-gray-700 mb-1">
               Họ và tên <span className="text-red-500">*</span>

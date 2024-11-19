@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 import axios from "../../services/axios";
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
 
 function App() {
   const [jobPost, setJobPost] = useState({
@@ -10,12 +9,18 @@ function App() {
     mucluong: "",
     Ngayhethan: "",
     trangthai: "active",
-    MaNTD: "",
+    kinhnghiem: "",
+    loaihopdong: "",
+    diaChiLamviec: "",
+    Kynang: [],
+    Capbac: [],
   });
 
   const [jobPosts, setJobPosts] = useState([]);
-  const [recruiters, setRecruiters] = useState([]);
+  const [skills, setSkills] = useState([]); // Quản lý danh sách kỹ năng
+  const [levels, setLevels] = useState([]); // Quản lý danh sách cấp bậc
 
+  // Fetch danh sách bài tuyển dụng
   const fetchJobPosts = async () => {
     try {
       const response = await axios.get("/tintd");
@@ -25,18 +30,38 @@ function App() {
     }
   };
 
-  const fetchRecruiters = async () => {
+  // Fetch danh sách kỹ năng
+  const fetchSkills = async () => {
     try {
-      const response = await axios.get("/nhatd");
-      setRecruiters(response.data);
+      const response = await axios.get("/kynang");
+      const formattedSkills = response.data.map((skill) => ({
+        value: skill.id,
+        label: skill.ten,
+      }));
+      setSkills(formattedSkills);
     } catch (error) {
-      console.error("Error fetching recruiters:", error);
+      console.error("Error fetching skills:", error);
+    }
+  };
+
+  // Fetch danh sách cấp bậc
+  const fetchLevels = async () => {
+    try {
+      const response = await axios.get("/capbac");
+      const formattedLevels = response.data.map((level) => ({
+        value: level.id,
+        label: level.ten,
+      }));
+      setLevels(formattedLevels);
+    } catch (error) {
+      console.error("Error fetching levels:", error);
     }
   };
 
   useEffect(() => {
     fetchJobPosts();
-    fetchRecruiters();
+    fetchSkills();
+    fetchLevels();
   }, []);
 
   const handleChange = (e) => {
@@ -44,10 +69,19 @@ function App() {
     setJobPost((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleMultiSelectChange = (selectedOptions, { name }) => {
+    setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/tintd", jobPost);
+      const postData = {
+        ...jobPost,
+        Kynang: jobPost.Kynang.map((k) => k.value),
+        Capbac: jobPost.Capbac.map((l) => l.value),
+      };
+      const response = await axios.post("/tintd", postData);
       setJobPosts((prev) => [...prev, response.data]);
       setJobPost({
         tieude: "",
@@ -55,7 +89,11 @@ function App() {
         mucluong: "",
         Ngayhethan: "",
         trangthai: "active",
-        MaNTD: "",
+        kinhnghiem: "",
+        loaihopdong: "",
+        diaChiLamviec: "",
+        Kynang: [],
+        Capbac: [],
       });
     } catch (error) {
       console.error("Error adding job post:", error);
@@ -67,8 +105,6 @@ function App() {
       <h1 className="text-2xl font-bold text-center mb-6">
         Đăng tin tuyển dụng
       </h1>
-
-      <div className="text-right mb-4"></div>
 
       <form
         onSubmit={handleSubmit}
@@ -107,61 +143,63 @@ function App() {
               placeholder="Nhập mức lương"
             />
           </div>
-          {/* <div>
+          <div>
             <label className="block font-semibold mb-1">Kinh nghiệm</label>
             <input
               type="text"
-              name="mucluong"
-              value={jobPost.mucluong}
+              name="kinhnghiem"
+              value={jobPost.kinhnghiem}
               onChange={handleChange}
               className="w-full p-2 border rounded"
-              placeholder="Nhập mức lương"
+              placeholder="Nhập kinh nghiệm (VD: 3-5 năm)"
             />
-          </div> */}
-          {/* <div>
-            <label className="block font-semibold mb-1">Địa chỉ</label>
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">Địa chỉ làm việc</label>
             <input
               type="text"
-              name="mucluong"
-              value={jobPost.mucluong}
+              name="diaChiLamviec"
+              value={jobPost.diaChiLamviec}
               onChange={handleChange}
               className="w-full p-2 border rounded"
-              placeholder="Nhập mức lương"
-            />
-          </div> */}
-          <div>
-            <label className="block font-semibold mb-1">Ngày hết hạn</label>
-            <input
-              type="date"
-              name="Ngayhethan"
-              value={jobPost.Ngayhethan}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
+              placeholder="Nhập địa chỉ làm việc"
             />
           </div>
           <div>
-            <label className="block font-semibold mb-1">Kỹ năng </label>
+            <label className="block font-semibold mb-1">Loại hợp đồng</label>
             <select
-              name="trangthai"
+              name="loaihopdong"
+              value={jobPost.loaihopdong}
               onChange={handleChange}
               className="w-full p-2 border rounded"
             >
-              <option value="active">Java</option>
-              <option value="active">Python</option>
-              <option value="expired">Nodejs</option>
+              <option value="">Chọn loại hợp đồng</option>
+              <option value="Toàn thời gian">Toàn thời gian</option>
+              <option value="Bán thời gian">Bán thời gian</option>
+              <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
             </select>
           </div>
           <div>
-            <label className="block font-semibold mb-1">Cập bậc</label>
-            <select
-              name="trangthai"
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            >
-              <option value="active">Intern</option>
-              <option value="active">Fresher</option>
-              <option value="expired">Leader</option>
-            </select>
+            <label className="block font-semibold mb-1">Kỹ năng</label>
+            <Select
+              name="Kynang"
+              isMulti
+              options={skills}
+              value={jobPost.Kynang}
+              onChange={handleMultiSelectChange}
+              placeholder="Chọn kỹ năng"
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">Cấp bậc</label>
+            <Select
+              name="Capbac"
+              isMulti
+              options={levels}
+              value={jobPost.Capbac}
+              onChange={handleMultiSelectChange}
+              placeholder="Chọn cấp bậc"
+            />
           </div>
         </div>
         <button

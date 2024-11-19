@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Dialog,
   DialogPanel,
@@ -227,8 +228,9 @@ export default function Example() {
         <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
             {jobPosts.map((product) => (
-              <a
+              <Link
                 key={product.id}
+                to={`/tintuyendung/${product.id}`} // The URL to navigate to the job post detail page
                 className="group border border-gray-300 rounded-lg p-4"
               >
                 <div className="flex justify-center items-center w-24 h-24 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
@@ -245,7 +247,7 @@ export default function Example() {
                 <p className="mt-4 text-sm text-gray-700">
                   {product.employer.diachi}
                 </p>
-              </a>
+              </Link>
             ))}
           </div>
         </div>

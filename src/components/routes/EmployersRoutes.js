@@ -18,10 +18,10 @@
 import EmployerLayout from "../layouts/EmployerLayout";
 import Home from "../pages/Employers/Home";
 
-export const EmployersRoutes =[
+export const EmployersRoutes = [
   {
-    path :"/employerhome",
-    component : Home,
-    layout : EmployerLayout
-  }
-]
+    path: "/employerhome",
+    component: Home,
+    layout: EmployerLayout,
+  },
+];

@@ -3,7 +3,7 @@ import axios from "../../services/axios";
 import Modal from "react-modal";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import { Link } from "react-router-dom"; // Import Link for routing
+import { Form, Link } from "react-router-dom"; // Import Link for routing
 
 Modal.setAppElement("#root"); // For accessibility
 
@@ -17,12 +17,6 @@ function JobApplicationForm() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalFile, setModalFile] = useState(null);
   const [status, setStatus] = useState("");
-
-  useEffect(() => {
-    fetchJobPosts();
-    fetchEmployers();
-    fetchApplications();
-  }, []);
 
   const fetchJobPosts = async () => {
     try {
@@ -105,6 +99,7 @@ function JobApplicationForm() {
     formData.append("file", file);
     formData.append("MaTTD", selectedJob);
     formData.append("MaNTV", selectedEmployer);
+    formData.append("trangthai", status);
 
     try {
       await axios.post("/Ut", formData, {
@@ -126,6 +121,11 @@ function JobApplicationForm() {
     setModalIsOpen(false);
     setModalFile(null);
   };
+  useEffect(() => {
+    fetchJobPosts();
+    fetchEmployers();
+    fetchApplications();
+  }, []);
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
@@ -216,6 +216,7 @@ function JobApplicationForm() {
               <th className="px-4 py-2 border-b">ID</th>
               <th className="px-4 py-2 border-b">Mã TTD</th>
               <th className="px-4 py-2 border-b">MÃ NTV</th>
+              <th className="px-4 py-2 border-b">Trạng thái</th>
               <th className="px-4 py-2 border-b">Ngày</th>
               <th className="px-4 py-2 border-b">File</th>
             </tr>
@@ -226,6 +227,7 @@ function JobApplicationForm() {
                 <td className="px-4 py-2 border-b text-center">{app.id}</td>
                 <td className="px-4 py-2 border-b">{app.MaTTD}</td>
                 <td className="px-4 py-2 border-b">{app.MaNTV}</td>
+                <td className="px-4 py-2 border-b">{app.trangthai}</td>
                 <td className="px-4 py-2 border-b text-center">
                   {new Date(app.NgayNop).toLocaleDateString()}
                 </td>

@@ -28,7 +28,14 @@ function App() {
     doc.setFontSize(12);
 
     const headers = [
-      ["Title", "Description", "Salary", "Expiry Date", "Status", "Recruiter"],
+      [
+        "Tiêu đề",
+        "Mô tả ",
+        "Mức lương",
+        "Ngyaf hết hạn",
+        "Trạng thái",
+        "Nhà tuyển dụng",
+      ],
     ];
     const rows = jobPosts.map((post) => [
       post.tieude,

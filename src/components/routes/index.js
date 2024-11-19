@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 import { authRoutes } from "./authRoutes";
 import Home from "../pages/Employers/Home";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
@@ -12,6 +13,7 @@ import { Link } from "react-router-dom"; // Import Link for routing
 import { AdminRoutes } from "./AdminRoutes";
 import { EmployersRoutes } from "./EmployersRoutes";
 import FilePreview from "../pages/FilePreivew";
+import EmployerLayout from "../layouts/EmployerLayout";
 
 import AdminLayout from "../layouts/AdminLayout";
 
@@ -79,6 +81,34 @@ function App() {
             />
 
             {AdminRoutes.map((route, index) => {
+              return (
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={
+                    <route.layout>
+                      <route.component />
+                    </route.layout>
+                  }
+                />
+              );
+            })}
+          </>
+        ) : (
+          <Route path="*" element={<Navigate to={"/home"} />} />
+        )}
+        {isAuth === "true" && role === "ntd" ? (
+          <>
+            <Route
+              path="/se"
+              element={
+                <EmployerLayout>
+                  <Home />
+                </EmployerLayout>
+              }
+            />
+
+            {EmployersRoutes.map((route, index) => {
               return (
                 <Route
                   key={index}

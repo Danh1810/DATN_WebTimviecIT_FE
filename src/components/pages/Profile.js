@@ -1,451 +1,327 @@
-import { useState } from "react";
-import { Field, Label, Switch } from "@headlessui/react";
-import { Calendar, theme } from "antd";
-import {
-  Dialog,
-  DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
-} from "@headlessui/react";
-import {
-  ArrowPathIcon,
-  Bars3Icon,
-  ChartPieIcon,
-  CursorArrowRaysIcon,
-  FingerPrintIcon,
-  SquaresPlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  PhoneIcon,
-  PlayCircleIcon,
-} from "@heroicons/react/20/solid";
-import { DatePicker, Space } from "antd";
-const onChange = (date, dateString) => {
-  console.log(date, dateString);
-};
-const products = [
-  {
-    name: "Analytics",
-    description: "Get a better understanding of your traffic",
-    href: "#",
-    icon: ChartPieIcon,
-  },
-  {
-    name: "Engagement",
-    description: "Speak directly to your customers",
-    href: "#",
-    icon: CursorArrowRaysIcon,
-  },
-  {
-    name: "Security",
-    description: "Your customers’ data will be safe and secure",
-    href: "#",
-    icon: FingerPrintIcon,
-  },
-  {
-    name: "Integrations",
-    description: "Connect with third-party tools",
-    href: "#",
-    icon: SquaresPlusIcon,
-  },
-  {
-    name: "Automations",
-    description: "Build strategic funnels that will convert",
-    href: "#",
-    icon: ArrowPathIcon,
-  },
-];
-const onPanelChange = (value, mode) => {
-  console.log(value.format("YYYY-MM-DD"), mode);
-};
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const callsToAction = [
-  { name: "Watch demo", href: "#", icon: PlayCircleIcon },
-  { name: "Contact sales", href: "#", icon: PhoneIcon },
-];
+const ProfileForm = () => {
+  const [profiles, setProfiles] = useState([]); // Danh sách hồ sơ
+  const [formData, setFormData] = useState({
+    anhDaiDien: "",
+    hoVaTen: "",
+    ngaySinh: "",
+    thanhPho: "",
+    diaChi: "",
+    gioiTinh: "",
+    soDienThoai: "",
+    kyNangLapTrinh: "",
+    capBacHienTai: "",
+    mucTieuNgheNghiep: "",
+  });
 
-export default function Profile() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  console.log(localStorage.getItem("isAuth"));
+  const [editId, setEditId] = useState(null); // ID hồ sơ đang chỉnh sửa
+
+  // Lấy danh sách hồ sơ
+  // const fetchProfiles = async () => {
+  //   try {
+  //     const response = await axios.get("http://localhost:5000/profiles");
+  //     setProfiles(response.data.data);
+  //   } catch (error) {
+  //     console.error("Lỗi khi lấy danh sách hồ sơ:", error);
+  //   }
+  // };
+
+  // Gọi API khi load trang
+  // useEffect(() => {
+  //   fetchProfiles();
+  // }, []);
+
+  // Xử lý thay đổi form
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Xử lý gửi form
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     if (editId) {
+  //       // Cập nhật hồ sơ
+  //       await axios.put(`http://localhost:5000/profiles/${editId}`, formData);
+  //       alert("Cập nhật hồ sơ thành công");
+  //     } else {
+  //       // Tạo mới hồ sơ
+  //       await axios.post("http://localhost:5000/profiles", formData);
+  //       alert("Tạo hồ sơ thành công");
+  //     }
+  //     fetchProfiles(); // Reload danh sách
+  //     setFormData({
+  //       anhDaiDien: "",
+  //       hoVaTen: "",
+  //       ngaySinh: "",
+  //       thanhPho: "",
+  //       diaChi: "",
+  //       gioiTinh: "",
+  //       soDienThoai: "",
+  //       kyNangLapTrinh: "",
+  //       capBacHienTai: "",
+  //       mucTieuNgheNghiep: "",
+  //     });
+  //     setEditId(null); // Reset form
+  //   } catch (error) {
+  //     console.error("Lỗi khi gửi dữ liệu:", error);
+  //   }
+  // };
+
+  // Xóa hồ sơ
+  // const handleDelete = async (id) => {
+  //   try {
+  //     await axios.delete(`http://localhost:5000/profiles/${id}`);
+  //     alert("Xóa hồ sơ thành công");
+  //     fetchProfiles();
+  //   } catch (error) {
+  //     console.error("Lỗi khi xóa hồ sơ:", error);
+  //   }
+  // };
+
+  // Sửa hồ sơ
+  // const handleEdit = (profile) => {
+  //   setEditId(profile.id);
+  //   setFormData(profile);
+  // };
 
   return (
     <div>
-      <header className="bg-white">
-        <nav
-          aria-label="Global"
-          className="mx-auto flex w-full items-center justify-start p-6 lg:px-8"
-        >
-          <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
-              <span className="sr-only">Your Company</span>
-              <img
-                alt=""
-                src="https://static.vecteezy.com/system/resources/thumbnails/020/272/341/small/it-alphabet-letters-curving-shape-initials-monogram-logo-it-t-and-i-pro-vector.jpg"
-                className="h-8 w-auto"
-              />
-            </a>
-          </div>
-          <div className="flex lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-            >
-              <span className="sr-only">Open main menu</span>
-              <Bars3Icon aria-hidden="true" className="h-6 w-6" />
-            </button>
-          </div>
-          <PopoverGroup className="hidden lg:flex lg:gap-x-12">
-            <Popover className="relative">
-              <PopoverButton className="flex items-center gap-x-1 text-2xl font-semibold leading-6 text-gray-900">
-                Product
-                <ChevronDownIcon
-                  aria-hidden="true"
-                  className="h-5 w-5 flex-none text-gray-400"
-                />
-              </PopoverButton>
+      <nav className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <span className="text-red-600 font-bold text-lg">TopDev CV</span>
+            </div>
 
-              <PopoverPanel
-                transition
-                className="absolute -left-8 top-full z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5 transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
+            {/* Navigation Links */}
+            <div className="hidden md:flex space-x-6">
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
               >
-                <div className="p-4">
-                  {products.map((item) => (
-                    <div
-                      key={item.name}
-                      className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50"
-                    >
-                      <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                        <item.icon
-                          aria-hidden="true"
-                          className="h-6 w-6 text-gray-600 group-hover:text-indigo-600"
-                        />
-                      </div>
-                      <div className="flex-auto">
-                        <a
-                          href={item.href}
-                          className="block font-semibold text-gray-900"
-                        >
-                          {item.name}
-                          <span className="absolute inset-0" />
-                        </a>
-                        <p className="mt-1 text-gray-600">{item.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50">
-                  {callsToAction.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center justify-center gap-x-2.5 p-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
-                    >
-                      <item.icon
-                        aria-hidden="true"
-                        className="h-5 w-5 flex-none text-gray-400"
-                      />
-                      {item.name}
-                    </a>
-                  ))}
-                </div>
-              </PopoverPanel>
-            </Popover>
-
-            <a
-              href="#"
-              className="text-2xl font-semibold leading-6 text-gray-900"
-            >
-              Features
-            </a>
-            <a
-              href="#"
-              className="text-2xl font-semibold leading-6 text-gray-900"
-            >
-              Marketplace
-            </a>
-            <a
-              href="#"
-              className="text-2xl font-semibold leading-6 text-gray-900"
-            >
-              Company
-            </a>
-          </PopoverGroup>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-center items-center  p-4 ml-10 ">
-            <a
-              href="#"
-              className="text-2xl font-semibold leading-6 text-gray-900 flex items-center gap-x-2"
-            >
-              Đăng nhập <span aria-hidden="true">&rarr;</span>
-            </a>
-          </div>
-
-          <div className="hidden lg:flex lg:flex-1  ">
-            <a
-              href="#"
-              className="text-2xl font-semibold leading-6 text-gray-900"
-            >
-              Đăng ký <span aria-hidden="true">&rarr;</span>
-            </a>
-          </div>
-        </nav>
-
-        <Dialog
-          open={mobileMenuOpen}
-          onClose={setMobileMenuOpen}
-          className="lg:hidden"
-        >
-          <div className="fixed inset-0 z-10" />
-          <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-            <div className="flex items-center justify-between">
-              <a href="#" className="-m-1.5 p-1.5">
-                <span className="sr-only">Your Company</span>
-                <img
-                  alt=""
-                  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                  className="h-8 w-auto"
-                />
+                TopDev CV của tôi
               </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
+              >
+                Quản lý việc làm
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
+              >
+                Quản lý CV
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
+              >
+                Quản lý Email
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
+              >
+                Việc đã ứng tuyển
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
+              >
+                Việc đang theo dõi
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-red-600 font-medium"
+              >
+                Trắc nghiệm tính cách
+              </a>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700"
               >
-                <span className="sr-only">Close menu</span>
-                <XMarkIcon aria-hidden="true" className="h-6 w-6" />
+                <svg
+                  className="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
               </button>
             </div>
-            <div className="mt-6 flow-root">
-              <div className="-my-6 divide-y divide-gray-500/10">
-                <div className="space-y-2 py-6">
-                  <Disclosure as="div" className="-mx-3">
-                    <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">
-                      Product
-                      <ChevronDownIcon
-                        aria-hidden="true"
-                        className="h-5 w-5 flex-none group-data-[open]:rotate-180"
-                      />
-                    </DisclosureButton>
-                    <DisclosurePanel className="mt-2 space-y-2">
-                      {[...products, ...callsToAction].map((item) => (
-                        <DisclosureButton
-                          key={item.name}
-                          as="a"
-                          href={item.href}
-                          className="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                        >
-                          {item.name}
-                        </DisclosureButton>
-                      ))}
-                    </DisclosurePanel>
-                  </Disclosure>
-                  <a
-                    href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Features
-                  </a>
-                  <a
-                    href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Marketplace
-                  </a>
-                  <a
-                    href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Company
-                  </a>
-                </div>
-                <div className="py-6">
-                  <a
-                    href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Log in
-                  </a>
-                </div>
-              </div>
-            </div>
-          </DialogPanel>
-        </Dialog>
-      </header>
-      <div className="isolate bg-white px-6 py-24 sm:py-32 lg:px-8">
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[-20rem]"
-        >
-          <div
-            style={{
-              clipPath:
-                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-            }}
-            className="relative left-1/2 -z-10 aspect-[1155/678] w-[36.125rem] max-w-none -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-40rem)] sm:w-[72.1875rem]"
-          />
+          </div>
         </div>
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Thông tin cá nhân
+      </nav>
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Quản lý Hồ Sơ Cá Nhân</h1>
+
+        <form className="mb-6 p-4 border rounded shadow">
+          <h2 className="text-xl font-semibold mb-4">
+            {editId ? "Cập nhật hồ sơ" : "Thêm mới hồ sơ"}
           </h2>
-        </div>
-        <form
-          action="#"
-          method="POST"
-          className="mx-auto mt-16 max-w-xl sm:mt-20"
-        >
-          <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+
+          {/* Các trường trong form */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="first-name"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                Họ Và Tên
-              </label>
-              <div className="mt-2.5">
-                <input
-                  id="first-name"
-                  name="first-name"
-                  type="text"
-                  autoComplete="given-name"
-                  className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
+              <label className="block font-medium">Họ và Tên</label>
+              <input
+                type="text"
+                name="hoVaTen"
+                value={formData.hoVaTen}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+                required
+              />
             </div>
+
             <div>
-              <label
-                htmlFor="last-name"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                Năm sinh
-              </label>
-              <div className="mt-2.5">
-                <Space direction="vertical">
-                  <DatePicker onChange={onChange} />
-                  {/* <DatePicker onChange={onChange} picker="week" />
-    <DatePicker onChange={onChange} picker="month" />
-    <DatePicker onChange={onChange} picker="quarter" />
-    <DatePicker onChange={onChange} picker="year" /> */}
-                </Space>
-              </div>
+              <label className="block font-medium">Ngày Sinh</label>
+              <input
+                type="date"
+                name="ngaySinh"
+                value={formData.ngaySinh}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+              />
             </div>
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="company"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                Giới tính
-              </label>
+
+            <div>
+              <label className="block font-medium">Tỉnh/Thành phố</label>
+              <input
+                type="text"
+                name="thanhPho"
+                value={formData.thanhPho}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">Địa chỉ</label>
+              <input
+                type="text"
+                name="diaChi"
+                value={formData.diaChi}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">Giới Tính</label>
               <select
-                id="gender"
-                name="gender"
-                className="h-full rounded-md border-0 bg-transparent bg-none py-0 pl-4 pr-9 text-gray-900 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                name="gioiTinh"
+                value={formData.gioiTinh}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
               >
-                <option>Nam</option>
-                <option>NỮ</option>
+                <option value="">Chọn</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
               </select>
             </div>
+
             <div>
-              <label
-                htmlFor="last-name"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                SDT
-              </label>
-              <div className="mt-2.5">
-                <input
-                  id="nam sinh"
-                  name="nam sinh"
-                  type="text"
-                  autoComplete="family-name"
-                  className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                Email
-              </label>
-              <div className="mt-2.5">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="phone-number"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                Địa chỉ
-              </label>
-              <div className=" mt-2.5">
-                <input
-                  id="phone-number"
-                  name="phone-number"
-                  type="tel"
-                  autoComplete="tel"
-                  className="block w-full rounded-md border-0 px-3.5 py-2 pl-20 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="message"
-                className="block text-sm font-semibold leading-6 text-gray-900"
-              >
-                Kinh Nghiệm
-              </label>
+              <label className="block font-medium">Số điện thoại</label>
               <input
-                id="phone-number"
-                name="phone-number"
-                type="tel"
-                autoComplete="tel"
-                className="block w-full rounded-md border-0 px-3.5 py-2 pl-20 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                type="text"
+                name="soDienThoai"
+                value={formData.soDienThoai}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+                required
               />
-              {/* <div className="mt-2.5">
-              <textarea
-                id="message"
-                name="message"
-                rows={4}
-                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                defaultValue={''}
-              /> 
-            </div> */}
+            </div>
+
+            <div>
+              <label className="block font-medium">Kỹ năng lập trình</label>
+              <input
+                type="text"
+                name="kyNangLapTrinh"
+                value={formData.kyNangLapTrinh}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">Cấp bậc hiện tại</label>
+              <input
+                type="text"
+                name="capBacHienTai"
+                value={formData.capBacHienTai}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+              />
             </div>
           </div>
-          <div className="mt-10">
-            <button
-              type="submit"
-              className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Lưu
-            </button>
+
+          <div className="mt-4">
+            <label className="block font-medium">Mục tiêu nghề nghiệp</label>
+            <textarea
+              name="mucTieuNgheNghiep"
+              value={formData.mucTieuNgheNghiep}
+              onChange={handleChange}
+              className="w-full border rounded px-2 py-1"
+              rows="3"
+            ></textarea>
           </div>
-          <div className="mt-10">
-            <button
-              type="submit"
-              className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Hủy
-            </button>
-          </div>
+
+          <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            {editId ? "Cập nhật" : "Lưu"}
+          </button>
         </form>
+
+        {/* Danh sách hồ sơ */}
+        <h2 className="text-xl font-semibold mb-4">Danh sách hồ sơ</h2>
+        {/* <ul className="space-y-4">
+        {profiles.map((profile) => (
+          <li
+            key={profile.id}
+            className="p-4 border rounded shadow flex justify-between items-center"
+          >
+            <div>
+              <h3 className="font-bold">{profile.hoVaTen}</h3>
+              <p>{profile.soDienThoai}</p>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleEdit(profile)}
+                className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              >
+                Sửa
+              </button>
+              <button
+                onClick={() => handleDelete(profile.id)}
+                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Xóa
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul> */}
       </div>
     </div>
   );
-}
+};
+
+export default ProfileForm;
