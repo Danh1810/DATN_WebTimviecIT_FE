@@ -9,6 +9,7 @@ import db from "../pages/Dashboard/DashboardPage";
 import singupe from "../pages/Employers/Home";
 import chitiet from "../pages/Chitiet";
 import dl from "../pages/DulieuPage/index";
+import dn from "../pages/User/DashboardNTV";
 export const authRoutes = [
   { path: "/login", component: Login, layout: AuthLayout },
   { path: "/singup", component: Singup, layout: AuthLayout },
@@ -18,6 +19,7 @@ export const authRoutes = [
   { path: "/se", component: singupe, layout: AuthLayout },
   { path: "/tintuyendung/:id", component: chitiet, layout: AuthLayout },
   { path: "/dl", component: dl, layout: AuthLayout },
+  { path: "/dn", component: dn, layout: AuthLayout },
 
   // { path: "/forgotpassword", component: ForgotPassword, layout: AuthLayout },
 ];

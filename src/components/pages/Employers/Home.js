@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import App from "./ThemTin";
-
+import EmployerManagement from "./ThongtinNTD";
 const Dashboard = () => {
   const [selectedMenu, setSelectedMenu] = useState("Overview");
   const [showAnalyticsSubNav, setShowAnalyticsSubNav] = useState(false);
@@ -133,6 +133,12 @@ const Dashboard = () => {
           {selectedMenu === "Analytics" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Analytics Data</h2>
+              {/* Content for Analytics */}
+            </div>
+          )}
+          {selectedMenu === "Overview" && (
+            <div className="bg-white shadow-lg rounded-lg p-4">
+              <EmployerManagement />
               {/* Content for Analytics */}
             </div>
           )}

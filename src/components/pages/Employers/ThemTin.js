@@ -8,7 +8,7 @@ function App() {
     mota: "",
     mucluong: "",
     Ngayhethan: "",
-    trangthai: "active",
+    trangthai: "Chờ duyệt",
     kinhnghiem: "",
     loaihopdong: "",
     diaChiLamviec: "",
@@ -81,7 +81,9 @@ function App() {
         Kynang: jobPost.Kynang.map((k) => k.value),
         Capbac: jobPost.Capbac.map((l) => l.value),
       };
+      console.log("🚀 ~ handleSubmit ~ postData:", postData);
       const response = await axios.post("/tintd", postData);
+      console.log("🚀 ~ handleSubmit ~ postData:", postData);
       setJobPosts((prev) => [...prev, response.data]);
       setJobPost({
         tieude: "",
@@ -138,6 +140,17 @@ function App() {
               type="text"
               name="mucluong"
               value={jobPost.mucluong}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="Nhập mức lương"
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">Ngày hết hạn</label>
+            <input
+              type="date"
+              name="Ngayhethan"
+              value={jobPost.Ngayhethan}
               onChange={handleChange}
               className="w-full p-2 border rounded"
               placeholder="Nhập mức lương"
