@@ -90,11 +90,11 @@ function Layout({ children }) {
               <ChevronDownIcon className="h-4 w-4" />
             </button>
             {isRegionOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
+              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-10">
                 <a href="/login" className="block px-4 py-2 hover:bg-gray-100">
                   Đăng nhập
                 </a>
-                <a href="/singup" className="block px-4 py-2 hover:bg-gray-100">
+                <a href="/signup" className="block px-4 py-2 hover:bg-gray-100">
                   Đăng ký
                 </a>
               </div>

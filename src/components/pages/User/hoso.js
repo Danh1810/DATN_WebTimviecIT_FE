@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "../../services/axios";
 
 const CVManagement = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
-  };
+  const [jobSeekers, setJobSeekers] = useState([]);
+  const [isXem, setisxem] = useState(false);
+  const [hoso, sethoso] = useState([]);
+  const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({
     anhDaiDien: "",
     hoVaTen: "",
@@ -22,85 +23,109 @@ const CVManagement = () => {
     linkHoSoOnline: "",
     ngayCapNhat: "",
   });
+  const [selectedNTV, setSelectedNTV] = useState(null);
+  const fetchJobSeekers = async () => {
+    try {
+      const response = await axios.get("/ngtviec");
+      setJobSeekers(response.data);
+    } catch (error) {
+      console.error("Error fetching job seekers:", error);
+    }
+  };
+  const fetchhoso = async () => {
+    try {
+      const response = await axios.get("/ngtviec/hoso", { params: { id: 1 } });
+      const hoso = response.data[0]?.hoso || []; // Safely access the nested `hoso` array
+      sethoso(hoso);
+    } catch (error) {
+      console.error("Error fetching CV data:", error);
+    }
+  };
 
-  const [editId, setEditId] = useState(null); // ID hồ sơ đang chỉnh sửa
+  const toggleModal = () => {
+    setIsOpen(!isOpen);
+  };
+  const togglexemModal = () => {
+    setisxem(!isOpen);
+  };
+  // const handleEdit = (id) => {
+  //   const selectedCV = hoso.find((cv) => cv.id === id);
+  //   setFormData(selectedCV);
+  //   setEditId(id);
+  //   toggleModal();
+  // };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+  const [selectedhosoNTV, setSelectedhoNTV] = useState(null);
+  const xemChiTiet = (id) => {
+    setisxem(!isOpen);
+    const post = hoso.find((post) => post.id === id);
+    setSelectedhoNTV(post); // Lưu bài đăng được chọn vào state
+  };
+  const closeModal = () => {
+    setSelectedhoNTV(null); // Đóng modal
+  };
+
+  useEffect(() => {
+    fetchhoso();
+    fetchJobSeekers();
+  }, []);
+
   return (
     <div className="container mx-auto p-4">
-      {/* Navigation */}
-      <div className="flex justify-between items-center border-b pb-2 mb-4">
-        <div className="flex space-x-4">
-          <a href="#" className="text-red-600 font-medium">
-            Quản lý CV
-          </a>
-          <span className="text-gray-400">|</span>
-          <a href="#" className="text-gray-600">
-            Thư giới thiệu
-          </a>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={toggleModal}
-            className="bg-gray-700 text-white px-4 py-2 rounded flex items-center space-x-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 16l4-4m0 0l4-4m-4 4v12"
-              />
-            </svg>
-            <span>Tải CV lên</span>
-          </button>
-          <button className="bg-red-600 text-white px-4 py-2 rounded flex items-center space-x-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12h6m-3 3v6m-6-6a3 3 0 003 3h6a3 3 0 003-3V9a3 3 0 00-3-3H9a3 3 0 00-3 3v6z"
-              />
-            </svg>
-            <span>Tạo CV mới</span>
-          </button>
-        </div>
+      <button
+        onClick={toggleModal}
+        className="bg-gray-700 text-white px-4 py-2 rounded flex items-center space-x-2"
+      >
+        <span>Tải hồ sơ</span>
+      </button>
+      <div className="bg-gray-100 p-4 rounded">
+        <table className="table-auto w-full text-left">
+          <thead>
+            <tr className="text-gray-600 font-medium">
+              <th className="px-4 py-2">Tên CV</th>
+              <th className="px-4 py-2">Trạng thái CV</th>
+              <th className="px-4 py-2">Lần chỉnh sửa cuối</th>
+              <th className="px-4 py-2">Tùy chọn</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hoso.length === 0 ? (
+              <tr>
+                <td className="px-4 py-2 text-center" colSpan="4">
+                  No CVs found.
+                </td>
+              </tr>
+            ) : (
+              hoso.map((hs) => (
+                <tr className="text-gray-800" key={hs.id}>
+                  <td className="border-t px-6 py-3">{hs.tenhoso}</td>
+                  <td className="border-t px-6 py-3">{hs.mucTieuNgheNghiep}</td>
+                  <td className="border-t px-6 py-3">{hs.ngayCapNhat}</td>
+                  <td className="border-t px-6 py-3 flex space-x-3">
+                    <button
+                      className="text-blue-500 hover:underline"
+                      // onClick={() => handleEdit(hs.id)}
+                    >
+                      Chỉnh sửa
+                    </button>
+                    <button
+                      className="text-blue-500 hover:underline"
+                      onClick={() => xemChiTiet(hs.id)}
+                    >
+                      Xem
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Table */}
-      <div className="bg-gray-100 p-4 rounded">
-        <div className="grid grid-cols-4 text-gray-600 font-medium">
-          <div>Tên CV</div>
-          <div>Trạng thái CV</div>
-          <div>Lần chỉnh sửa cuối</div>
-          <div>Tùy chọn</div>
-        </div>
-        {/* Table content */}
-        <div className="grid grid-cols-4 text-gray-800 mt-2">
-          <div>CV Mẫu</div>
-          <div>Hoạt động</div>
-          <div>18/11/2024</div>
-          <div>
-            <button className="text-blue-500 hover:underline">Chỉnh sửa</button>
-          </div>
-        </div>
-      </div>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="container mx-auto p-4 bg-white max-h-[90vh] overflow-y-auto">
@@ -128,7 +153,7 @@ const CVManagement = () => {
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                {/* <div>
                   <label className="block font-medium">Họ và Tên</label>
                   <input
                     type="text"
@@ -198,7 +223,7 @@ const CVManagement = () => {
                     className="w-full border rounded px-2 py-1"
                     required
                   />
-                </div>
+                </div> */}
 
                 <div>
                   <label className="block font-medium">Kỹ năng lập trình</label>
@@ -292,9 +317,163 @@ const CVManagement = () => {
                 Đóng
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {selectedhosoNTV && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="container mx-auto p-4 bg-white max-h-[90vh] overflow-y-auto">
+            <form className="mb-6 p-4 border rounded shadow">
+              <h2 className="text-xl font-semibold mb-4">
+                {editId ? "Cập nhật hồ sơ" : "Thêm mới hồ sơ"}
+              </h2>
 
-            <h2 className="text-xl font-semibold mb-4">Danh sách hồ sơ</h2>
-            {/* Danh sách hồ sơ rendering */}
+              <div className="mb-6 flex flex-col items-center">
+                <div className="w-48 h-48 rounded-full overflow-hidden border mb-4">
+                  <img
+                    src={
+                      jobSeekers.find(
+                        (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                      )?.anhDaiDien || "N/A"
+                    }
+                    // selectedhosoNTV.anhDaiDien ||
+                    // "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
+                    // Ảnh mặc định nếu không có ảnh
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <label className="text-sm">
+                  {jobSeekers.find(
+                    (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                  )?.anhDaiDien
+                    ? "Ảnh đã tải lên"
+                    : "Chưa tải ảnh"}
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-medium">Họ và Tên:</label>
+                  <label className="block">
+                    {jobSeekers.find(
+                      (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                    )?.hoVaTen || "N/A"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Ngày Sinh:</label>
+                  <label className="block">
+                    {jobSeekers.find(
+                      (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                    )?.ngaySinh || "N/A"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Tỉnh/Thành phố:</label>
+                  <label className="block">
+                    {jobSeekers.find(
+                      (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                    )?.thanhPho || "N/A"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Địa chỉ:</label>
+                  <label className="block">
+                    {jobSeekers.find(
+                      (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                    )?.diaChi || "N/A"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Giới Tính:</label>
+                  <label className="block">
+                    {jobSeekers.find(
+                      (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                    )?.gioiTinh || "N/A"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Số điện thoại:</label>
+                  <label className="block">
+                    {jobSeekers.find(
+                      (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                    )?.soDienThoai || "N/A"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">
+                    Kỹ năng lập trình:
+                  </label>
+                  <label className="block">
+                    {selectedhosoNTV.kyNangLapTrinh || "Chưa nhập"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Cấp bậc hiện tại:</label>
+                  <label className="block">
+                    {selectedhosoNTV.capBacHienTai || "Chưa nhập"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">
+                    Chứng chỉ nghề nghiệp:
+                  </label>
+                  <label className="block">
+                    {selectedhosoNTV.chungChiNgheNghiep || "Chưa nhập"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">
+                    Dự án đã tham gia:
+                  </label>
+                  <label className="block">
+                    {selectedhosoNTV.duAnDaThamGia || "Chưa nhập"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">
+                    Link hồ sơ online:
+                  </label>
+                  <label className="block">
+                    {selectedhosoNTV.selectedhosoNTV || "Chưa nhập"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium">Ngày cập nhật:</label>
+                  <label className="block">
+                    {selectedhosoNTV.ngayCapNhat || "Chưa nhập"}
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block font-medium">
+                  Mục tiêu nghề nghiệp:
+                </label>
+                <label className="block">
+                  {selectedhosoNTV.mucTieuNgheNghiep || "Chưa nhập"}
+                </label>
+              </div>
+
+              <button
+                onClick={closeModal}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+              >
+                Đóng
+              </button>
+            </form>
           </div>
         </div>
       )}

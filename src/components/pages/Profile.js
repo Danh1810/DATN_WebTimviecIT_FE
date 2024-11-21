@@ -21,18 +21,19 @@ const ProfileForm = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get("/ngtviec"); // URL API để lấy dữ liệu
-  //       setSavedData(response.data); // Gán dữ liệu vào state
-  //     } catch (error) {
-  //       console.error("Error fetching saved data:", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("/ngtviec/detail", {
+          params: { id: 1 },
+        }); // URL API để lấy dữ liệu
+        setSavedData(response.data); // Gán dữ liệu vào state
+      } catch (error) {
+        console.error("Error fetching saved data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Xử lý thay đổi file
   const handleFileChange = (e) => {

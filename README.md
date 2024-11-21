@@ -68,3 +68,10 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+định dạng Hạn nộp:{" "}
+{new Date(job.Ngayhethan).toLocaleDateString("vi-VN", {
+day: "2-digit",
+month: "2-digit",
+year: "numeric",
+})}

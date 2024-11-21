@@ -5,6 +5,7 @@ import { Modal, Button } from "antd";
 import { getTintdbyID } from "../services/jb.service";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
+import { toast } from "react-toastify";
 function JobDetails() {
   const [activeTab, setActiveTab] = useState("details");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,7 +17,9 @@ function JobDetails() {
   console.log("🚀 ~ JobDetails ~ id:", id);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [jobSeekers, setJobSeekers] = useState([]);
+  const [isXem, setisxem] = useState(false);
+  const [hoso, sethoso] = useState([]);
   const similarJobs = [
     {
       title: "Front-end Developer",
@@ -40,6 +43,20 @@ function JobDetails() {
       deadline: "20/11/2024",
     },
   ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("/ngtviec/detail", {
+          params: { id: 1 },
+        }); // URL API để lấy dữ liệu
+        setName(response.data.hoVaTen);
+        setPhone(response.data.soDienThoai); // Gán dữ liệu vào state
+      } catch (error) {
+        console.error("Error fetching saved data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Fetch job details by ID
   const fetchJobDetails = async () => {
@@ -58,16 +75,42 @@ function JobDetails() {
       setLoading(false); // Stop loading
     }
   };
+  const fetchJobSeekers = async () => {
+    try {
+      const response = await axios.get("/ngtviec");
+      setJobSeekers(response.data);
+    } catch (error) {
+      console.error("Error fetching job seekers:", error);
+    }
+  };
+  const fetchhoso = async () => {
+    try {
+      const response = await axios.get("/ngtviec/hoso", { params: { id: 1 } });
+      const hoso = response.data[0]?.hoso || []; // Safely access the nested `hoso` array
+      sethoso(hoso);
+    } catch (error) {
+      console.error("Error fetching CV data:", error);
+    }
+  };
+  const [selectedHoSoId, setSelectedHoSoId] = useState(null);
 
-  useEffect(() => {
-    fetchJobDetails(); // Fetch job details on component mount or id change
-  }, [id]);
+  // Hàm xử lý khi chọn hồ sơ
+  const handleSelect = (id) => {
+    setSelectedHoSoId(id); // Lưu ID hồ sơ được chọn
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({ name, email, phone });
+    // e.preventDefault();
+    // console.log({ name, email, phone });
+    toast.success("Nộp hố sơ thành công");
     setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    fetchJobDetails();
+    fetchJobSeekers();
+    fetchhoso();
+  }, [id]);
 
   return (
     <div className="p-6 bg-gray-50">
@@ -97,34 +140,45 @@ function JobDetails() {
               </button>
 
               {/* Logo & Title */}
-              <div className="flex items-center space-x-4">
+              <div
+                key={job.id}
+                className="flex items-center space-x-6 p-4 bg-white rounded-lg shadow-lg"
+              >
+                {/* Employer Logo */}
                 <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/4/4d/MBBank_Logo.png"
-                  alt="MB Logo"
-                  className="w-12 h-12"
+                  src={job.employer.logo}
+                  alt="Employer Logo"
+                  className="w-20 h-20 object-contain rounded-full border border-gray-200 bg-gray-100"
                 />
+
+                {/* Job Details */}
                 <div>
-                  <h2 className="text-lg font-bold text-gray-800">
+                  <h2 className="text-xl font-semibold text-gray-900 leading-tight">
                     {job.tieude}
                   </h2>
-                  <p className="text-sm text-gray-500">{job.employer.ten}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {job.employer.ten}
+                  </p>
                 </div>
               </div>
 
               {/* Location & Time */}
-              <div className="mt-4 space-y-2">
-                <p className="flex items-center text-gray-600 text-sm">
-                  <span className="material-icons mr-2">
-                    <LocationOnIcon />
+              <div className="mt-4 p-4 bg-white rounded-lg shadow-lg">
+                <div className="flex items-center text-gray-700 text-sm">
+                  <LocationOnIcon className="text-gray-500 mr-2" />
+                  <span className="font-medium">{job.employer.diachi}</span>
+                </div>
+                <div className="flex items-center text-gray-700 text-sm mt-2">
+                  <AccessTimeFilledIcon className="text-gray-500 mr-2" />
+                  <span className="font-medium">
+                    Hạn nộp:{" "}
+                    {new Date(job.Ngayhethan).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
                   </span>
-                  {job.employer.diachi}
-                </p>
-                <p className="flex items-center text-gray-600 text-sm">
-                  <span className="material-icons mr-2">
-                    <AccessTimeFilledIcon />
-                  </span>
-                  {job.Ngayhethan}
-                </p>
+                </div>
               </div>
 
               {/* Salary */}
@@ -179,7 +233,7 @@ function JobDetails() {
             ) : (
               <>
                 {activeTab === "details" ? (
-                  <div>
+                  <div key={job.id}>
                     <h1 className="text-2xl font-bold mb-4">
                       {job?.title || "Thông tin tuyển dụng"}
                     </h1>
@@ -191,10 +245,9 @@ function JobDetails() {
                         <strong>Cấp bậc : </strong>
                         {job?.levels?.length > 0
                           ? job.levels.map((level, index) => (
-                              <span key={index}>
+                              <span key={level.id || `level-${index}`}>
                                 {level.ten || "N/A"}
-                                {index < job.levels.length - 1 && ", "}{" "}
-                                {/* Thêm dấu phẩy nếu không phải phần tử cuối */}
+                                {index < job.levels.length - 1 && ", "}
                               </span>
                             ))
                           : "N/A"}
@@ -207,10 +260,9 @@ function JobDetails() {
                         <strong>Kỹ năng : </strong>
                         {job?.skills?.length > 0
                           ? job.skills.map((skill, index) => (
-                              <span key={index}>
+                              <span key={skill.id || `skill-${index}`}>
                                 {skill.ten || "N/A"}
-                                {index < job.skills.length - 1 && ", "}{" "}
-                                {/* Thêm dấu phẩy nếu không phải phần tử cuối */}
+                                {index < job.skills.length - 1 && ", "}
                               </span>
                             ))
                           : "N/A"}
@@ -256,24 +308,20 @@ function JobDetails() {
           </div>
 
           {/* Similar Jobs */}
-          <aside className="w-full lg:w-64 bg-white p-4 rounded-lg shadow-md">
+          {/* <aside className="w-full lg:w-64 bg-white p-4 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Việc làm tương tự
             </h3>
             {similarJobs.map((job, index) => (
-              <div key={index} className="mb-4 p-3 border rounded-lg shadow-sm">
-                <h4 className="text-lg font-semibold text-gray-800">
-                  {job.title}
-                </h4>
-                <p className="text-sm text-gray-600">{job.company}</p>
-                <p className="text-sm text-gray-600">Khu vực: {job.location}</p>
-                <p className="text-sm text-gray-600">Mức lương: {job.salary}</p>
-                <p className="text-sm text-gray-600">
-                  Hạn nộp hồ sơ: {job.deadline}
-                </p>
-              </div>
-            ))}
-          </aside>
+  <div key={job.title || index} className="mb-4 p-3 border rounded-lg shadow-sm">
+    <h4 className="text-lg font-semibold text-gray-800">{job.title}</h4>
+    <p className="text-sm text-gray-600">{job.company}</p>
+    <p className="text-sm text-gray-600">Khu vực: {job.location}</p>
+    <p className="text-sm text-gray-600">Mức lương: {job.salary}</p>
+    <p className="text-sm text-gray-600">Hạn nộp hồ sơ: {job.deadline}</p>
+  </div>
+))}
+          </aside> */}
         </div>
       </div>
 
@@ -327,6 +375,33 @@ function JobDetails() {
               placeholder="0123456789"
               required
             />
+          </div>
+          <div className="mb-4">
+            <label className="block font-medium text-gray-700 mb-1">
+              Hồ sơ <span className="text-red-500"></span>
+            </label>
+            <div className="bg-white shadow-md p-4 rounded-lg space-y-2">
+              {hoso.map((hs) => (
+                <div
+                  key={hs.id}
+                  className={`flex justify-between items-center p-2 border rounded-lg ${
+                    selectedHoSoId === hs.id ? "bg-blue-50 border-blue-400" : ""
+                  }`}
+                >
+                  <div>{hs.tenhoso}</div>
+
+                  {/* Nút radio để chọn hồ sơ */}
+                  <input
+                    type="radio"
+                    name="hoso"
+                    value={hs.id}
+                    checked={selectedHoSoId === hs.id}
+                    onChange={() => handleSelect(hs.id)}
+                    className="cursor-pointer"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </form>
       </Modal>
