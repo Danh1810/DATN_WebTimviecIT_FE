@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ProfileForm from "../Profile";
 import CVManagement from "./hoso";
+import Luucongviec from "./Luucongviec";
 
 const DashboardNTV = () => {
   const [selectedMenu, setSelectedMenu] = useState("Overview");
@@ -12,10 +13,10 @@ const DashboardNTV = () => {
         return <ProfileForm />;
       case "Kynang":
         return <CVManagement />;
-      case "Overview":
-        return <h3 className="text-lg font-semibold mb-2">Người tìm việc</h3>;
+      case "quyen":
+        return <Luucongviec />;
       default:
-        return <p>Content not available</p>;
+        return <ProfileForm />;
     }
   };
 
@@ -45,7 +46,6 @@ const DashboardNTV = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex space-x-6">
               {[
-                { key: "Overview", label: "Tổng quan" },
                 { key: "profile", label: "Thông tin cá nhân" },
                 { key: "Kynang", label: "Hồ sơ cá nhân" },
                 { key: "ntd", label: "Việc làm đã ứng tuyển" },

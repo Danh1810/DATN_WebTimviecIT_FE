@@ -3,6 +3,7 @@ import axios from "../../services/axios";
 
 const CVManagement = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const id = localStorage.getItem("id");
   const [jobSeekers, setJobSeekers] = useState([]);
   const [isXem, setisxem] = useState(false);
   const [hoso, sethoso] = useState([]);
@@ -34,7 +35,7 @@ const CVManagement = () => {
   };
   const fetchhoso = async () => {
     try {
-      const response = await axios.get("/ngtviec/hoso", { params: { id: 1 } });
+      const response = await axios.get("/ngtviec/hoso", { params: { id: id } });
       const hoso = response.data[0]?.hoso || []; // Safely access the nested `hoso` array
       sethoso(hoso);
     } catch (error) {
@@ -75,7 +76,7 @@ const CVManagement = () => {
   }, []);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4  min-h-screen">
       <button
         onClick={toggleModal}
         className="bg-gray-700 text-white px-4 py-2 rounded flex items-center space-x-2"

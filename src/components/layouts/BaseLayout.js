@@ -1,11 +1,35 @@
 import React from "react";
 import { useState } from "react";
 import { ChevronDownIcon, BellIcon } from "@heroicons/react/20/solid";
+import { Logout } from "../services/auth/logout";
+import { logout } from "../slice/authSlice";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 
 function Layout({ children }) {
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
   const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const auth = useSelector((state) => state.auth);
+  const user = { name: "Nguyễn Văn A" };
+  const handleLogout = async () => {
+    const res = await Logout();
+    console.log("db", res);
+    if (+res.code === 0) {
+      localStorage.removeItem("token");
+      localStorage.setItem("isAuth", false);
+      localStorage.setItem("prePath", location.pathname);
+      localStorage.setItem("username", "");
+      localStorage.setItem("group_id", "");
+      localStorage.setItem("role", "");
+      localStorage.setItem("preRole", auth.role);
+      dispatch(logout());
+      navigate("/login");
+    }
+  };
   return (
     <div>
       <nav className="bg-purple-700 text-white flex items-center justify-between p-4">
@@ -23,6 +47,7 @@ function Layout({ children }) {
         <div className="hidden md:flex space-x-8">
           {/* Menu Item 1 */}
           <div className="relative">
+            {/* Button to toggle dropdown */}
             <button
               onClick={() => setIsOpportunityOpen(!isOpportunityOpen)}
               className="flex items-center space-x-1"
@@ -30,20 +55,28 @@ function Layout({ children }) {
               <span>Việc Làm</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
+
+            {/* Dropdown menu */}
             {isOpportunityOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
+              <div
+                className={`absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48 transition-transform duration-200 ${
+                  isOpportunityOpen
+                    ? "scale-100 opacity-100"
+                    : "scale-95 opacity-0"
+                }`}
+              >
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100">
                   Theo kỹ năng
                 </a>
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Theo cấp bặc
+                  Theo cấp bậc
                 </a>
               </div>
             )}
           </div>
-
           {/* Menu Item 2 */}
           <div className="relative">
+            {/* Button to toggle dropdown */}
             <button
               onClick={() => setIsToolOpen(!isToolOpen)}
               className="flex items-center space-x-1"
@@ -51,8 +84,10 @@ function Layout({ children }) {
               <span>Công ty</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
+
+            {/* Dropdown menu */}
             {isToolOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
+              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48">
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100">
                   Tool 1
                 </a>
@@ -80,42 +115,79 @@ function Layout({ children }) {
 
         {/* Right side (Icons and Region Selector) */}
         <div className="flex items-center space-x-6">
-          {/* Region Dropdown */}
+          {/* User Dropdown */}
           <div className="relative">
+            {/* Button */}
             <button
               onClick={() => setIsRegionOpen(!isRegionOpen)}
               className="flex items-center space-x-1"
             >
-              <span>Người tìm việc</span>
-              <ChevronDownIcon className="h-4 w-4" />
+              {/* Check if user exists */}
+              {auth.isAuth ? (
+                <>
+                  <span>{auth.username}</span>
+                  <ChevronDownIcon className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <span>Đăng nhập / Đăng ký</span>
+                  <ChevronDownIcon className="h-4 w-4" />
+                </>
+              )}
             </button>
+
+            {/* Dropdown */}
             {isRegionOpen && (
               <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-10">
-                <a href="/login" className="block px-4 py-2 hover:bg-gray-100">
-                  Đăng nhập
-                </a>
-                <a href="/signup" className="block px-4 py-2 hover:bg-gray-100">
-                  Đăng ký
-                </a>
+                {auth.isAuth ? (
+                  <>
+                    <a
+                      href="/user"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Thông tin cá nhân
+                    </a>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Đăng xuất
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <a
+                      href="/login"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Đăng nhập
+                    </a>
+                    <a
+                      href="/signup"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Đăng ký
+                    </a>
+                  </>
+                )}
               </div>
             )}
           </div>
 
-          {/* Notification Icon */}
-          <div className="relative">
+          {/* <div className="relative">
             <BellIcon className="h-6 w-6" />
             <span className="absolute -top-2 -right-2 bg-red-500 text-xs font-bold px-1.5 py-0.5 rounded-full">
               8
             </span>
           </div>
 
-          {/* User Role Selector */}
+          
           <div className="flex items-center space-x-1">
             <span className="flex items-center space-x-1">
               <span>Dành cho</span>
               <span className="font-semibold">Nhà Tuyển Dụng</span>
             </span>
-          </div>
+          </div> */}
 
           {/* Language Selector */}
         </div>

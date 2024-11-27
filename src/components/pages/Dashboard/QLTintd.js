@@ -33,7 +33,7 @@ function App() {
         "Tiêu đề",
         "Mô tả ",
         "Mức lương",
-        "Ngyaf hết hạn",
+        "Ngày hết hạn",
         "Trạng thái",
         "Nhà tuyển dụng",
       ],
@@ -99,7 +99,7 @@ function App() {
       toast.success("Duyệt thành công");
       fetchJobPosts();
     } catch (error) {
-      console.error("Lỗi duyệt :", error);
+      toast.error("Lỗi duyệt :", error);
     }
   };
   const [selectedPost, setSelectedPost] = useState(null);
@@ -133,49 +133,58 @@ function App() {
       </div>
 
       <>
-        {/* Bảng danh sách */}
-        <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
-          <thead>
-            <tr className="border-b">
-              <th className="px-4 py-2">Tiêu đề</th>
-              <th className="px-4 py-2">Mô tả</th>
-              <th className="px-4 py-2">Nhà tuyển dụng</th>
-              <th className="px-4 py-2">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {jobPosts.map((post) => (
-              <tr key={post.id} className="border-b">
-                <td className="px-4 py-2">{post.tieude}</td>
-                <td className="px-4 py-2">{post.mota}</td>
-                <td className="px-4 py-2">
-                  {recruiters.find((rec) => rec.id === post.MaNTD)?.ten ||
-                    "N/A"}
-                </td>
-                <td className="px-4 py-2">
-                  <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-                    onClick={() => xemChiTiet(post.id)}
-                  >
-                    Xem chi tiết
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded"
-                    onClick={() => console.log("Từ chối:", post.id)}
-                  >
-                    Từ chối
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded"
-                    onClick={() => handleSubmit(post.id)}
-                  >
-                    Duyệt
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
+            <thead>
+              <tr className="border-b">
+                <th className="px-4 py-2 sticky top-0 bg-white z-10">
+                  Tiêu đề
+                </th>
+                <th className="px-4 py-2 sticky top-0 bg-white z-10">Mô tả</th>
+                <th className="px-4 py-2 sticky top-0 bg-white z-10">
+                  Nhà tuyển dụng
+                </th>
+                <th className="px-4 py-2 sticky top-0 bg-white z-10">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {jobPosts.map((post) => (
+                <tr key={post.id} className="border-b">
+                  <td className="px-4 py-2 sticky left-0 bg-white">
+                    {post.tieude}
+                  </td>
+                  <td className="px-4 py-2 sticky left-0 bg-white">
+                    {post.mota}
+                  </td>
+                  <td className="px-4 py-2 sticky left-0 bg-white">
+                    {recruiters.find((rec) => rec.id === post.MaNTD)?.ten ||
+                      "N/A"}
+                  </td>
+                  <td className="px-4 py-2 sticky left-0 bg-white">
+                    <button
+                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                      onClick={() => xemChiTiet(post.id)}
+                    >
+                      Xem chi tiết
+                    </button>
+                    <button
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                      onClick={() => console.log("Từ chối:", post.id)}
+                    >
+                      Từ chối
+                    </button>
+                    <button
+                      className="bg-green-500 text-white px-3 py-1 rounded"
+                      onClick={() => handleSubmit(post.id)}
+                    >
+                      Duyệt
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Modal */}
         {selectedPost && (

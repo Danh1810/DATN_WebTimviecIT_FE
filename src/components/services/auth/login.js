@@ -1,10 +1,10 @@
 import axios from "../axios";
 
-const Login = async (username, password) => {
+const Login = async (email, password) => {
   return axios.post(
     "/login",
     {
-      username,
+      email,
       password,
     },
     { withCredentials: true }

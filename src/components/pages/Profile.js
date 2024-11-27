@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "../services/axios";
+import { useSelector, useDispatch } from "react-redux";
 
 const ProfileForm = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [savedData, setSavedData] = useState(null);
+  const auth = useSelector((state) => state.auth);
+  console.log("🚀 ~ ProfileForm ~ auth:", auth);
+  const id = localStorage.getItem("id");
+  console.log("🚀 ~ ProfileForm ~ id:", id);
   const [formData, setFormData] = useState({
     anhDaiDien: "",
     hoVaTen: "",
@@ -21,17 +26,28 @@ const ProfileForm = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  // const reportError = async (error) => {
+  //   // Gửi lỗi tới server log hoặc dịch vụ logging (ví dụ: Sentry, LogRocket)
+  //   await axios.post("/log", { error: error.message });
+  // };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("/ngtviec/detail", {
-          params: { id: 1 },
-        }); // URL API để lấy dữ liệu
-        setSavedData(response.data); // Gán dữ liệu vào state
+          params: { id: id },
+        });
+
+        if (!response.data || Object.keys(response.data).length === 0) {
+          setSavedData(null);
+        } else {
+          setSavedData(response.data);
+        }
       } catch (error) {
-        console.error("Error fetching saved data:", error);
+        console.error(error); // Gửi lỗi đi
       }
     };
+
     fetchData();
   }, []);
 
@@ -86,7 +102,7 @@ const ProfileForm = () => {
     console.log("🚀 ~ handleAddJobSeeker ~ formData:", formData.anhDaiDien);
   };
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 flex flex-col min-h-screen">
       <h1 className="text-2xl font-bold mb-4">Thông tin cá nhân</h1>
 
       {/* Nếu chưa có dữ liệu đã lưu thì hiển thị form */}

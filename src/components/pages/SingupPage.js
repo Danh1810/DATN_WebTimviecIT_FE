@@ -15,7 +15,12 @@ function Signup() {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    console.log("Field changed:", name, "Value:", value); // Kiểm tra giá trị
+    setInputs((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   // Fetch roles on component mount
@@ -35,7 +40,7 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3060/vieclamit/register", inputs);
+      await axios.post("/register", inputs);
       navigate("/login");
     } catch (err) {
       if (err.response && err.response.status === 409) {
@@ -44,6 +49,7 @@ function Signup() {
         setError("Có lỗi xảy ra, vui lòng thử lại!");
       }
     }
+    console.log("🚀 ~ handleSubmit ~ inputs:", inputs);
   };
 
   return (
@@ -80,10 +86,13 @@ function Signup() {
                 />
                 <select
                   name="MaQuyen"
-                  value={inputs.MaQuyen} // Corrected reference to inputs.MaQuyen
+                  value={inputs.MaQuyen}
                   onChange={handleChange}
                   className="w-full p-2 border rounded mt-5"
                 >
+                  <option value="" disabled>
+                    -- Chọn quyền --
+                  </option>
                   {roles.map((role) => (
                     <option key={role.id} value={role.id}>
                       {role.mota}

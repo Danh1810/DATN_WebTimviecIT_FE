@@ -4,6 +4,9 @@ import axios from "../../services/axios";
 import { ToastContainer, toast } from "react-toastify";
 
 function App() {
+  const id = localStorage.getItem("id");
+  console.log("🚀 ~ App ~ id:", id);
+
   const [jobPost, setJobPost] = useState({
     tieude: "",
     mota: "",
@@ -15,12 +18,14 @@ function App() {
     diaChiLamviec: "",
     Kynang: [],
     Capbac: [],
+    Ma: id,
   });
 
   const [jobPosts, setJobPosts] = useState([]);
   const [skills, setSkills] = useState([]); // Quản lý danh sách kỹ năng
   const [levels, setLevels] = useState([]); // Quản lý danh sách cấp bậc
   const [recruiters, setRecruiters] = useState([]);
+  const [employers, setEmployers] = useState([]);
   // Fetch danh sách bài tuyển dụng
   const fetchJobPosts = async () => {
     try {
@@ -75,6 +80,23 @@ function App() {
     setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
   };
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/nhatd/detail", {
+        params: { id: id },
+      });
+      console.log("🚀 ~ fetchData ~ response:", response.data.Soluongdangbai);
+
+      if (!response.data || Object.keys(response.data).length === 0) {
+        setEmployers(null);
+      } else {
+        setEmployers(response.data);
+      }
+    } catch (error) {
+      console.error(error); // Gửi lỗi đi
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -98,17 +120,21 @@ function App() {
         diaChiLamviec: "",
         Kynang: [],
         Capbac: [],
+        Ma: id,
       });
+      fetchRecruiters();
       toast.success("Đăng thành công hãy chờ quản trị viên duyệt");
     } catch (error) {
       console.error("Error adding job post:", error);
     }
   };
+
   useEffect(() => {
     fetchJobPosts();
     fetchSkills();
     fetchLevels();
     fetchRecruiters();
+    fetchData();
   }, []);
 
   return (
@@ -119,8 +145,7 @@ function App() {
 
       {/* Label số lượng đăng tuyển */}
       <div className="absolute top-0 left-0 bg-blue-100 text-blue-600 px-4 py-2 rounded-tr-lg rounded-bl-lg shadow-md">
-        Số lượng đăng tuyển:{" "}
-        {recruiters.find((rec) => rec.id === 1)?.Soluongdangbai || "N/A"}
+        Số lượng đăng tuyển: {employers.Soluongdangbai}
       </div>
 
       <form

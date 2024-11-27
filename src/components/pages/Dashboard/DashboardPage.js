@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Logout } from "../../services/auth/logout";
 import { logout } from "../../slice/authSlice";
 import App from "./QLTintd";
+import UserManagement from "./QLND";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -168,8 +169,7 @@ const Dashboard = () => {
           {/* Hiển thị các nội dung khác dựa trên state */}
           {selectedMenu === "Reports" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
-              <h2 className="text-lg font-semibold mb-4">Reports Data</h2>
-              <p>Hiển thị dữ liệu báo cáo tại đây...</p>
+              <UserManagement />
             </div>
           )}
           {selectedMenu === "Settings" && (

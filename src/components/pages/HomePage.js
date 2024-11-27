@@ -1,55 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import {
-  Dialog,
-  DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
-} from "@headlessui/react";
-import SaveIcon from "@mui/icons-material/Save";
-import {
-  ArrowPathIcon,
-  Bars3Icon,
-  ChartPieIcon,
-  CursorArrowRaysIcon,
-  FingerPrintIcon,
-  SquaresPlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  PhoneIcon,
-  PlayCircleIcon,
-} from "@heroicons/react/20/solid";
-import { getJobpost } from "../services/jb.service";
 import axios from "../services/axios";
-
-const callsToAction = [
-  { name: "Watch demo", href: "#", icon: PlayCircleIcon },
-  { name: "Contact sales", href: "#", icon: PhoneIcon },
-];
+import { Logout } from "../services/auth/logout";
+import { logout } from "../slice/authSlice";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 
 export default function Example() {
+  const [keyword, setKeyword] = useState("");
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const items = ["Da Nang", "Ha Noi", "HoChiMinh", "Can Tho"];
-
+  const auth = useSelector((state) => state.auth);
+  console.log("🚀 ~ Example ~ auth:", auth.isAuth);
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
-  const products = [
-    { name: "Theo Kỹ Năng" },
-    { name: "Theo cấp bậc" },
-    { name: "Theo địa điểm" },
-    { name: "Integrations" },
-    { name: "Automations" },
-  ];
 
   const handleClickOutside = (event) => {
     if (
@@ -57,6 +24,12 @@ export default function Example() {
       event.target.closest("#dropdown-menu") === null
     ) {
       setIsOpen(false);
+    }
+  };
+  const handleSearchcv = () => {
+    if (keyword.trim()) {
+      // Điều hướng tới trang /results và truyền từ khóa qua query parameter
+      navigate(`/ser?keyword=${keyword}`);
     }
   };
 
@@ -89,6 +62,22 @@ export default function Example() {
       console.error("Error fetching job posts:", error);
     }
   };
+  const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const itemsPerPage = 8; // Number of items per page
+
+  // Calculate total pages
+  const totalPages = Math.ceil(jobPosts.length / itemsPerPage);
+
+  // Get the items for the current page
+  const currentItems = jobPosts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
   useEffect(() => {
     fetchEmployers();
     fetchJobPosts();
@@ -96,7 +85,7 @@ export default function Example() {
 
   return (
     <div>
-      <div className="flex items-center justify-center h-[25vh] from-teal-100 via-teal-300 to-teal-500 bg-purple-700">
+      <div className="flex items-center justify-center h-[25vh] from-teal-100 via-teal-300 to-teal-500  bg-gradient-to-r from-purple-500 to-pink-500">
         <div className="w-full max-w-7xl mx-auto bg-white rounded-lg shadow-xl flex items-center space-x-4 p-4">
           {/* Search Input */}
           <div className="flex items-center w-full">
@@ -106,7 +95,7 @@ export default function Example() {
               aria-label="Search components"
               type="text"
             />
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 id="dropdown-button"
                 onClick={toggleDropdown}
@@ -205,7 +194,7 @@ export default function Example() {
                     </a>
                   ))}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Search Button */}
@@ -216,18 +205,16 @@ export default function Example() {
           </div>
         </div>
       </div>
-
       <div className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <a className="text-3xl font-semibold leading-6 text-blue-900">
-          {" "}
           VIỆC LÀM TỐT NHẤT
         </a>
       </div>
-
       <div className="bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+        <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12 bg-slate-100 lg:max-w-7xl lg:px-8">
+          {/* Job Post Grid */}
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-            {jobPosts.map((product) => (
+            {currentItems.map((product) => (
               <Link
                 key={product.id}
                 to={`/tintuyendung/${product.id}`} // The URL to navigate to the job post detail page
@@ -250,8 +237,26 @@ export default function Example() {
               </Link>
             ))}
           </div>
+
+          {/* Pagination */}
+          <div className="mt-8 flex justify-center">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                onClick={() => handlePageChange(index + 1)}
+                className={`mx-1 px-4 py-2 border rounded ${
+                  currentPage === index + 1
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-700"
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
       <div className="bg-gray-100 py-8">
         <div className="container mx-auto px-4">
           <h2 className="text-xl font-semibold mb-6">Các công ty nổi bật</h2>
@@ -276,7 +281,7 @@ export default function Example() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl p-8 lg:px-10 bg-blue-500 rounded-lg shadow-md">
+      <div className="mx-auto max-w-7xl p-8 lg:px-10 bg-slate-200 rounded-lg shadow-md">
         <a className="text-3xl font-semibold leading-6 text-blue-900 block mb-8 text-center">
           VIỆC LÀM MỚI NHẤT
         </a>

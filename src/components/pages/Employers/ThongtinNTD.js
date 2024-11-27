@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 
 function EmployerManagement() {
+  const id = localStorage.getItem("id");
+  console.log("🚀 ~ ProfileForm ~ id:", id);
   const [previewImage, setPreviewImage] = useState(null);
   const [employer, setEmployer] = useState({
     ten: "",
@@ -11,6 +13,7 @@ function EmployerManagement() {
     website: "",
     linhvuc: "",
     logo: "",
+    MaND: id,
   });
 
   const [employers, setEmployers] = useState(null);
@@ -51,6 +54,25 @@ function EmployerManagement() {
       setPreviewImage(URL.createObjectURL(files[0]));
     }
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("/nhatd/detail", {
+          params: { id: id },
+        });
+
+        if (!response.data || Object.keys(response.data).length === 0) {
+          setEmployers(null);
+        } else {
+          setEmployers(response.data);
+        }
+      } catch (error) {
+        console.error(error); // Gửi lỗi đi
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,6 +92,7 @@ function EmployerManagement() {
     formDataToSend.append("linhvuc", employer.linhvuc);
     formDataToSend.append("logo", employer.logo); // Assuming logo is a file (if it's a URL, it can be directly appended as string)
     formDataToSend.append("website", employer.website);
+    formDataToSend.append("MaND", id);
 
     try {
       // Send the form data via a POST request

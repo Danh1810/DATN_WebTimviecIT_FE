@@ -16,12 +16,12 @@
 //   { path: "/user/profile/:user_id", component: Profile, layout: ParentLayout },
 // ];
 import EmployerLayout from "../layouts/EmployerLayout";
-import Home from "../pages/Employers/Home";
+import Dashboard from "../pages/Dashboard/DashboardPage";
 
 export const EmployersRoutes = [
   {
     path: "/employerhome",
-    component: Home,
+    component: Dashboard,
     layout: EmployerLayout,
   },
 ];

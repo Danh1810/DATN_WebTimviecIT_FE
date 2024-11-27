@@ -15,10 +15,12 @@ function JobDetails() {
   const [job, setJob] = useState(null);
   const { id } = useParams(); // Get the job ID from URL
   console.log("🚀 ~ JobDetails ~ id:", id);
+  const isAuth = localStorage.getItem("isAuth");
+  console.log("🚀 ~ JobDetails ~ isAuth:", isAuth);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [jobSeekers, setJobSeekers] = useState([]);
-  const [isXem, setisxem] = useState(false);
+  const [isXem, setisxem] = useState([id]);
   const [hoso, sethoso] = useState([]);
   const similarJobs = [
     {
@@ -62,10 +64,10 @@ function JobDetails() {
   const fetchJobDetails = async () => {
     try {
       setLoading(true); // Start loading
-      const response = await getTintdbyID(id); // Make API call
-      // const response = await axios.get("/tintd/details", {
-      //   params: { id: id },
-      // });
+      // const response = await getTintdbyID(id); // Make API call
+      const response = await axios.get(`/tintd/details`, {
+        params: { id: id },
+      });
       console.log("🚀 ~ fetchJobDetails ~ response:", response.data);
       setJob(response.data); // Set job details
     } catch (err) {
@@ -85,7 +87,7 @@ function JobDetails() {
   };
   const fetchhoso = async () => {
     try {
-      const response = await axios.get("/ngtviec/hoso", { params: { id: 1 } });
+      const response = await axios.get("/ngtviec/hoso", { params: { id: 5 } });
       const hoso = response.data[0]?.hoso || []; // Safely access the nested `hoso` array
       sethoso(hoso);
     } catch (error) {
@@ -98,12 +100,27 @@ function JobDetails() {
   const handleSelect = (id) => {
     setSelectedHoSoId(id); // Lưu ID hồ sơ được chọn
   };
+  const handleNop = () => {
+    if (isAuth === "false") {
+      toast.error("Bạn càn đăng nhập");
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = (e) => {
-    // e.preventDefault();
-    // console.log({ name, email, phone });
-    toast.success("Nộp hố sơ thành công");
-    setIsModalOpen(false);
+    const formData = new FormData();
+    formData.append("MaTTD", id);
+    formData.append("MaHS", selectedHoSoId);
+    formData.append("trangthai", "Đã nộp");
+
+    try {
+      await axios.post("/Ut", formData);
+      toast.success("Bạn đã ứng tuyển thành công hãy chú ý mail nhé");
+    } catch (error) {
+      console.error("Error submitting application:", error);
+    }
   };
 
   useEffect(() => {
@@ -117,7 +134,7 @@ function JobDetails() {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Job Header */}
 
-        <div className="border rounded-lg p-4 shadow-md bg-white relative">
+        <div className="border rounded-lg p-4 shadow-md bg-white relative z-0">
           {/* Ensure `job` exists before rendering */}
           {job ? (
             <>
@@ -142,7 +159,7 @@ function JobDetails() {
               {/* Logo & Title */}
               <div
                 key={job.id}
-                className="flex items-center space-x-6 p-4 bg-white rounded-lg shadow-lg"
+                className="flex items-center space-x-6 p-4 bg-white rounded-lg shadow-lg z-0"
               >
                 {/* Employer Logo */}
                 <img
@@ -284,7 +301,7 @@ function JobDetails() {
                     <div className="flex justify-end space-x-4 mt-6">
                       <button
                         className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={handleNop}
                       >
                         Nộp hồ sơ
                       </button>
@@ -307,25 +324,31 @@ function JobDetails() {
             )}
           </div>
 
-          {/* Similar Jobs */}
-          {/* <aside className="w-full lg:w-64 bg-white p-4 rounded-lg shadow-md">
+          {/*       
+          <aside className="w-full lg:w-64 bg-white p-4 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Việc làm tương tự
             </h3>
             {similarJobs.map((job, index) => (
-  <div key={job.title || index} className="mb-4 p-3 border rounded-lg shadow-sm">
-    <h4 className="text-lg font-semibold text-gray-800">{job.title}</h4>
-    <p className="text-sm text-gray-600">{job.company}</p>
-    <p className="text-sm text-gray-600">Khu vực: {job.location}</p>
-    <p className="text-sm text-gray-600">Mức lương: {job.salary}</p>
-    <p className="text-sm text-gray-600">Hạn nộp hồ sơ: {job.deadline}</p>
-  </div>
-))}
+              <div
+                key={job.title || index}
+                className="mb-4 p-3 border rounded-lg shadow-sm"
+              >
+                <h4 className="text-lg font-semibold text-gray-800">
+                  {job.title}
+                </h4>
+                <p className="text-sm text-gray-600">{job.company}</p>
+                <p className="text-sm text-gray-600">Khu vực: {job.location}</p>
+                <p className="text-sm text-gray-600">Mức lương: {job.salary}</p>
+                <p className="text-sm text-gray-600">
+                  Hạn nộp hồ sơ: {job.deadline}
+                </p>
+              </div>
+            ))}
           </aside> */}
         </div>
       </div>
 
-      {/* Modal */}
       <Modal
         title="Nộp hồ sơ"
         open={isModalOpen}
@@ -390,7 +413,6 @@ function JobDetails() {
                 >
                   <div>{hs.tenhoso}</div>
 
-                  {/* Nút radio để chọn hồ sơ */}
                   <input
                     type="radio"
                     name="hoso"
