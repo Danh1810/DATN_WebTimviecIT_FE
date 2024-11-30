@@ -4,6 +4,7 @@ import { Logout } from "../services/auth/logout";
 import { logout } from "../slice/authSlice";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 
 export default function Example() {
   const [keyword, setKeyword] = useState("");
@@ -11,38 +12,39 @@ export default function Example() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const items = ["Da Nang", "Ha Noi", "HoChiMinh", "Can Tho"];
+  const userid = localStorage.getItem("id");
   const auth = useSelector((state) => state.auth);
   console.log("🚀 ~ Example ~ auth:", auth.isAuth);
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
 
-  const handleClickOutside = (event) => {
-    if (
-      event.target.closest("#dropdown-button") === null &&
-      event.target.closest("#dropdown-menu") === null
-    ) {
-      setIsOpen(false);
-    }
-  };
   const handleSearchcv = () => {
     if (keyword.trim()) {
       // Điều hướng tới trang /results và truyền từ khóa qua query parameter
       navigate(`/ser?keyword=${keyword}`);
     }
   };
+  const [formData, setFormData] = useState({
+    MaTTD: "",
+    Userid: "",
+  });
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value.toLowerCase());
+  const handleSearch = async (id) => {
+    if (auth.isAuth === false) {
+      navigate("/login");
+    } else {
+      const formDataToSend = new FormData();
+      formDataToSend.append("MaTTD", id);
+      formDataToSend.append("Userid", userid);
+      toast.success("Ok");
+      try {
+        await axios.post("/lcv", formDataToSend);
+        toast.success("Duyệt thành công");
+        fetchJobPosts(); // Tải lại danh sách
+      } catch (error) {
+        toast.error(`Lỗi duyệt: ${error.message}`);
+      }
+    }
+    // const response = await axios.post("/lcv")
   };
-
-  React.useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
   const [employers, setEmployers] = useState([]);
   const fetchEmployers = async () => {
     try {
@@ -85,7 +87,7 @@ export default function Example() {
 
   return (
     <div>
-      <div className="flex items-center justify-center h-[25vh] from-teal-100 via-teal-300 to-teal-500  bg-gradient-to-r from-purple-500 to-pink-500">
+      <div className="flex items-center justify-center h-[25vh] from-teal-100 via-teal-300 to-teal-500  bg-purple-400	">
         <div className="w-full max-w-7xl mx-auto bg-white rounded-lg shadow-xl flex items-center space-x-4 p-4">
           {/* Search Input */}
           <div className="flex items-center w-full">
@@ -94,112 +96,17 @@ export default function Example() {
               placeholder="Tìm kiếm công việc"
               aria-label="Search components"
               type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
             />
-            {/* <div className="relative">
-              <button
-                id="dropdown-button"
-                onClick={toggleDropdown}
-                aria-expanded={isOpen}
-                className="inline-flex items-center w-64 px-4 h-12 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500"
-              >
-                <span className="mr-2">Địa điểm</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 ml-2 -mr-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                id="dropdown-menu"
-                className={`absolute right-0 w-64 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 ${
-                  isOpen ? "" : "hidden"
-                }`}
-              >
-                <input
-                  id="dropdown-search-input"
-                  className="block w-full px-4 py-2 text-gray-800 border rounded-md border-gray-300 focus:outline-none"
-                  type="text"
-                  placeholder="Search items"
-                  autoComplete="off"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-                {items
-                  .filter((item) => item.toLowerCase().includes(searchTerm))
-                  .map((item, index) => (
-                    <a
-                      key={index}
-                      href="#"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md"
-                    >
-                      {item}
-                    </a>
-                  ))}
-              </div>
-            </div>
-            <div className="relative">
-              <button
-                id="dropdown-button"
-                onClick={toggleDropdown}
-                aria-expanded={isOpen}
-                className="inline-flex items-center w-64 px-4 h-12 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500"
-              >
-                <span className="mr-2">Địa điểm</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 ml-2 -mr-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                id="dropdown-menu"
-                className={`absolute right-0 w-64 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-1 space-y-1 ${
-                  isOpen ? "" : "hidden"
-                }`}
-              >
-                <input
-                  id="dropdown-search-input"
-                  className="block w-full px-4 py-2 text-gray-800 border rounded-md border-gray-300 focus:outline-none"
-                  type="text"
-                  placeholder="Search items"
-                  autoComplete="off"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-                {items
-                  .filter((item) => item.toLowerCase().includes(searchTerm))
-                  .map((item, index) => (
-                    <a
-                      key={index}
-                      href="#"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 active:bg-blue-100 cursor-pointer rounded-md"
-                    >
-                      {item}
-                    </a>
-                  ))}
-              </div>
-            </div> */}
           </div>
 
           {/* Search Button */}
           <div className="ml-4">
-            <button className="w-48 h-12 px-10 text-white bg-pink-500 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+            <button
+              onClick={handleSearchcv}
+              className="w-48 h-12 px-10 text-white bg-pink-500 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+            >
               Tìm kiếm
             </button>
           </div>
@@ -217,21 +124,46 @@ export default function Example() {
             {currentItems.map((product) => (
               <Link
                 key={product.id}
-                to={`/tintuyendung/${product.id}`} // The URL to navigate to the job post detail page
-                className="group border border-gray-300 rounded-lg p-4"
+                to={`/tintuyendung/${product.id}`} // URL dẫn đến trang chi tiết
+                className="group border border-gray-300 rounded-lg p-4 flex flex-col"
               >
-                <div className="flex justify-center items-center w-24 h-24 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
-                  <img
-                    src={product.employer.logo} // Đường dẫn logo công ty
-                    alt="Company Logo"
-                    className="object-contain w-full h-full"
-                  />
+                <div className="flex justify-between items-start">
+                  <div className="flex justify-center items-center w-24 h-24 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
+                    <img
+                      src={product.employer.logo} // Đường dẫn logo công ty
+                      alt="Company Logo"
+                      className="object-contain w-full h-full"
+                    />
+                  </div>
+                  <button
+                    className="text-gray-400 hover:text-blue-500"
+                    aria-label="Save Job"
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent link navigation when clicking the button
+                      handleSearch(product.id); // Pass the product ID to the function
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                      />
+                    </svg>
+                  </button>
                 </div>
 
-                <h3 className="mt-1 text-lg font-medium text-gray-900">
+                <h3 className="mt-4 text-lg font-medium text-gray-900">
                   {product.tieude}
                 </h3>
-                <p className="mt-4 text-sm text-gray-700">
+                <p className="mt-2 text-sm text-gray-700">
                   {product.employer.diachi}
                 </p>
               </Link>
@@ -296,6 +228,7 @@ export default function Example() {
                 <h3 className="text-lg font-semibold text-gray-900 truncate">
                   {product.tieude}
                 </h3>
+
                 <button
                   className="text-gray-400 hover:text-blue-500"
                   aria-label="Save Job"
@@ -311,7 +244,7 @@ export default function Example() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M3.75 12l7.5 7.5L21 7.5"
+                      d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
                     />
                   </svg>
                 </button>

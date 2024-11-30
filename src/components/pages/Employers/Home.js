@@ -7,9 +7,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import App from "./ThemTin";
 import EmployerManagement from "./ThongtinNTD";
+import TTDNTD from "./QuanlyTinTD";
 const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const name = localStorage.getItem("username");
   const location = useLocation();
   const auth = useSelector((state) => state.auth);
   const [selectedMenu, setSelectedMenu] = useState("Overview");
@@ -64,7 +66,6 @@ const Dashboard = () => {
             Thông tin
           </a>
           <a
-            href="#"
             onClick={() => handleMenuClick("Analytics")}
             className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
               selectedMenu === "Analytics" ? "bg-gray-700" : ""
@@ -77,18 +78,18 @@ const Dashboard = () => {
             <div className="ml-4">
               <a
                 href="#"
-                onClick={() => setSelectedMenu("Traffic")}
+                onClick={() => setSelectedMenu("Createttd")}
                 className={`block py-2 px-4 rounded transition duration-200 hover:bg-gray-700 ${
-                  selectedMenu === "Traffic" ? "bg-gray-700" : ""
+                  selectedMenu === "Createttd" ? "bg-gray-700" : ""
                 }`}
               >
                 Tạo bài đăng
               </a>
               <a
                 href="#"
-                onClick={() => setSelectedMenu("Sales")}
+                onClick={() => setSelectedMenu("ttd")}
                 className={`block py-2 px-4 rounded transition duration-200 hover:bg-gray-700 ${
-                  selectedMenu === "Sales" ? "bg-gray-700" : ""
+                  selectedMenu === "ttd" ? "bg-gray-700" : ""
                 }`}
               >
                 Các bài đăng
@@ -144,7 +145,7 @@ const Dashboard = () => {
         {/* Header */}
         <header className="bg-white shadow p-4">
           <div className="flex justify-between">
-            <h1 className="text-xl font-bold">Nhà tuyển dụng</h1>
+            <h1 className="text-xl font-bold">{name}</h1>
             <button
               onClick={handleLogout}
               className="bg-blue-500 text-white px-4 py-2 rounded-md"
@@ -157,56 +158,18 @@ const Dashboard = () => {
         {/* Content */}
         <main className="p-6">
           {/* Conditional content based on selected menu */}
-          {selectedMenu === "Analytics" && (
-            <div className="bg-white shadow-lg rounded-lg p-4">
-              <h2 className="text-lg font-semibold mb-4">Analytics Data</h2>
-              {/* Content for Analytics */}
-            </div>
-          )}
           {selectedMenu === "Overview" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <EmployerManagement />
               {/* Content for Analytics */}
             </div>
           )}
-          {selectedMenu === "Traffic" && (
+          {selectedMenu === "Createttd" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <App />
             </div>
           )}
-          {selectedMenu === "Sales" && (
-            <div className="bg-white shadow-lg rounded-lg p-4">
-              <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
-                <thead>
-                  <tr className="border-b">
-                    <th className="px-4 py-2">Tiêu đề</th>
-                    <th className="px-4 py-2">Mô tả</th>
-                    <th className="px-4 py-2">Mức lương</th>
-                    <th className="px-4 py-2">Ngày hết hạn</th>
-                    <th className="px-4 py-2">Trạng thái</th>
-                    <th className="px-4 py-2">Nhà tuyển dụng</th>
-                  </tr>
-                </thead>
-                {/* <tbody>
-                  {jobPosts.map((post) => (
-                    <tr key={post.MaTTD} className="border-b">
-                      <td className="px-4 py-2">{post.tieude}</td>
-                      <td className="px-4 py-2">{post.mota}</td>
-                      <td className="px-4 py-2">{post.mucluong}</td>
-                      <td className="px-4 py-2">
-                        {new Date(post.Ngayhethan).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2">{post.trangthai}</td>
-                      <td className="px-4 py-2">
-                        {recruiters.find((rec) => rec.id === post.MaNTD)
-                          ?.name || "N/A"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody> */}
-              </table>
-            </div>
-          )}
+          {selectedMenu === "ttd" && <TTDNTD />}
           {selectedMenu === "Reports" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Reports Data</h2>

@@ -35,6 +35,7 @@ function Login() {
     if (isValid) {
       try {
         const res = await log(email, password);
+        console.log("🚀 ~ handleSubmit ~ res:", res);
 
         if (res && +res.code === 0) {
           localStorage.setItem("token", res.data.access_token);
@@ -68,7 +69,10 @@ function Login() {
   return (
     <div>
       <nav className="bg-purple-700 text-white flex items-center justify-between p-4">
-        <div className="flex items-center space-x-4">
+        <div
+          onClick={() => (window.location.href = "/home")}
+          className="flex items-center space-x-4"
+        >
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREfsesMJwwXL8130hzXhA8LtGBG1HMN6lKLA&s"
             alt="Company Logo"

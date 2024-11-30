@@ -17,6 +17,7 @@ function JobDetails() {
   console.log("🚀 ~ JobDetails ~ id:", id);
   const isAuth = localStorage.getItem("isAuth");
   console.log("🚀 ~ JobDetails ~ isAuth:", isAuth);
+  const userid = localStorage.getItem("id");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [jobSeekers, setJobSeekers] = useState([]);
@@ -49,7 +50,7 @@ function JobDetails() {
     const fetchData = async () => {
       try {
         const response = await axios.get("/ngtviec/detail", {
-          params: { id: 1 },
+          params: { id: userid },
         }); // URL API để lấy dữ liệu
         setName(response.data.hoVaTen);
         setPhone(response.data.soDienThoai); // Gán dữ liệu vào state
@@ -87,7 +88,9 @@ function JobDetails() {
   };
   const fetchhoso = async () => {
     try {
-      const response = await axios.get("/ngtviec/hoso", { params: { id: 5 } });
+      const response = await axios.get("/ngtviec/hoso", {
+        params: { id: userid },
+      });
       const hoso = response.data[0]?.hoso || []; // Safely access the nested `hoso` array
       sethoso(hoso);
     } catch (error) {
@@ -104,7 +107,11 @@ function JobDetails() {
     if (isAuth === "false") {
       toast.error("Bạn càn đăng nhập");
     } else {
-      setIsModalOpen(true);
+      if (name.length === 0) {
+        toast.error("Bạn cần tạo hồ sơ");
+      } else {
+        setIsModalOpen(true);
+      }
     }
   };
   const handleSubmit = async (e) => {
@@ -119,7 +126,7 @@ function JobDetails() {
       await axios.post("/Ut", formData);
       toast.success("Bạn đã ứng tuyển thành công hãy chú ý mail nhé");
     } catch (error) {
-      console.error("Error submitting application:", error);
+      toast.error("Bạn cần tạo hồ sơ");
     }
   };
 
@@ -130,7 +137,7 @@ function JobDetails() {
   }, [id]);
 
   return (
-    <div className="p-6 bg-gray-50">
+    <div className="p-6 bg-gray-50 min h-screen">
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Job Header */}
 
@@ -316,7 +323,7 @@ function JobDetails() {
                       Thông tin công ty
                     </h2>
                     <p className="text-gray-700">
-                      {job?.companyInfo || "Thông tin không có sẵn."}
+                      {job?.employer.ten || "Thông tin không có sẵn."}
                     </p>
                   </div>
                 )}
@@ -386,7 +393,7 @@ function JobDetails() {
             />
           </div>
 
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label className="block font-medium text-gray-700 mb-1">
               Số điện thoại <span className="text-red-500">*</span>
             </label>
@@ -398,31 +405,41 @@ function JobDetails() {
               placeholder="0123456789"
               required
             />
-          </div>
+          </div> */}
           <div className="mb-4">
             <label className="block font-medium text-gray-700 mb-1">
               Hồ sơ <span className="text-red-500"></span>
             </label>
             <div className="bg-white shadow-md p-4 rounded-lg space-y-2">
-              {hoso.map((hs) => (
-                <div
-                  key={hs.id}
-                  className={`flex justify-between items-center p-2 border rounded-lg ${
-                    selectedHoSoId === hs.id ? "bg-blue-50 border-blue-400" : ""
-                  }`}
-                >
-                  <div>{hs.tenhoso}</div>
+              {hoso.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-2 text-center" colSpan="4">
+                    Bạn chưa có hồ sơ
+                  </td>
+                </tr>
+              ) : (
+                hoso.map((hs) => (
+                  <div
+                    key={hs.id}
+                    className={`flex justify-between items-center p-2 border rounded-lg ${
+                      selectedHoSoId === hs.id
+                        ? "bg-blue-50 border-blue-400"
+                        : ""
+                    }`}
+                  >
+                    <div>{hs.tenhoso}</div>
 
-                  <input
-                    type="radio"
-                    name="hoso"
-                    value={hs.id}
-                    checked={selectedHoSoId === hs.id}
-                    onChange={() => handleSelect(hs.id)}
-                    className="cursor-pointer"
-                  />
-                </div>
-              ))}
+                    <input
+                      type="radio"
+                      name="hoso"
+                      value={hs.id}
+                      checked={selectedHoSoId === hs.id}
+                      onChange={() => handleSelect(hs.id)}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </form>

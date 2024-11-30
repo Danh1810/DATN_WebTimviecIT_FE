@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Logout } from "../../services/auth/logout";
 import { logout } from "../../slice/authSlice";
@@ -8,12 +8,15 @@ import UserManagement from "./QLND";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const location = useLocation();
+  const name = localStorage.getItem("username");
+  const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+
+  const [selectedMenu, setSelectedMenu] = useState("Overview");
+
   const handleLogout = async () => {
     const res = await Logout();
-    console.log("db", res);
     if (+res.code === 0) {
       localStorage.removeItem("token");
       localStorage.setItem("isAuth", false);
@@ -26,53 +29,34 @@ const Dashboard = () => {
       navigate("/login");
     }
   };
-  // State để quản lý mục được chọn (ví dụ: "Analytics")
-  const [selectedMenu, setSelectedMenu] = useState("Overview");
+
+  const menuItems = [
+    { label: "Overview", key: "Overview" },
+    { label: "Quản lý tin tuyển dụng", key: "Analytics" },
+    { label: "Quản lý người dùng", key: "Reports" },
+    { label: "Settings", key: "Settings" },
+  ];
 
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-800 text-white">
         <div className="p-4">
-          <h2 className="text-2xl font-bold">ADmin</h2>
+          <h2 className="text-2xl font-bold">Admin</h2>
         </div>
         <nav className="mt-6">
-          <a
-            href="#"
-            onClick={() => setSelectedMenu("Overview")}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
-              selectedMenu === "Overview" ? "bg-gray-700" : ""
-            }`}
-          >
-            Overview
-          </a>
-          <a
-            href="#"
-            onClick={() => setSelectedMenu("Analytics")}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
-              selectedMenu === "Analytics" ? "bg-gray-700" : ""
-            }`}
-          >
-            Analytics
-          </a>
-          <a
-            href="#"
-            onClick={() => setSelectedMenu("Reports")}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
-              selectedMenu === "Reports" ? "bg-gray-700" : ""
-            }`}
-          >
-            Reports
-          </a>
-          <a
-            href="#"
-            onClick={() => setSelectedMenu("Settings")}
-            className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
-              selectedMenu === "Settings" ? "bg-gray-700" : ""
-            }`}
-          >
-            Settings
-          </a>
+          {menuItems.map((item) => (
+            <a
+              key={item.key}
+              href="#"
+              onClick={() => setSelectedMenu(item.key)}
+              className={`block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 ${
+                selectedMenu === item.key ? "bg-gray-700" : ""
+              }`}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
       </aside>
 
@@ -81,7 +65,7 @@ const Dashboard = () => {
         {/* Header */}
         <header className="bg-white shadow p-4">
           <div className="flex justify-between">
-            <h1 className="text-xl font-bold">{selectedMenu}</h1>
+            <h1 className="text-xl font-bold">{name}</h1>
             <button
               onClick={handleLogout}
               className="bg-blue-500 text-white px-4 py-2 rounded-md"
@@ -93,59 +77,6 @@ const Dashboard = () => {
 
         {/* Content */}
         <main className="p-6">
-          {/* Hiển thị bảng khi chọn Analytics */}
-          {selectedMenu === "Analytics" && (
-            <div className="bg-white shadow-lg rounded-lg p-4">
-              <App />
-              {/* <div className="flex items-center">
-                <input
-                  className="block w-full appearance-none bg-transparent text-base text-gray-700 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 border border-gray-300 rounded-l-md px-4 py-2"
-                  placeholder="Tìm kiếm công việc"
-                  aria-label="Search components"
-                  type="text"
-                  // value={searchQuery}
-                  // onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  // onClick={handleClick}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-r-md"
-                >
-                  Submit
-                </button>
-              </div>
-              <h2 className="text-lg font-semibold mb-4"></h2>
-              <table className="min-w-full bg-white ">
-                <thead>
-                  <tr>
-                    <th className="py-2 border border-gray-300">Metric</th>
-                    <th className="py-2 border border-gray-300">Value</th>
-                    <th className="py-2 border border-gray-300">Change</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="py-2  border border-gray-900">Visitors</td>
-                    <td className="py-2  border border-gray-900">5,432</td>
-                    <td className="py-2 border text-green-500">+12%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 border border-gray-300">Revenue</td>
-                    <td className="py-2 border border-gray-300">$9,876</td>
-                    <td className="py-2 text-green-500 border border-gray-300">
-                      +8%
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2">Signups</td>
-                    <td className="py-2">432</td>
-                    <td className="py-2 text-red-500">-3%</td>
-                  </tr>
-                </tbody>
-              </table> */}
-            </div>
-          )}
-
-          {/* Hiển thị các thẻ thông tin khi chọn Overview */}
           {selectedMenu === "Overview" && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white shadow-lg rounded-lg p-4">
@@ -166,12 +97,18 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Hiển thị các nội dung khác dựa trên state */}
+          {selectedMenu === "Analytics" && (
+            <div className="bg-white shadow-lg rounded-lg p-4">
+              <App />
+            </div>
+          )}
+
           {selectedMenu === "Reports" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <UserManagement />
             </div>
           )}
+
           {selectedMenu === "Settings" && (
             <div className="bg-white shadow-lg rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">Settings</h2>

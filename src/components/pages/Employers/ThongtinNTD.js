@@ -20,29 +20,6 @@ function EmployerManagement() {
   const [availableMaNDs, setAvailableMaNDs] = useState([]);
   const [isEditing, setIsEditing] = useState(true); // Tracks edit/view mode
 
-  //   const fetchEmployers = async () => {
-  //     try {
-  //       const response = await axios.get("/nhatd");
-  //       setEmployers(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching employers:", error);
-  //     }
-  //   };
-
-  //   const fetchMaNDs = async () => {
-  //     try {
-  //       const response = await axios.get("/nguoidung");
-  //       setAvailableMaNDs(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching MaND options:", error);
-  //     }
-  //   };
-
-  //   useEffect(() => {
-  //     fetchEmployers();
-  //     fetchMaNDs();
-  //   }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmployer((prev) => ({ ...prev, [name]: value }));
@@ -149,7 +126,7 @@ function EmployerManagement() {
                   "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
                 }
                 alt="Avatar"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
             <input
@@ -225,7 +202,6 @@ function EmployerManagement() {
                 value={employer.linhvuc}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
-                placeholder="Link website"
               />
             </div>
           </div>

@@ -11,7 +11,6 @@ function App() {
     tieude: "",
     mota: "",
     mucluong: "",
-    Ngayhethan: "",
     trangthai: "Chờ duyệt",
     kinhNghiem: "",
     loaiHopdong: "",
@@ -113,7 +112,6 @@ function App() {
         tieude: "",
         mota: "",
         mucluong: "",
-        Ngayhethan: "",
         trangthai: "active",
         kinhNghiem: "",
         loaiHopdong: "",
@@ -183,16 +181,6 @@ function App() {
               onChange={handleChange}
               className="w-full p-2 border rounded"
               placeholder="Nhập mức lương"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Ngày hết hạn</label>
-            <input
-              type="date"
-              name="Ngayhethan"
-              value={jobPost.Ngayhethan}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
             />
           </div>
           <div>

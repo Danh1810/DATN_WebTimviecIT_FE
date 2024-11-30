@@ -164,7 +164,6 @@ import { AdminRoutes } from "./AdminRoutes";
 import { EmployersRoutes } from "./EmployersRoutes";
 import Layout from "../layouts/BaseLayout";
 import Example from "../pages/HomePage";
-import FilePreview from "../pages/FilePreivew";
 import EmployerLayout from "../layouts/EmployerLayout";
 
 import AdminLayout from "../layouts/AdminLayout";

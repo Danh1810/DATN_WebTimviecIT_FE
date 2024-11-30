@@ -81,7 +81,8 @@ function UserManagement() {
         MaQuyen: "",
         Trangthai: "active",
       });
-      setIsModalOpen(false); // Close modal after adding
+      setIsModalOpen(false);
+      fetchUsers(); // Close modal after adding
     } catch (error) {
       console.error("Error adding user:", error);
     }

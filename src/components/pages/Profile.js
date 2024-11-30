@@ -79,6 +79,7 @@ const ProfileForm = () => {
     formDataToSend.append("gioiTinh", formData.gioiTinh);
     formDataToSend.append("soDienThoai", formData.soDienThoai);
     formDataToSend.append("anhDaiDien", formData.anhDaiDien);
+    formDataToSend.append("MaND", id);
 
     try {
       // Gửi formData với kiểu dữ liệu multipart/form-data

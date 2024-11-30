@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ProfileForm from "../Profile";
 import CVManagement from "./hoso";
 import Luucongviec from "./Luucongviec";
+import JobApplicationForm from "./Congviecungtuyen";
 
 const DashboardNTV = () => {
   const [selectedMenu, setSelectedMenu] = useState("Overview");
@@ -15,6 +16,8 @@ const DashboardNTV = () => {
         return <CVManagement />;
       case "quyen":
         return <Luucongviec />;
+      case "ntd":
+        return <JobApplicationForm />;
       default:
         return <ProfileForm />;
     }
