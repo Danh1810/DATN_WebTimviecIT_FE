@@ -1,252 +1,142 @@
-import React from "react";
-import { useState } from "react";
-import { ChevronDownIcon, BellIcon } from "@heroicons/react/20/solid";
+import React, { useState, useEffect } from "react";
+import axios from "../../services/axios";
 
 const RegisterForm = () => {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
-  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const id = localStorage.getItem("id");
+  const [formData, setFormData] = useState({
+    id: id,
+    sotien: "",
+    soluong: "",
+    MaTT: "",
+    goimua: "",
+  });
+  const [paymentTypes, setPaymentTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const fetchPaymentTypes = async () => {
+    try {
+      const response = await axios.get("/thanhtoan");
+      setPaymentTypes(response.data);
+    } catch (error) {
+      console.error("Error fetching payment types:", error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.post("thanhtoan/create", formData);
+      const { data } = response;
+
+      if (data.code === 0) {
+        // Redirect to MoMo payment URL
+        window.location.href = data.data.payUrl || data.data.redirectUrl;
+      } else {
+        setError("Failed to initiate payment. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred while processing payment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentTypes();
+  }, []);
+
   return (
-    <div>
-      <nav className="bg-purple-700 text-white flex items-center justify-between p-4">
-        {/* Left side (Logo) */}
-        <div className="flex items-center space-x-4">
-          <img
-            src="https://example.com/logo.png"
-            alt="Company Logo"
-            className="h-8"
-          />
-          <span className="text-xl font-bold">việc làm 24h</span>
-        </div>
-
-        {/* Center (Menu Items) */}
-        <div className="hidden md:flex space-x-8">
-          {/* Menu Item 1 */}
-          <div className="relative">
-            <button
-              onClick={() => setIsOpportunityOpen(!isOpportunityOpen)}
-              className="flex items-center space-x-1"
-            >
-              <span>Cơ hội việc làm</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            {isOpportunityOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Job Opportunity 1
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Job Opportunity 2
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Menu Item 2 */}
-          <div className="relative">
-            <button
-              onClick={() => setIsToolOpen(!isToolOpen)}
-              className="flex items-center space-x-1"
-            >
-              <span>Công cụ</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            {isToolOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Tool 1
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Tool 2
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Additional Menu Item 3 */}
-          <div className="relative">
-            <button className="flex items-center space-x-1">
-              <span>Thư viện</span>
-            </button>
-          </div>
-
-          {/* Additional Menu Item 4 */}
-          <div className="relative">
-            <button className="flex items-center space-x-1">
-              <span>Liên hệ</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Right side (Icons and Region Selector) */}
-        <div className="flex items-center space-x-6">
-          {/* Region Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsRegionOpen(!isRegionOpen)}
-              className="flex items-center space-x-1"
-            >
-              <span>Miền Nam</span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            {isRegionOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Miền Bắc
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Miền Trung
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Miền Nam
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Notification Icon */}
-          <div className="relative">
-            <BellIcon className="h-6 w-6" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-xs font-bold px-1.5 py-0.5 rounded-full">
-              8
-            </span>
-          </div>
-
-          {/* User Role Selector */}
-          <div className="flex items-center space-x-1">
-            <span className="flex items-center space-x-1">
-              <span>Dành cho</span>
-              <span className="font-semibold">Nhà Tuyển Dụng</span>
-            </span>
-          </div>
-
-          {/* Language Selector */}
-          <img
-            src="https://example.com/flag.png" // Replace with your flag image URL
-            alt="English"
-            className="h-6 w-6"
-          />
-        </div>
-      </nav>
-      <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-center mb-6">
-          Đăng ký tài khoản nhà tuyển dụng
-        </h2>
-
-        {/* Thông tin tài khoản */}
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Thông tin tài khoản</h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Họ và tên <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Điền họ và tên"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Số điện thoại <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                placeholder="Điền số điện thoại"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                placeholder="Điền email"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Mật khẩu <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                placeholder="Điền mật khẩu"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Thông tin công ty */}
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Thông tin công ty</h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Tên công ty <span className="text-red-500">*</span>
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Theo giấy phép kinh doanh
-              </p>
-              <input
-                type="text"
-                placeholder="Điền tên công ty"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Địa điểm <span className="text-red-500">*</span>
-              </label>
-              <select className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option>Chọn tỉnh thành phố</option>
-                {/* Thêm các tùy chọn khác ở đây */}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Lĩnh vực hoạt động
-              </label>
-              <select className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option>Chọn lĩnh vực</option>
-                {/* Thêm các tùy chọn khác ở đây */}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Đăng nhập và nút hoàn thành đăng ký */}
-        <div className="mt-6 flex justify-between items-center">
-          <p className="text-sm">
-            Bạn đã có tài khoản?{" "}
-            <a href="#" className="text-blue-500 font-medium">
-              Đăng nhập
-            </a>
-          </p>
-          <button className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none">
-            Hoàn thành đăng ký
-          </button>
-        </div>
-
-        <p className="mt-4 text-xs text-center">
-          Bằng việc nhấn nút đăng ký, bạn đã đồng ý với{" "}
-          <a href="#" className="text-blue-500">
-            Điều khoản sử dụng
-          </a>{" "}
-          của Việc Làm 24h
-        </p>
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 bg-white p-6 rounded shadow-md"
+    >
+      <div>
+        <label className="block font-semibold mb-1">Số lượng</label>
+        <input
+          type="number"
+          name="soluong"
+          value={formData.soluong}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          placeholder="Nhập số lượng"
+        />
       </div>
-    </div>
+      <div>
+        <label className="block font-semibold mb-1">Số tiền</label>
+        <input
+          type="number"
+          name="sotien"
+          value={formData.sotien}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          placeholder="Nhập số tiền"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Chọn gói mua</label>
+        <select
+          name="goimua"
+          value={formData.goimua}
+          onChange={handleChange}
+          className="w-full p-2 border rounded bg-gray-50"
+        >
+          <option value="" disabled>
+            -- Chọn gói mua --
+          </option>
+          <option value="goi1">Gói 1</option>
+          <option value="goi2">Gói 2</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">
+          Chọn phương thức thanh toán
+        </label>
+        <div className="bg-gray-100 shadow-md p-4 rounded-lg space-y-2">
+          {paymentTypes.length === 0 ? (
+            <div className="text-center text-gray-500">
+              Không có phương thức thanh toán khả dụng.
+            </div>
+          ) : (
+            paymentTypes.map((hs) => (
+              <div
+                key={hs.id}
+                className="flex justify-between items-center p-2 border rounded-lg"
+              >
+                <div>{hs.ten}</div>
+                <input
+                  type="radio"
+                  name="MaTT"
+                  value={hs.id}
+                  onChange={handleChange}
+                  className="cursor-pointer"
+                />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <button
+        type="submit"
+        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+        disabled={loading}
+      >
+        {loading ? "Đang xử lý..." : "Đăng"}
+      </button>
+    </form>
   );
 };
 

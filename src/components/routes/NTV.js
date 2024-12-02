@@ -1,11 +1,15 @@
 import duser from "../pages/User/DashboardNTV";
-import Layout from "../layouts/BaseLayout";
+import Layout from "../layouts/SeekersLayout";
 import JobDetails from "../pages/Chitiet";
 import Example from "../pages/HomePage";
+import ProfileForm from "../pages/Profile";
+import CVManagement from "../pages/User/hoso";
+import Luucongviec from "../pages/User/Luucongviec";
+import JobApplicationForm from "../pages/User/Congviecungtuyen";
 export const NtvRoutes = [
   {
-    path: "/user",
-    component: duser,
+    path: "/profile",
+    component: ProfileForm,
     layout: Layout,
   },
   {
@@ -16,6 +20,21 @@ export const NtvRoutes = [
   {
     path: "/homepage",
     component: Example,
+    layout: Layout,
+  },
+  {
+    path: "/hoso",
+    component: CVManagement,
+    layout: Layout,
+  },
+  {
+    path: "/luucv",
+    component: Luucongviec,
+    layout: Layout,
+  },
+  {
+    path: "/vieclamut",
+    component: JobApplicationForm,
     layout: Layout,
   },
 ];

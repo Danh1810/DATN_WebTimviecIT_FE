@@ -50,9 +50,9 @@ function Login() {
 
           // Navigate to dashboard or home based on role
           if (res.data.TenQuyen === "admin") {
-            navigate("/dashboardadmin");
+            navigate("/dashboard/overview");
           } else if (res.data.TenQuyen === "ntd") {
-            navigate("/se");
+            navigate("/ntd/thongtin");
           } else {
             navigate("/homepage");
           }

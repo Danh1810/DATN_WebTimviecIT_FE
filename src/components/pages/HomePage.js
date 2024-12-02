@@ -222,12 +222,21 @@ export default function Example() {
           {jobPosts.map((product) => (
             <div
               key={product.id}
-              className="border border-gray-200 rounded-lg p-5 shadow-md bg-white"
+              className={`border rounded-lg p-5 shadow-md ${
+                product.id === 3
+                  ? "bg-red-100 border-red-500"
+                  : "bg-white border-gray-200"
+              }`}
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-gray-900 truncate">
                   {product.tieude}
                 </h3>
+                {product.id === 3 && (
+                  <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    Nổi bật
+                  </span>
+                )}
 
                 <button
                   className="text-gray-400 hover:text-blue-500"

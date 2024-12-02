@@ -40,13 +40,25 @@
 //   },
 // ];
 
-import Dashboard from "../pages/Dashboard/DashboardPage";
 import AdminLayout from "../layouts/AdminLayout";
+import UserManagement from "../pages/Dashboard/QLND";
+import App from "../pages/Dashboard/QLTintd";
+import Overview from "../pages/Dashboard/Overview";
 
-export const AdminRoutes =[
+export const AdminRoutes = [
   {
-    path : "/dashboardadmin",
-    component : Dashboard ,
-    layout : AdminLayout
-  }
-] 
+    path: "/dashboard/overview",
+    component: Overview,
+    layout: AdminLayout,
+  },
+  {
+    path: "/dashboard/admin/tintuyendung",
+    component: App,
+    layout: AdminLayout,
+  },
+  {
+    path: "/dashboard/admin/nguoidung",
+    component: UserManagement,
+    layout: AdminLayout,
+  },
+];

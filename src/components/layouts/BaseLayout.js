@@ -142,7 +142,7 @@ function Layout({ children }) {
                 {auth.isAuth ? (
                   <>
                     <a
-                      href="/user"
+                      href="/profile"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Thông tin cá nhân
