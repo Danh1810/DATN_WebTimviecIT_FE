@@ -12,9 +12,10 @@ import dl from "../pages/DulieuPage/index";
 import dn from "../pages/User/DashboardNTV";
 import SearchBar from "../pages/TimkiemPage";
 export const authRoutes = [
+  { path: "/home", component: Home, layout: Base },
   { path: "/login", component: Login, layout: AuthLayout },
   { path: "/singup", component: Singup, layout: AuthLayout },
-  { path: "/home", component: Home, layout: Base },
+
   // { path: "/profile", component: Pro, layout: AuthLayout },
   // { path: "/db", component: db, layout: AuthLayout },
   // { path: "/se", component: singupe, layout: AuthLayout },

@@ -12,7 +12,7 @@ function App() {
   const [statusFilter, setStatusFilter] = useState("all"); // Bộ lọc trạng thái
   const [selectedPost, setSelectedPost] = useState(null); // Bài đăng được chọn
   const [loading, setLoading] = useState(false); // Trạng thái loading
-
+  const [users, setUsers] = useState([]);
   // Lọc theo trạng thái
   const handleStatusFilterChange = (status) => {
     setStatusFilter(status);
@@ -23,11 +23,21 @@ function App() {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get("/nguoidung");
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
   // Fetch danh sách bài đăng
   const fetchJobPosts = async () => {
     setLoading(true);
     try {
       const response = await axios.get("/tintd/admin");
+      console.log("🚀 ~ fetchJobPosts ~ response:", response);
       setJobPosts(response.data);
       setFilteredJobPosts(
         response.data.filter(
@@ -120,6 +130,7 @@ function App() {
   useEffect(() => {
     fetchRecruiters();
     fetchJobPosts();
+    fetchUsers();
   }, []);
 
   return (
@@ -163,6 +174,7 @@ function App() {
           <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
             <thead>
               <tr className="border-b">
+                <th className="px-4 py-2">Người đăng</th>
                 <th className="px-4 py-2">Tiêu đề</th>
                 <th className="px-4 py-2">Mô tả</th>
                 <th className="px-4 py-2">Nhà tuyển dụng</th>
@@ -173,6 +185,12 @@ function App() {
             <tbody>
               {filteredJobPosts.map((post) => (
                 <tr key={post.id} className="border-b">
+                  <td className="px-4 py-2">
+                    {
+                      users.find((rec) => rec.id === post.employer.MaND)
+                        ?.username
+                    }
+                  </td>
                   <td className="px-4 py-2">{post.tieude}</td>
                   <td className="px-4 py-2">{post.mota}</td>
                   <td className="px-4 py-2">

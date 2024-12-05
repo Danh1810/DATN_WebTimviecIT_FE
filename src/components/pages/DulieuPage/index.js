@@ -11,7 +11,6 @@ import EmployerManagement from "./NTD";
 import JobSeekerManagement from "./NTV";
 import InterviewChat from "./Phongvan";
 import RoleManagement from "./Quyen";
-import PaymentTypeManagement from "./Thanhtoan";
 import App from "./TinTD";
 import JobApplicationForm from "./Ungtuyen";
 import UserList from "./VTTT";
@@ -50,8 +49,6 @@ const Dashboard = () => {
         return <UserManagement />;
       case "quyen":
         return <RoleManagement />;
-      case "thanhtoan":
-        return <PaymentTypeManagement />;
       case "lstt":
         return <PaymentHistory />;
       case "ung":

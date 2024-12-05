@@ -4,7 +4,9 @@ import Dashboard from "../pages/Employers/Home";
 import TTDNTD from "../pages/Employers/QuanlyTinTD";
 import App from "../pages/Employers/ThemTin";
 import EmployerManagement from "../pages/Employers/ThongtinNTD";
-import RegisterForm from "../pages/Employers/Dangky";
+import Thanhtoan from "../pages/Employers/Dangky";
+import TransactionHistory from "../pages/Employers/thanhtoandone";
+import Layout from "../layouts/AuthLayout";
 
 export const EmployersRoutes = [
   {
@@ -24,7 +26,12 @@ export const EmployersRoutes = [
   },
   {
     path: "/ntd/muabaidang",
-    component: RegisterForm,
+    component: Thanhtoan,
     layout: EmployerLayout,
+  },
+  {
+    path: "/ntd/thanhcong/:id",
+    component: TransactionHistory,
+    layout: Layout,
   },
 ];

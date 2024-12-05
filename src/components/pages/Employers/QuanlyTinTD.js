@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
+import Select from "react-select";
 import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
@@ -11,9 +12,12 @@ function TTDNTD() {
     tieude: "",
     mota: "",
     mucluong: "",
-    Ngayhethan: "",
-    trangthai: "",
-    MaNTD: "",
+    trangthai: "Chờ duyệt",
+    kinhNghiem: "",
+    loaiHopdong: "",
+    diaChiLamviec: "",
+    Kynang: [],
+    Capbac: [],
   });
   const [jobSeekers, setJobSeekers] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
@@ -95,6 +99,13 @@ function TTDNTD() {
       console.error("Error fetching recruiters:", error);
     }
   };
+  const handleChange1 = (e) => {
+    const { name, value } = e.target;
+    setSelectedPostcs({
+      ...selectedPostcs, // Sao chép các trường hiện tại
+      [name]: value, // Cập nhật trường đang thay đổi
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,11 +113,16 @@ function TTDNTD() {
   };
 
   const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedPostcs, setSelectedPostcs] = useState(null);
   const [selectedhoso, setSelectedhosot] = useState(null);
   const [selectedhosoxem, setSelectedhosoxem] = useState(null);
   const xemChiTiet = (id) => {
     const post = jobPosts.find((post) => post.id === id);
     setSelectedPost(post); // Lưu bài đăng được chọn vào state
+  };
+  const Chinhsua = (id) => {
+    const post = jobPosts.find((post) => post.id === id);
+    setSelectedPostcs(post); // Lưu bài đăng được chọn vào state
   };
   const xemhoso = async (id) => {
     console.log("🚀 ~ xemhoso ~ id:", id);
@@ -128,6 +144,34 @@ function TTDNTD() {
       toast.error("Lỗi duyệt :", error);
     }
   };
+  const [skills, setSkills] = useState([]); // Quản lý danh sách kỹ năng
+  const [levels, setLevels] = useState([]); // Quản lý danh sách cấp bậc
+  const fetchSkills = async () => {
+    try {
+      const response = await axios.get("/kynang");
+      const formattedSkills = response.data.map((skill) => ({
+        value: skill.id,
+        label: skill.ten,
+      }));
+      setSkills(formattedSkills);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+    }
+  };
+
+  // Fetch danh sách cấp bậc
+  const fetchLevels = async () => {
+    try {
+      const response = await axios.get("/capbac");
+      const formattedLevels = response.data.map((level) => ({
+        value: level.id,
+        label: level.ten,
+      }));
+      setLevels(formattedLevels);
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+    }
+  };
   // const handleShowFile = (fileHoso) => {
   //   setSelectedFile(fileHoso); // Lưu file hồ sơ được chọn
   //   setShowModal(true); // Mở modal
@@ -138,6 +182,9 @@ function TTDNTD() {
   //   setShowModal(false); // Đóng modal
   //   setSelectedFile(null); // Xoá file đã chọn
   // };
+  const handleMultiSelectChange = (selectedOptions, { name }) => {
+    setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
+  };
 
   const closeModal = () => {
     setSelectedPost(null); // Đóng modal
@@ -148,10 +195,29 @@ function TTDNTD() {
   const closeModal2 = () => {
     setSelectedhosoxem(null); // Đóng modal
   };
+  const handleHuy = () => {
+    setSelectedPostcs(null); // Đóng modal
+  };
+  const handleSua = async () => {
+    try {
+      const response = await axios.put("/tintd/update", selectedPostcs);
+      console.log("🚀 ~ handleSua ~ response:", response);
+      if (response.code === 0) {
+        alert("Cập nhật thành công!");
+      } else {
+        alert("Đã xảy ra lỗi khi cập nhật.");
+      }
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+    }
+  };
+
   useEffect(() => {
     fetchJobPosts();
     fetchRecruiters();
     fetchJobSeekers();
+    fetchSkills();
+    fetchLevels();
   }, []);
 
   return (
@@ -174,35 +240,33 @@ function TTDNTD() {
           <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
             <thead>
               <tr className="border-b">
-                <th className="px-4 py-2 sticky top-0 bg-white z-10">
+                <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
                   Tên bài đăng
                 </th>
-                <th className="px-4 py-2 sticky top-0 bg-white z-10">Mô tả</th>
-                <th className="px-4 py-2 sticky top-0 bg-white z-10">
+                <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
+                  Mô tả
+                </th>
+                <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
                   Ngày Hết hạn
                 </th>
-                <th className="px-4 py-2 sticky top-0 bg-white z-10">
+                <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
                   Trạng thái
                 </th>
-                <th className="px-4 py-2 sticky top-0 bg-white z-10">Action</th>
+                <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
               {jobPosts.map((post) => (
                 <tr key={post.id} className="border-b">
-                  <td className="px-4 py-2 sticky left-0 bg-white">
-                    {post.tieude}
-                  </td>
-                  <td className="px-4 py-2 sticky left-0 bg-white">
-                    {post.mota}
-                  </td>
-                  <td className="px-4 py-2 sticky left-0 bg-white">
+                  <td className="px-4 py-2 text-left">{post.tieude}</td>
+                  <td className="px-4 py-2 text-left">{post.mota}</td>
+                  <td className="px-4 py-2 text-left">
                     {new Date(post.Ngayhethan).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-2 sticky left-0 bg-white">
-                    {post.trangthai}
-                  </td>
-                  <td className="px-4 py-2 sticky left-0 bg-white">
+                  <td className="px-4 py-2 text-left">{post.trangthai}</td>
+                  <td className="px-4 py-2 text-left">
                     <button
                       className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
                       onClick={() => xemChiTiet(post.id)}
@@ -211,7 +275,7 @@ function TTDNTD() {
                     </button>
                     <button
                       className="bg-red-500 text-white px-3 py-1 rounded"
-                      onClick={() => console.log("Từ chối:", post.id)}
+                      onClick={() => Chinhsua(post.id)}
                     >
                       Chỉnh sửa
                     </button>
@@ -522,40 +586,165 @@ function TTDNTD() {
             </div>
           </div>
         )}
-      </>
-      {/* <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>File Hồ sơ</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedFileLink ? (
-            <div>
-              <p>
-                File hồ sơ:{" "}
-                <a
-                  href={selectedFileLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
+        {selectedPostcs && (
+          <form
+            className="bg-white p-6 rounded-lg shadow-md"
+            onSubmit={(e) => {
+              e.preventDefault(); // Ngăn form refresh trang
+              handleSua(); // Thực hiện logic sửa
+            }}
+          >
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label htmlFor="tieude" className="block font-semibold mb-1">
+                  Tiêu đề
+                </label>
+                <input
+                  id="tieude"
+                  type="text"
+                  name="tieude"
+                  value={selectedPostcs.tieude}
+                  onChange={handleChange1}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập tiêu đề"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="mota" className="block font-semibold mb-1">
+                  Mô tả
+                </label>
+                <textarea
+                  id="mota"
+                  name="mota"
+                  value={selectedPostcs.mota}
+                  onChange={handleChange1}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập mô tả công việc"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="mucluong" className="block font-semibold mb-1">
+                  Mức lương
+                </label>
+                <input
+                  id="mucluong"
+                  type="text"
+                  name="mucluong"
+                  value={selectedPostcs.mucluong}
+                  onChange={handleChange1}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập mức lương"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="kinhNghiem"
+                  className="block font-semibold mb-1"
                 >
-                  {selectedFileLink}
-                </a>
-              </p>
-              <iframe
-                src={selectedFileLink}
-                style={{ width: "100%", height: "400px" }}
-                title="File Hồ sơ"
-              ></iframe>
+                  Kinh nghiệm
+                </label>
+                <input
+                  id="kinhNghiem"
+                  type="text"
+                  name="kinhNghiem"
+                  value={selectedPostcs.kinhNghiem}
+                  onChange={handleChange1}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập kinh nghiệm (VD: 3-5 năm)"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="diaChiLamviec"
+                  className="block font-semibold mb-1"
+                >
+                  Địa chỉ làm việc
+                </label>
+                <input
+                  id="diaChiLamviec"
+                  type="text"
+                  name="diaChiLamviec"
+                  value={selectedPostcs.diaChiLamviec}
+                  onChange={handleChange1}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập địa chỉ làm việc"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="loaiHopdong"
+                  className="block font-semibold mb-1"
+                >
+                  Loại hợp đồng
+                </label>
+                <select
+                  id="loaiHopdong"
+                  name="loaiHopdong"
+                  value={selectedPostcs.loaiHopdong}
+                  onChange={handleChange1}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Chọn loại hợp đồng</option>
+                  <option value="Toàn thời gian">Toàn thời gian</option>
+                  <option value="Bán thời gian">Bán thời gian</option>
+                  <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
+                </select>
+              </div>
+              {/* <div>
+                <label htmlFor="Kynang" className="block font-semibold mb-1">
+                  Kỹ năng
+                </label>
+                <Select
+                  id="Kynang"
+                  name="Kynang"
+                  isMulti
+                  options={skills}
+                  value={selectedPostcs.Kynang}
+                  onChange={handleMultiSelectChange}
+                  placeholder="Chọn kỹ năng"
+                  className="focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="Capbac" className="block font-semibold mb-1">
+                  Cấp bậc
+                </label>
+                <Select
+                  id="Capbac"
+                  name="Capbac"
+                  isMulti
+                  options={levels}
+                  value={selectedPostcs.Capbac}
+                  onChange={handleMultiSelectChange}
+                  placeholder="Chọn cấp bậc"
+                  className="focus:ring-2 focus:ring-blue-500"
+                />
+              </div> */}
             </div>
-          ) : (
-            <p>Không có file liên kết</p>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Đóng
-          </Button>
-        </Modal.Footer>
-      </Modal> */}
+            <div className="flex space-x-4">
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              >
+                Sửa
+              </button>
+              <button
+                type="button"
+                onClick={handleHuy}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
+              >
+                Hủy
+              </button>
+            </div>
+          </form>
+        )}
+      </>
     </div>
   );
 }
