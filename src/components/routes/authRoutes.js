@@ -11,6 +11,7 @@ import chitiet from "../pages/Chitiet";
 import dl from "../pages/DulieuPage/index";
 import dn from "../pages/User/DashboardNTV";
 import SearchBar from "../pages/TimkiemPage";
+
 export const authRoutes = [
   { path: "/home", component: Home, layout: Base },
   { path: "/login", component: Login, layout: AuthLayout },
@@ -23,7 +24,7 @@ export const authRoutes = [
 
   // { path: "/dl", component: dl, layout: AuthLayout },
   // { path: "/dn", component: dn, layout: AuthLayout },
-  { path: "/ser", component: SearchBar, layout: AuthLayout },
+  { path: "/ser", component: SearchBar, layout: Base },
 
   // { path: "/forgotpassword", component: ForgotPassword, layout: AuthLayout },
 ];

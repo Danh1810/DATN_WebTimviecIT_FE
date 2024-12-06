@@ -45,6 +45,7 @@ const SearchBar = () => {
   // Lọc dữ liệu dựa trên filters
   const filteredJobPosts = useMemo(() => {
     return originalJobPosts.filter((job) => {
+      console.log("🚀 ~ returnoriginalJobPosts.filter ~ job:", job);
       const { diaChiLamviec, loaiHopdong, levels, skills } = job;
 
       const isMatch = [
@@ -81,9 +82,9 @@ const SearchBar = () => {
   };
 
   return (
-    <div>
+    <div className="min h-screen">
       {/* Thanh tìm kiếm */}
-      <div className="bg-purple-700 p-4 rounded-lg shadow-md">
+      <div className="bg-purple-700 p-4 rounded-lg shadow-md ">
         <div className="flex items-center gap-2 h-16">
           <input
             type="text"
@@ -107,7 +108,7 @@ const SearchBar = () => {
           {
             key: "loaiHopdong",
             label: "Tất cả loại hợp đồng",
-            options: ["Thỏa thuận", "10-15 triệu", "20-25 triệu"],
+            options: ["Toàn thời gian", "Bán thời gian", "20-25 triệu"],
           },
           {
             key: "level",

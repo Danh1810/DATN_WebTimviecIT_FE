@@ -33,38 +33,33 @@ function Layout({ children }) {
   return (
     <div>
       <nav className="bg-purple-700 text-white flex items-center justify-between p-4">
-        {/* Left side (Logo) */}
-        <div className="flex items-center space-x-4">
+        {/* Left Side: Logo */}
+
+        <div
+          onClick={() => (window.location.href = "/home")}
+          className="flex items-center space-x-4"
+        >
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREfsesMJwwXL8130hzXhA8LtGBG1HMN6lKLA&s"
             alt="Company Logo"
             className="h-8"
           />
-          <span className="text-xl font-bold">việc làm IT</span>
+          <span className="text-xl font-bold">Việc làm IT</span>
         </div>
 
-        {/* Center (Menu Items) */}
+        {/* Center: Menu Items */}
         <div className="hidden md:flex space-x-8">
-          {/* Menu Item 1 */}
+          {/* Menu Dropdown 1 */}
           <div className="relative">
-            {/* Button to toggle dropdown */}
             <button
               onClick={() => setIsOpportunityOpen(!isOpportunityOpen)}
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 hover:text-gray-200"
             >
               <span>Việc Làm</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
-
-            {/* Dropdown menu */}
             {isOpportunityOpen && (
-              <div
-                className={`absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48 transition-transform duration-200 ${
-                  isOpportunityOpen
-                    ? "scale-100 opacity-100"
-                    : "scale-95 opacity-0"
-                }`}
-              >
+              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48">
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100">
                   Theo kỹ năng
                 </a>
@@ -74,18 +69,16 @@ function Layout({ children }) {
               </div>
             )}
           </div>
-          {/* Menu Item 2 */}
+
+          {/* Menu Dropdown 2 */}
           <div className="relative">
-            {/* Button to toggle dropdown */}
             <button
               onClick={() => setIsToolOpen(!isToolOpen)}
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 hover:text-gray-200"
             >
               <span>Công ty</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
-
-            {/* Dropdown menu */}
             {isToolOpen && (
               <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48">
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100">
@@ -98,31 +91,24 @@ function Layout({ children }) {
             )}
           </div>
 
-          {/* Additional Menu Item 3 */}
-          <div className="relative">
-            <button className="flex items-center space-x-1">
-              <span>Blog</span>
-            </button>
-          </div>
+          {/* Blog Link */}
+          <Link to="/blog" className="hover:text-gray-200">
+            Blog
+          </Link>
 
-          {/* Additional Menu Item 4 */}
-          <div className="relative">
-            <button className="flex items-center space-x-1">
-              <span>Liên hệ</span>
-            </button>
-          </div>
+          {/* Contact Link */}
+          <Link to="/contact" className="hover:text-gray-200">
+            Liên hệ
+          </Link>
         </div>
-
-        {/* Right side (Icons and Region Selector) */}
-        <div className="flex items-center space-x-6">
+        {/* Right Side: User & Language Options */}
+        <div className="flex items-center space-x-6 pr-4">
           {/* User Dropdown */}
           <div className="relative">
-            {/* Button */}
             <button
               onClick={() => setIsRegionOpen(!isRegionOpen)}
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 hover:text-gray-200"
             >
-              {/* Check if user exists */}
               {auth.isAuth ? (
                 <>
                   <span>{auth.username}</span>
@@ -135,10 +121,8 @@ function Layout({ children }) {
                 </>
               )}
             </button>
-
-            {/* Dropdown */}
             {isRegionOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-10">
+              <div className="absolute right-0 bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48">
                 {auth.isAuth ? (
                   <>
                     <a
@@ -173,25 +157,9 @@ function Layout({ children }) {
               </div>
             )}
           </div>
-
-          {/* <div className="relative">
-            <BellIcon className="h-6 w-6" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-xs font-bold px-1.5 py-0.5 rounded-full">
-              8
-            </span>
-          </div>
-
-          
-          <div className="flex items-center space-x-1">
-            <span className="flex items-center space-x-1">
-              <span>Dành cho</span>
-              <span className="font-semibold">Nhà Tuyển Dụng</span>
-            </span>
-          </div> */}
-
-          {/* Language Selector */}
         </div>
       </nav>
+
       {children}
       <footer className="bg-white dark:bg-gray-900">
         <div className="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
@@ -204,7 +172,7 @@ function Layout({ children }) {
                   alt="FlowBite Logo"
                 />
                 <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-                  Flowbite
+                  ViecLamIT
                 </span>
               </a>
             </div>
@@ -276,7 +244,7 @@ function Layout({ children }) {
             <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
               © 2023{" "}
               <a href="https://flowbite.com/" className="hover:underline">
-                Flowbite™
+                ViecLamIT
               </a>
               . All Rights Reserved.
             </span>

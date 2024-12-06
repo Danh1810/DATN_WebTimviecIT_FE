@@ -29,6 +29,7 @@ function Layout({ children }) {
       ],
     },
     { label: "Mua", key: "mua", path: "/ntd/muabaidang" },
+    { label: "Tìm kiếm ứng viên", key: "tkuv", path: "/ntd/tkuv" },
   ];
 
   const name = localStorage.getItem("username") || "Nhà Tuyển Dụng";

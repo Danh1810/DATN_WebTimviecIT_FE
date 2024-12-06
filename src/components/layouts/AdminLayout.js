@@ -49,6 +49,11 @@ function AdminLayout({ children }) {
       key: "Nguoidung",
       path: "/dashboard/admin/nguoidung",
     },
+    {
+      label: "Quản lý cấp bậc",
+      key: "Nguoidung",
+      path: "/dashboard/admin/capbac",
+    },
   ];
 
   const handleMenuClick = (item) => {

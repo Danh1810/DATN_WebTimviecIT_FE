@@ -99,7 +99,7 @@ function JobApplicationForm() {
   return (
     <div className="container mx-auto p-4  min-h-screen">
       <h2 className="text-2xl font-semibold mb-6 text-center">Ứng tuyển</h2>
-      <div className="bg-gray-100 p-4 rounded">
+      <div className="bg-white-100 p-4 rounded">
         <table className="table-auto w-full text-left">
           <thead>
             <tr className="text-gray-600 font-medium">

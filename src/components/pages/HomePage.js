@@ -28,23 +28,37 @@ export default function Example() {
   });
 
   const handleSearch = async (id) => {
-    if (auth.isAuth === false) {
-      navigate("/login");
-    } else {
-      const formDataToSend = new FormData();
-      formDataToSend.append("MaTTD", id);
-      formDataToSend.append("Userid", userid);
-      toast.success("Ok");
-      try {
-        await axios.post("/lcv", formDataToSend);
-        toast.success("Duyệt thành công");
-        fetchJobPosts(); // Tải lại danh sách
-      } catch (error) {
-        toast.error(`Lỗi duyệt: ${error.message}`);
-      }
+    if (!auth.isAuth) {
+      navigate("/login"); // Redirect to login if not authenticated
+      return;
     }
-    // const response = await axios.post("/lcv")
+
+    const dataToSend = {
+      MaTTD: id,
+      Userid: userid,
+    };
+
+    console.log("🚀 ~ handleSearch ~ Data to send:", dataToSend);
+
+    try {
+      const response = await axios.post("/lcv", dataToSend, {
+        headers: {
+          "Content-Type": "application/json", // Set header to handle JSON payload
+        },
+      });
+      toast.success("Duyệt thành công"); // Notify success
+      fetchJobPosts(); // Reload the job posts
+      console.log("🚀 ~ handleSearch ~ response:", response.data);
+    } catch (error) {
+      console.error("🚀 ~ handleSearch ~ error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unknown error occurred";
+      toast.error(`Lỗi duyệt: ${errorMessage}`);
+    }
   };
+
   const [employers, setEmployers] = useState([]);
   const fetchEmployers = async () => {
     try {

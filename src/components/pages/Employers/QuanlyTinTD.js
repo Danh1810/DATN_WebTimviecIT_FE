@@ -5,8 +5,18 @@ import Select from "react-select";
 import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
+import { Modal, Button } from "antd";
 
 function TTDNTD() {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
   const id = localStorage.getItem("id");
   const [jobPost, setJobPost] = useState({
     tieude: "",
@@ -479,12 +489,35 @@ function TTDNTD() {
                   </div>
 
                   <div>
-                    <label className="block font-medium">
-                      Link hồ sơ online:
-                    </label>
-                    <label className="block">
-                      {selectedhosoxem.selectedhosoxem || "Chưa nhập"}
-                    </label>
+                    <label className="block font-medium">File Hồ Sơ</label>
+                    {selectedhosoxem.fileHoso ? (
+                      <div>
+                        <Button
+                          type="link"
+                          onClick={showModal}
+                          className="text-blue-500 underline"
+                        >
+                          Xem hồ sơ
+                        </Button>
+                        <Modal
+                          title="Xem Hồ Sơ"
+                          visible={isModalVisible}
+                          onCancel={handleCancel}
+                          footer={null} // Loại bỏ footer của modal
+                          width="90vw" // Chiều rộng chiếm 90% viewport
+                          bodyStyle={{ height: "90vh", padding: 0 }} // Chiều cao chiếm 90% viewport
+                        >
+                          <iframe
+                            src={`${selectedhosoxem.fileHoso}#view=FitH`} // Đảm bảo PDF hiển thị với tỷ lệ 100%
+                            style={{ width: "100%", height: "100%" }}
+                            title="Hồ sơ PDF"
+                            frameBorder="0"
+                          />
+                        </Modal>
+                      </div>
+                    ) : (
+                      <label className="block">Chưa nhập</label>
+                    )}
                   </div>
 
                   <div>
@@ -587,116 +620,124 @@ function TTDNTD() {
           </div>
         )}
         {selectedPostcs && (
-          <form
-            className="bg-white p-6 rounded-lg shadow-md"
-            onSubmit={(e) => {
-              e.preventDefault(); // Ngăn form refresh trang
-              handleSua(); // Thực hiện logic sửa
-            }}
-          >
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label htmlFor="tieude" className="block font-semibold mb-1">
-                  Tiêu đề
-                </label>
-                <input
-                  id="tieude"
-                  type="text"
-                  name="tieude"
-                  value={selectedPostcs.tieude}
-                  onChange={handleChange1}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập tiêu đề"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="mota" className="block font-semibold mb-1">
-                  Mô tả
-                </label>
-                <textarea
-                  id="mota"
-                  name="mota"
-                  value={selectedPostcs.mota}
-                  onChange={handleChange1}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập mô tả công việc"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="mucluong" className="block font-semibold mb-1">
-                  Mức lương
-                </label>
-                <input
-                  id="mucluong"
-                  type="text"
-                  name="mucluong"
-                  value={selectedPostcs.mucluong}
-                  onChange={handleChange1}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập mức lương"
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="kinhNghiem"
-                  className="block font-semibold mb-1"
-                >
-                  Kinh nghiệm
-                </label>
-                <input
-                  id="kinhNghiem"
-                  type="text"
-                  name="kinhNghiem"
-                  value={selectedPostcs.kinhNghiem}
-                  onChange={handleChange1}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập kinh nghiệm (VD: 3-5 năm)"
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="diaChiLamviec"
-                  className="block font-semibold mb-1"
-                >
-                  Địa chỉ làm việc
-                </label>
-                <input
-                  id="diaChiLamviec"
-                  type="text"
-                  name="diaChiLamviec"
-                  value={selectedPostcs.diaChiLamviec}
-                  onChange={handleChange1}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập địa chỉ làm việc"
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="loaiHopdong"
-                  className="block font-semibold mb-1"
-                >
-                  Loại hợp đồng
-                </label>
-                <select
-                  id="loaiHopdong"
-                  name="loaiHopdong"
-                  value={selectedPostcs.loaiHopdong}
-                  onChange={handleChange1}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Chọn loại hợp đồng</option>
-                  <option value="Toàn thời gian">Toàn thời gian</option>
-                  <option value="Bán thời gian">Bán thời gian</option>
-                  <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
-                </select>
-              </div>
-              {/* <div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="container mx-auto p-4 bg-white max-h-[90vh] overflow-y-auto">
+              <form
+                className="bg-white p-6 rounded-lg shadow-md"
+                onSubmit={(e) => {
+                  e.preventDefault(); // Ngăn form refresh trang
+                  handleSua(); // Thực hiện logic sửa
+                }}
+              >
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label
+                      htmlFor="tieude"
+                      className="block font-semibold mb-1"
+                    >
+                      Tiêu đề
+                    </label>
+                    <input
+                      id="tieude"
+                      type="text"
+                      name="tieude"
+                      value={selectedPostcs.tieude}
+                      onChange={handleChange1}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập tiêu đề"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mota" className="block font-semibold mb-1">
+                      Mô tả
+                    </label>
+                    <textarea
+                      id="mota"
+                      name="mota"
+                      value={selectedPostcs.mota}
+                      onChange={handleChange1}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập mô tả công việc"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="mucluong"
+                      className="block font-semibold mb-1"
+                    >
+                      Mức lương
+                    </label>
+                    <input
+                      id="mucluong"
+                      type="text"
+                      name="mucluong"
+                      value={selectedPostcs.mucluong}
+                      onChange={handleChange1}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập mức lương"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="kinhNghiem"
+                      className="block font-semibold mb-1"
+                    >
+                      Kinh nghiệm
+                    </label>
+                    <input
+                      id="kinhNghiem"
+                      type="text"
+                      name="kinhNghiem"
+                      value={selectedPostcs.kinhNghiem}
+                      onChange={handleChange1}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập kinh nghiệm (VD: 3-5 năm)"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="diaChiLamviec"
+                      className="block font-semibold mb-1"
+                    >
+                      Địa chỉ làm việc
+                    </label>
+                    <input
+                      id="diaChiLamviec"
+                      type="text"
+                      name="diaChiLamviec"
+                      value={selectedPostcs.diaChiLamviec}
+                      onChange={handleChange1}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập địa chỉ làm việc"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="loaiHopdong"
+                      className="block font-semibold mb-1"
+                    >
+                      Loại hợp đồng
+                    </label>
+                    <select
+                      id="loaiHopdong"
+                      name="loaiHopdong"
+                      value={selectedPostcs.loaiHopdong}
+                      onChange={handleChange1}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">Chọn loại hợp đồng</option>
+                      <option value="Toàn thời gian">Toàn thời gian</option>
+                      <option value="Bán thời gian">Bán thời gian</option>
+                      <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
+                    </select>
+                  </div>
+                  {/* <div>
                 <label htmlFor="Kynang" className="block font-semibold mb-1">
                   Kỹ năng
                 </label>
@@ -726,23 +767,25 @@ function TTDNTD() {
                   className="focus:ring-2 focus:ring-blue-500"
                 />
               </div> */}
+                </div>
+                <div className="flex space-x-4">
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleHuy}
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
             </div>
-            <div className="flex space-x-4">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
-              >
-                Sửa
-              </button>
-              <button
-                type="button"
-                onClick={handleHuy}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
-              >
-                Hủy
-              </button>
-            </div>
-          </form>
+          </div>
         )}
       </>
     </div>

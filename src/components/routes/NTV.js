@@ -6,6 +6,7 @@ import ProfileForm from "../pages/Profile";
 import CVManagement from "../pages/User/hoso";
 import Luucongviec from "../pages/User/Luucongviec";
 import JobApplicationForm from "../pages/User/Congviecungtuyen";
+import SearchBar from "../pages/TimkiemPage";
 export const NtvRoutes = [
   {
     path: "/profile",
@@ -22,6 +23,7 @@ export const NtvRoutes = [
     component: Example,
     layout: Layout,
   },
+  { path: "/ser", component: SearchBar, layout: Layout },
   {
     path: "/hoso",
     component: CVManagement,

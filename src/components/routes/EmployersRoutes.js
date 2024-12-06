@@ -7,6 +7,7 @@ import EmployerManagement from "../pages/Employers/ThongtinNTD";
 import Thanhtoan from "../pages/Employers/Dangky";
 import TransactionHistory from "../pages/Employers/thanhtoandone";
 import Layout from "../layouts/AuthLayout";
+import App1 from "../pages/Employers/TKUV";
 
 export const EmployersRoutes = [
   {
@@ -33,5 +34,10 @@ export const EmployersRoutes = [
     path: "/ntd/thanhcong/:id",
     component: TransactionHistory,
     layout: Layout,
+  },
+  {
+    path: "/ntd/tkuv",
+    component: App1,
+    layout: EmployerLayout,
   },
 ];
