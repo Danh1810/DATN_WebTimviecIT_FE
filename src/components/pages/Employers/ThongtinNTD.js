@@ -24,15 +24,77 @@ function EmployerManagement() {
     setEmployer((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const { name, files } = e.target;
+
     if (files.length > 0) {
-      setEmployer((prev) => ({ ...prev, [name]: files[0] }));
-      setPreviewImage(URL.createObjectURL(files[0]));
+      const file = files[0];
+
+      try {
+        // Nén file trước khi lưu vào state
+        const compressedFile = await compressImageWithCanvas(file, 500, 500);
+
+        // Cập nhật state
+        setEmployer((prev) => ({ ...prev, [name]: compressedFile }));
+        setPreviewImage(URL.createObjectURL(compressedFile));
+      } catch (error) {
+        console.error("Error compressing image:", error);
+        alert("Failed to process the image. Please try again.");
+      }
     } else {
+      // Xóa state khi không có file
       setEmployer((prev) => ({ ...prev, [name]: null }));
       setPreviewImage(null);
     }
+  };
+
+  // Hàm nén ảnh bằng Canvas
+  const compressImageWithCanvas = (file, maxWidth, maxHeight) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          // Tính toán kích thước mới
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              width = maxWidth;
+              height = Math.round(maxWidth * (img.height / img.width));
+            } else {
+              height = maxHeight;
+              width = Math.round(maxHeight * (img.width / img.height));
+            }
+          }
+
+          // Resize ảnh
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Chuyển canvas thành Blob
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(new File([blob], file.name, { type: file.type }));
+              } else {
+                reject(new Error("Failed to create Blob"));
+              }
+            },
+            file.type,
+            0.8 // Chất lượng ảnh (0.1 - 1.0)
+          );
+        };
+        img.src = event.target.result;
+      };
+
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
   };
 
   const fetchData = async () => {
@@ -57,6 +119,7 @@ function EmployerManagement() {
   };
 
   const handleSubmit = async (e) => {
+    console.time("ntd");
     e.preventDefault();
     if (!employer.ten || !employer.email || !employer.sdt) {
       alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
@@ -90,6 +153,7 @@ function EmployerManagement() {
           "Đã xảy ra lỗi khi thêm nhà tuyển dụng. Vui lòng thử lại!"
       );
     }
+    console.timeEnd("ntd");
   };
 
   const handleEdit = () => {
@@ -129,7 +193,7 @@ function EmployerManagement() {
   useEffect(() => {
     fetchData();
   }, []);
-
+  console.log("🚀 ~ handleUpdate ~ response:");
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold text-center mb-6">

@@ -50,9 +50,9 @@ function AdminLayout({ children }) {
       path: "/dashboard/admin/nguoidung",
     },
     {
-      label: "Quản lý cấp bậc",
-      key: "Nguoidung",
-      path: "/dashboard/admin/capbac",
+      label: "Quản lý Nhà tuyển dụng",
+      key: "ntd",
+      path: "/dashboard/admin/ntd",
     },
   ];
 

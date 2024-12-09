@@ -91,6 +91,12 @@ function EmployerManagement() {
       console.error("Error fetching MaND options:", error);
     }
   };
+  const [ntd, setntd] = useState(null);
+  const xemChiTiet = (id) => {
+    const post = employers.find((post) => post.id === id);
+    console.log("🚀 ~ xemChiTiet ~  post:", post);
+    setntd(post); // Lưu bài đăng được chọn vào state
+  };
 
   useEffect(() => {
     fetchEmployers();
@@ -137,7 +143,7 @@ function EmployerManagement() {
           Export to PDF
         </button>
       </div>
-      <form
+      {/* <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-md"
       >
@@ -235,35 +241,97 @@ function EmployerManagement() {
         >
           Lưu
         </button>
-      </form>
+      </form> */}
 
       {/* Employer Table */}
       <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
         <thead>
-          <tr className="border-b">
-            <th className="px-4 py-2">Tên</th>
-            <th className="px-4 py-2">Email</th>
-            <th className="px-4 py-2">SĐT</th>
-            <th className="px-4 py-2">Địa chỉ</th>
-            <th className="px-4 py-2">Mã ND</th>
-            <th className="px-4 py-2">Logo</th>
-            <th className="px-4 py-2">Số lượng đăng bài</th>
+          <tr className="border-b bg-gray-100">
+            <th className="px-4 py-3 text-left">Tên</th>
+            <th className="px-4 py-3 text-left">Địa chỉ</th>
+            <th className="px-4 py-3 text-center w-1/4">Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {employers.map((emp) => (
-            <tr key={emp.MaNTD} className="border-b">
-              <td className="px-4 py-2">{emp.ten}</td>
-              <td className="px-4 py-2">{emp.email}</td>
-              <td className="px-4 py-2">{emp.sdt}</td>
-              <td className="px-4 py-2">{emp.diachi}</td>
-              <td className="px-4 py-2">{emp.MaND}</td>
-              <td className="px-4 py-2">{emp.logo}</td>
-              <td className="px-4 py-2">{emp.Soluongdangbai}</td>
+            <tr key={emp.id} className="border-b">
+              <td className="px-4 py-3">{emp.ten}</td>
+              <td className="px-4 py-3">{emp.diachi}</td>
+              <td className="px-4 py-3 text-center">
+                <div className="flex justify-center gap-2">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                    onClick={() => xemChiTiet(emp.id)}
+                  >
+                    Xem chi tiết
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                    // onClick={() => Chinhsua(emp.MaNTD)}
+                  >
+                    Chỉnh sửa
+                  </button>
+                  <button
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
+                    // onClick={() => XoaNguoiDung(emp.MaNTD)}
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {ntd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="mb-6 flex flex-col items-center">
+                <div className="w-48 h-48 rounded-full overflow-hidden border mb-4">
+                  <img
+                    src={
+                      ntd.logo ||
+                      "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
+                    }
+                    alt="Avatar"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                {[
+                  { label: "Tên nhà tuyển dụng", value: ntd.ten },
+                  { label: "Email", value: ntd.email },
+                  { label: "Số điện thoại", value: ntd.sdt },
+                  { label: "Địa chỉ", value: ntd.diachi },
+                  { label: "Website", value: ntd.website },
+                  { label: "Lĩnh vực", value: ntd.linhvuc },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <label className="block font-semibold mb-1">{label}</label>
+                    <p className="w-full p-2 border rounded bg-gray-100">
+                      {value || "Chưa nhập"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <button
+                // onClick={handleEdit}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Chỉnh sửa
+              </button>
+              <button
+                onClick={() => setntd(null)}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

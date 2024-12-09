@@ -129,6 +129,22 @@ function UserManagement() {
       console.error("Error fetching levels:", error);
     }
   };
+  const xoanguoidung = async (id) => {
+    try {
+      const response = await axios.delete("/nguoidung", {
+        params: { id: id },
+      });
+      console.log("🚀 ~ handleSua ~ response:", response);
+      if (response.code === 0) {
+        fetchUsers();
+        alert("Xóa thành công!");
+      } else {
+        alert("Đã xảy ra lỗi khi xóa");
+      }
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -255,42 +271,42 @@ function UserManagement() {
         {/* Table */}
         <table className="min-w-full bg-white border rounded-lg shadow-md">
           <thead>
-            <tr className="border-b">
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Tên Người Dùng</th>
-              <th className="px-4 py-2">Quyền</th>
-              <th className="px-4 py-2">Trạng Thái</th>
-              <th className="px-4 py-2">Thao tác</th>
+            <tr className="border-b bg-gray-100">
+              <th className="px-4 py-2 w-1/6 text-left">Email</th>
+              <th className="px-4 py-2 w-1/6 text-left">Tên Người Dùng</th>
+              <th className="px-4 py-2 w-1/6 text-left">Quyền</th>
+              <th className="px-4 py-2 w-1/6 text-center">Trạng Thái</th>
+              <th className="px-4 py-2 w-1/6 text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.map((user) => (
               <tr key={user.id} className="border-b">
-                <td className="px-4 py-2">{user.email}</td>
-                <td className="px-4 py-2">{user.username}</td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 truncate">{user.email}</td>
+                <td className="px-4 py-2 truncate">{user.username}</td>
+                <td className="px-4 py-2 truncate">
                   {roles.find((rec) => rec.id === user.MaQuyen)?.mota || "N/A"}
                 </td>
-                <td className="px-4 py-2">{user.Trangthai}</td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-center">{user.Trangthai}</td>
+                <td className="px-4 py-2 text-center">
                   <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                    className="bg-blue-500 text-white px-3 py-1 rounded "
                     onClick={() => xemChiTiet(user.id)}
                   >
                     Xem chi tiết
                   </button>
                   <button
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-red-500 text-white px-3 py-1 rounded "
                     onClick={() => Chinhsua(user.id)}
                   >
                     Chỉnh sửa
                   </button>
-                  {/* <button
-                  className="bg-green-500 text-white px-3 py-1 rounded"
-                  onClick={() => xemhoso(user.id)}
-                >
-                  Xem hồ sơ
-                </button> */}
+                  <button
+                    className="bg-green-500 text-white px-3 py-1 rounded"
+                    onClick={() => xoanguoidung(user.id)}
+                  >
+                    Xóa
+                  </button>
                 </td>
               </tr>
             ))}

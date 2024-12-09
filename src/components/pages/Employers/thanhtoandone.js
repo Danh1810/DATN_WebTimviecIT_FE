@@ -36,37 +36,35 @@ const TransactionHistory = () => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Employer
+            Công ty thanh toán
           </label>
           <div className="mt-1 text-gray-900">
-            {transaction.employer ? transaction.employer.name : "N/A"}
+            {transaction.employer ? transaction.employer.ten : "N/A"}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Payment Type
-          </label>
+          <label className="block text-sm font-medium text-gray-700"></label>
           <div className="mt-1 text-gray-900">{transaction.loaiThanhtoan}</div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Status
+            Trạng thái
           </label>
           <div className="mt-1 text-gray-900">{transaction.trangthai}</div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Amount
+            Số tiền
           </label>
           <div className="mt-1 text-gray-900">{transaction.sotien}</div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Payment Date
+            Ngày thanh toán
           </label>
           <div className="mt-1 text-gray-900">
             {new Date(transaction.Ngaythanhtoan).toLocaleDateString()}
@@ -75,7 +73,7 @@ const TransactionHistory = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Quantity
+            Số lượng mua
           </label>
           <div className="mt-1 text-gray-900">{transaction.Soluongmua}</div>
         </div>

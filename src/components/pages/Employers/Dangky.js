@@ -12,10 +12,17 @@ const Thanhtoan = () => {
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const defaultPrice = 10000;
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const newFormData = { ...formData, [name]: value };
+
+    if (name === "soluong") {
+      // Tính toán số tiền dựa trên số lượng
+      newFormData.sotien = value * defaultPrice;
+    }
+
+    setFormData(newFormData);
   };
 
   const handleSubmit = async (e) => {
@@ -73,9 +80,9 @@ const Thanhtoan = () => {
           type="number"
           name="sotien"
           value={formData.sotien}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          placeholder="Nhập số tiền"
+          readOnly
+          className="w-full p-2 border rounded bg-gray-100"
+          placeholder="Số tiền sẽ tự động tính"
         />
       </div>
 

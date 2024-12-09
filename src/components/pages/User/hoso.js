@@ -162,6 +162,22 @@ const CVManagement = () => {
       kinhNghiemLamViec: "",
     });
   };
+  const Xoahoso = async (id) => {
+    try {
+      const response = await axios.delete("/hoso", {
+        params: { id: id },
+      });
+      console.log("🚀 ~ handleSua ~ response:", response);
+      if (response.code === 0) {
+        fetchhoso();
+        alert("Xóa thành công!");
+      } else {
+        alert("Đã xảy ra lỗi khi xóa");
+      }
+    } catch (error) {
+      console.error("Lỗi xóa", error);
+    }
+  };
   useEffect(() => {
     fetchhoso();
     fetchJobSeekers();
@@ -212,6 +228,12 @@ const CVManagement = () => {
                       onClick={() => xemChiTiet1(hs.id)}
                     >
                       Xem chi tiết
+                    </button>
+                    <button
+                      className="text-blue-500 hover:underline"
+                      onClick={() => Xoahoso(hs.id)}
+                    >
+                      Xóa
                     </button>
                   </td>
                 </tr>

@@ -147,7 +147,7 @@ function Layout({ children }) {
                       Đăng nhập
                     </a>
                     <a
-                      href="/signup"
+                      href="/singup"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Đăng ký

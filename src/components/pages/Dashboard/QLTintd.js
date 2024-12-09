@@ -73,6 +73,19 @@ function App() {
       toast.error(`Lỗi duyệt: ${error.message}`);
     }
   };
+  const XoaTinTD = async (id) => {
+    try {
+      await axios.delete("/tintd", {
+        params: {
+          id: id,
+        },
+      });
+      toast.success("Xóa thành công");
+      fetchJobPosts(); // Tải lại danh sách
+    } catch (error) {
+      toast.error(`Lỗi xóa: ${error.message}`);
+    }
+  };
 
   // Xem chi tiết bài đăng
   const xemChiTiet = (id) => {
@@ -173,34 +186,32 @@ function App() {
         ) : (
           <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
             <thead>
-              <tr className="border-b">
-                <th className="px-4 py-2">Người đăng</th>
-                <th className="px-4 py-2">Tiêu đề</th>
-                <th className="px-4 py-2">Mô tả</th>
-                <th className="px-4 py-2">Nhà tuyển dụng</th>
-                <th className="px-4 py-2">Trạng thái</th>
-                <th className="px-4 py-2">Action</th>
+              <tr className="border-b bg-gray-100">
+                <th className="px-4 py-2 w-1/5 text-left">Người đăng</th>
+                <th className="px-4 py-2 w-1/5 text-left">Tiêu đề</th>
+                <th className="px-4 py-2 w-1/5 text-left">Nhà tuyển dụng</th>
+                <th className="px-4 py-2 w-1/10 text-center">Trạng thái</th>
+                <th className="px-4 py-2 w-1/10 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {filteredJobPosts.map((post) => (
                 <tr key={post.id} className="border-b">
-                  <td className="px-4 py-2">
-                    {
-                      users.find((rec) => rec.id === post.employer.MaND)
-                        ?.username
-                    }
+                  <td className="px-4 py-2 w-1/5">
+                    {users.find((rec) => rec.id === post.employer.MaND)
+                      ?.username || "N/A"}
                   </td>
-                  <td className="px-4 py-2">{post.tieude}</td>
-                  <td className="px-4 py-2">{post.mota}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 w-1/5">{post.tieude}</td>
+                  <td className="px-4 py-2 w-1/5">
                     {recruiters.find((rec) => rec.id === post.MaNTD)?.ten ||
                       "N/A"}
                   </td>
-                  <td className="px-4 py-2">{post.trangthai}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 w-1/10 text-center">
+                    {post.trangthai}
+                  </td>
+                  <td className="px-4 py-2 w-1/10 text-center">
                     <button
-                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                      className="bg-blue-500 text-white px-3 py-1 rounded"
                       onClick={() => xemChiTiet(post.id)}
                     >
                       Xem chi tiết
@@ -210,6 +221,12 @@ function App() {
                       onClick={() => handleSubmit(post.id)}
                     >
                       Duyệt
+                    </button>
+                    <button
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                      onClick={() => XoaTinTD(post.id)}
+                    >
+                      Xóa
                     </button>
                   </td>
                 </tr>
