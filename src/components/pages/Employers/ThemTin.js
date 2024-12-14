@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import axios from "../../services/axios";
 import { ToastContainer, toast } from "react-toastify";
+import Quill from "quill";
+import "react-toastify/dist/ReactToastify.css";
+import "quill/dist/quill.snow.css";
 
 function App() {
   const id = localStorage.getItem("id");
-  console.log("🚀 ~ App ~ id:", id);
+  const quillRef = useRef(null);
 
   const [jobPost, setJobPost] = useState({
     tieude: "",
@@ -21,21 +24,20 @@ function App() {
   });
 
   const [jobPosts, setJobPosts] = useState([]);
-  const [skills, setSkills] = useState([]); // Quản lý danh sách kỹ năng
-  const [levels, setLevels] = useState([]); // Quản lý danh sách cấp bậc
+  const [skills, setSkills] = useState([]);
+  const [levels, setLevels] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
-  const [employers, setEmployers] = useState([]);
-  // Fetch danh sách bài tuyển dụng
+  const [employers, setEmployers] = useState(null);
+
   const fetchJobPosts = async () => {
     try {
       const response = await axios.get("/tintd");
       setJobPosts(response.data);
     } catch (error) {
-      console.error("Error fetching job posts:", error);
+      toast.error("Error fetching job posts");
     }
   };
 
-  // Fetch danh sách kỹ năng
   const fetchSkills = async () => {
     try {
       const response = await axios.get("/kynang");
@@ -45,11 +47,10 @@ function App() {
       }));
       setSkills(formattedSkills);
     } catch (error) {
-      console.error("Error fetching skills:", error);
+      toast.error("Error fetching skills");
     }
   };
 
-  // Fetch danh sách cấp bậc
   const fetchLevels = async () => {
     try {
       const response = await axios.get("/capbac");
@@ -59,7 +60,27 @@ function App() {
       }));
       setLevels(formattedLevels);
     } catch (error) {
-      console.error("Error fetching levels:", error);
+      toast.error("Error fetching levels");
+    }
+  };
+
+  const fetchRecruiters = async () => {
+    try {
+      const response = await axios.get("/nhatd");
+      setRecruiters(response.data);
+    } catch (error) {
+      toast.error("Error fetching recruiters");
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/nhatd/detail", {
+        params: { id },
+      });
+      setEmployers(response.data || null);
+    } catch (error) {
+      toast.error("Error fetching employer data");
     }
   };
 
@@ -67,52 +88,33 @@ function App() {
     const { name, value } = e.target;
     setJobPost((prev) => ({ ...prev, [name]: value }));
   };
-  const fetchRecruiters = async () => {
-    try {
-      const response = await axios.get("/nhatd");
-      setRecruiters(response.data);
-    } catch (error) {
-      console.error("Error fetching recruiters:", error);
-    }
-  };
+
   const handleMultiSelectChange = (selectedOptions, { name }) => {
     setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
   };
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("/nhatd/detail", {
-        params: { id: id },
-      });
-      console.log("🚀 ~ fetchData ~ response:", response.data.Soluongdangbai);
-
-      if (!response.data || Object.keys(response.data).length === 0) {
-        setEmployers(null);
-      } else {
-        setEmployers(response.data);
-      }
-    } catch (error) {
-      console.error(error); // Gửi lỗi đi
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!jobPost.tieude || !jobPost.mota || !jobPost.mucluong) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
     try {
       const postData = {
         ...jobPost,
         Kynang: jobPost.Kynang.map((k) => k.value),
         Capbac: jobPost.Capbac.map((l) => l.value),
       };
-      console.log("🚀 ~ handleSubmit ~ postData:", postData);
+
       const response = await axios.post("/tintd", postData);
-      console.log("🚀 ~ handleSubmit ~ postData:", postData);
       setJobPosts((prev) => [...prev, response.data]);
       setJobPost({
         tieude: "",
         mota: "",
         mucluong: "",
-        trangthai: "active",
+        trangthai: "Chờ duyệt",
         kinhNghiem: "",
         loaiHopdong: "",
         diaChiLamviec: "",
@@ -120,12 +122,34 @@ function App() {
         Capbac: [],
         Ma: id,
       });
-      fetchRecruiters();
-      toast.success("Đăng thành công hãy chờ quản trị viên duyệt");
+
+      toast.success("Job post submitted successfully!");
     } catch (error) {
-      console.error("Error adding job post:", error);
+      toast.error("Error submitting job post");
     }
   };
+
+  useEffect(() => {
+    const quill = new Quill(quillRef.current, {
+      theme: "snow",
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, 3, false] }],
+          ["bold", "italic", "underline", "strike"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["link", "image"],
+        ],
+      },
+    });
+
+    quill.root.innerHTML = jobPost.mota || "";
+
+    quill.on("text-change", () => {
+      handleChange({
+        target: { name: "mota", value: quill.root.innerHTML },
+      });
+    });
+  }, []);
 
   useEffect(() => {
     fetchJobPosts();
@@ -137,14 +161,16 @@ function App() {
 
   return (
     <div className="container mx-auto p-4 relative">
+      <ToastContainer />
       <h1 className="text-2xl font-bold text-center mb-6">
         Đăng tin tuyển dụng
       </h1>
 
-      {/* Label số lượng đăng tuyển */}
-      <div className="absolute top-0 left-0 bg-blue-100 text-blue-600 px-4 py-2 rounded-tr-lg rounded-bl-lg shadow-md">
-        Số lượng đăng tuyển: {employers.Soluongdangbai}
-      </div>
+      {employers && (
+        <div className="absolute top-0 left-0 bg-blue-100 text-blue-600 px-4 py-2 rounded-tr-lg rounded-bl-lg shadow-md">
+          Số lượng đăng tuyển: {employers.Soluongdangbai}
+        </div>
+      )}
 
       <form
         onSubmit={handleSubmit}
@@ -160,16 +186,6 @@ function App() {
               onChange={handleChange}
               className="w-full p-2 border rounded"
               placeholder="Nhập tiêu đề"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Mô tả</label>
-            <textarea
-              name="mota"
-              value={jobPost.mota}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập mô tả công việc"
             />
           </div>
           <div>
@@ -191,7 +207,7 @@ function App() {
               value={jobPost.kinhNghiem}
               onChange={handleChange}
               className="w-full p-2 border rounded"
-              placeholder="Nhập kinh nghiệm (VD: 3-5 năm)"
+              placeholder="Nhập kinh nghiệm"
             />
           </div>
           <div>
@@ -242,11 +258,19 @@ function App() {
             />
           </div>
         </div>
+        <div>
+          <label className="block font-semibold mb-1">Mô tả</label>
+          <div
+            ref={quillRef}
+            className="w-full border rounded"
+            style={{ minHeight: "150px", padding: "10px" }}
+          ></div>
+        </div>
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Đăng
+          Đăng tin
         </button>
       </form>
     </div>

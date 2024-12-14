@@ -63,6 +63,7 @@ export default function Example() {
   const fetchEmployers = async () => {
     try {
       const response = await axios.get("/nhatd");
+      console.log("🚀 ~ fetchEmployers ~ response:", response);
       setEmployers(response.data);
     } catch (error) {
       console.error("Error fetching employers:", error);
@@ -101,7 +102,7 @@ export default function Example() {
 
   return (
     <div>
-      <div className="flex items-center justify-center h-[25vh] from-teal-100 via-teal-300 to-teal-500  bg-purple-400	">
+      <div className="flex items-center justify-center h-[25vh] from-teal-100 via-teal-300 to-teal-500  bg-gray-400	">
         <div className="w-full max-w-7xl mx-auto bg-white rounded-lg shadow-xl flex items-center space-x-4 p-4">
           {/* Search Input */}
           <div className="flex items-center w-full">
@@ -207,21 +208,20 @@ export default function Example() {
         <div className="container mx-auto px-4">
           <h2 className="text-xl font-semibold mb-6">Các công ty nổi bật</h2>
 
-          <div className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth">
+          <div className="flex space-x-4 overflow-x-auto scrollbar-custom scroll-smooth">
             {employers.map((company) => (
-              <div
-                key={company.id}
-                className="bg-white shadow-md rounded-lg p-4 w-60 flex-shrink-0"
-              >
-                <img
-                  src={company.logo}
-                  alt={company.ten}
-                  className="h-16 mx-auto mb-4"
-                />
-                <h3 className="text-center font-medium text-gray-800">
-                  {company.ten}
-                </h3>
-              </div>
+              <Link key={company.id} to={`/ct/${company.id}`}>
+                <div className="bg-white shadow-md rounded-lg p-4 w-60 flex-shrink-0">
+                  <img
+                    src={company.logo}
+                    alt={company.ten}
+                    className="h-16 mx-auto mb-4"
+                  />
+                  <h3 className="text-center font-medium text-gray-800">
+                    {company.ten}
+                  </h3>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -234,55 +234,61 @@ export default function Example() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {jobPosts.map((product) => (
-            <div
-              key={product.id}
-              className={`border rounded-lg p-5 shadow-md ${
-                product.id === 3
-                  ? "bg-red-100 border-red-500"
-                  : "bg-white border-gray-200"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900 truncate">
-                  {product.tieude}
-                </h3>
-                {product.id === 3 && (
-                  <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    Nổi bật
-                  </span>
-                )}
+            <Link key={product.id} to={`/tintuyendung/${product.id}`}>
+              <div
+                className={`border rounded-lg p-5 shadow-md ${
+                  product.id === 3
+                    ? "bg-red-100 border-red-500"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    {product.tieude}
+                  </h3>
+                  {product.id === 3 && (
+                    <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      Nổi bật
+                    </span>
+                  )}
 
-                <button
-                  className="text-gray-400 hover:text-blue-500"
-                  aria-label="Save Job"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="w-6 h-6"
+                  <button
+                    className="text-gray-400 hover:text-blue-500"
+                    aria-label="Save Job"
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent link navigation when clicking the button
+                      handleSearch(product.id); // Pass the product ID to the function
+                    }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                      />
+                    </svg>
+                  </button>
+                </div>
 
-              <div className="flex items-center mb-3">
-                <img
-                  src={product.employer.logo}
-                  alt={`${product.employer.ten} logo`}
-                  className="w-12 h-12 object-contain mr-3"
-                />
-                <p className="text-sm text-gray-600">{product.employer.ten}</p>
-              </div>
+                <div className="flex items-center mb-3">
+                  <img
+                    src={product.employer.logo}
+                    alt={`${product.employer.ten} logo`}
+                    className="w-12 h-12 object-contain mr-3"
+                  />
+                  <p className="text-sm text-gray-600">
+                    {product.employer.ten}
+                  </p>
+                </div>
 
-              <div className="flex items-center text-blue-600 font-medium text-lg mb-3">
+                {/* <div className="flex items-center text-blue-600 font-medium text-lg mb-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -299,9 +305,9 @@ export default function Example() {
                   />
                 </svg>
                 {product.mucluong}
-              </div>
+              </div> */}
 
-              <div className="flex items-center text-gray-600 mb-3">
+                {/* <div className="flex items-center text-gray-600 mb-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -318,41 +324,42 @@ export default function Example() {
                   />
                 </svg>
                 {product.diachi}
-              </div>
+              </div> */}
 
-              <div className="flex justify-between items-center text-gray-500 text-sm mb-4">
-                <span className="flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="w-5 h-5 mr-1"
-                    aria-label="Days Left"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3.75 12l7.5 7.5L21 7.5"
-                    />
-                  </svg>
-                  {new Date(product.Ngayhethan).toLocaleDateString()}
-                </span>
-              </div>
-
-              {/* Skills/Tags Section */}
-              <div className="flex flex-wrap gap-2">
-                {product.levels.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full"
-                  >
-                    {skill.ten}
+                <div className="flex justify-between items-center text-gray-500 text-sm mb-4">
+                  <span className="flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="w-5 h-5 mr-1"
+                      aria-label="Days Left"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.75 12l7.5 7.5L21 7.5"
+                      />
+                    </svg>
+                    {new Date(product.Ngayhethan).toLocaleDateString()}
                   </span>
-                ))}
+                </div>
+
+                {/* Skills/Tags Section */}
+                <div className="flex flex-wrap gap-2">
+                  {product.levels.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full"
+                    >
+                      {skill.ten}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -86,6 +86,15 @@ function JobDetails() {
       console.error("Error fetching job seekers:", error);
     }
   };
+  const [jobPosts, setJobPosts] = useState([]);
+  const fetchJobPosts = async () => {
+    try {
+      const response = await axios.get("/tintd");
+      setJobPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching job posts:", error);
+    }
+  };
   const fetchhoso = async () => {
     try {
       const response = await axios.get("/ngtviec/hoso", {
@@ -129,24 +138,39 @@ function JobDetails() {
       toast.error("Bạn cần tạo hồ sơ");
     }
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  // Calculate the total number of pages
+  const totalPages = Math.ceil(jobPosts.length / itemsPerPage);
+
+  // Get the jobs for the current page
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentJobs = jobPosts.slice(startIndex, startIndex + itemsPerPage);
+
+  // Handle pagination
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   useEffect(() => {
     fetchJobDetails();
     fetchJobSeekers();
     fetchhoso();
+    fetchJobPosts();
   }, [id]);
 
   return (
-    <div className="p-6 bg-gray-50 min h-screen">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <div className="p-6 bg-gray-100 min ">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 ">
         {/* Job Header */}
-
         <div className="border rounded-lg p-4 shadow-md bg-white relative z-0">
-          {/* Ensure `job` exists before rendering */}
           {job ? (
             <>
-              {/* Save Icon */}
-              <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                aria-label="Save job"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -163,19 +187,15 @@ function JobDetails() {
                 </svg>
               </button>
 
-              {/* Logo & Title */}
               <div
                 key={job.id}
-                className="flex items-center space-x-6 p-4 bg-white rounded-lg shadow-lg z-0"
+                className="flex items-center space-x-6 p-4 bg-white rounded-lg shadow-lg"
               >
-                {/* Employer Logo */}
                 <img
-                  src={job.employer.logo}
-                  alt="Employer Logo"
+                  src={job.employer.logo || "/placeholder-logo.png"}
+                  alt={`${job.employer.ten || "Employer"} Logo`}
                   className="w-20 h-20 object-contain rounded-full border border-gray-200 bg-gray-100"
                 />
-
-                {/* Job Details */}
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 leading-tight">
                     {job.tieude}
@@ -186,14 +206,13 @@ function JobDetails() {
                 </div>
               </div>
 
-              {/* Location & Time */}
               <div className="mt-4 p-4 bg-white rounded-lg shadow-lg">
                 <div className="flex items-center text-gray-700 text-sm">
-                  <LocationOnIcon className="text-gray-500 mr-2" />
+                  <span className="text-gray-500 mr-2">📍</span>
                   <span className="font-medium">{job.employer.diachi}</span>
                 </div>
                 <div className="flex items-center text-gray-700 text-sm mt-2">
-                  <AccessTimeFilledIcon className="text-gray-500 mr-2" />
+                  <span className="text-gray-500 mr-2">⏰</span>
                   <span className="font-medium">
                     Hạn nộp:{" "}
                     {new Date(job.Ngayhethan).toLocaleDateString("vi-VN", {
@@ -204,27 +223,33 @@ function JobDetails() {
                   </span>
                 </div>
               </div>
-
-              {/* Salary */}
               <div className="mt-4">
                 <p className="text-sm font-medium text-red-500">
-                  {job.mucluong}
+                  Mức Lương : {job.mucluong}
                 </p>
+              </div>
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none"
+                  onClick={handleNop}
+                >
+                  Nộp hồ sơ
+                </button>
+                <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
+                  Lưu
+                </button>
               </div>
             </>
           ) : (
-            // Loading or fallback UI if `job` is undefined
             <div className="text-center text-gray-500">
               Loading job details...
             </div>
           )}
         </div>
 
-        {/* Main Content Area */}
+        {/* Tabs Section */}
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content */}
           <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
-            {/* Tabs */}
             <div className="border-b border-gray-200 mb-4">
               <nav className="flex space-x-6">
                 <button
@@ -257,42 +282,30 @@ function JobDetails() {
             ) : (
               <>
                 {activeTab === "details" ? (
-                  <div key={job.id}>
+                  <div>
                     <h1 className="text-2xl font-bold mb-4">
                       {job?.title || "Thông tin tuyển dụng"}
                     </h1>
                     <div className="grid grid-cols-2 gap-4 bg-purple-50 p-4 rounded-lg">
                       <div>
-                        <strong>Kinh nghiệm</strong> {job?.kinhNghiem || "N/A"}
+                        <strong>Kinh nghiệm</strong>: {job?.kinhNghiem || "N/A"}
                       </div>
                       <div>
-                        <strong>Cấp bậc : </strong>
-                        {job?.levels?.length > 0
-                          ? job.levels.map((level, index) => (
-                              <span key={level.id || `level-${index}`}>
-                                {level.ten || "N/A"}
-                                {index < job.levels.length - 1 && ", "}
-                              </span>
-                            ))
-                          : "N/A"}
+                        <strong>Cấp bậc</strong>:{" "}
+                        {job?.levels?.map((level) => level.ten).join(", ") ||
+                          "N/A"}
                       </div>
                       <div>
-                        <strong>Loại hợp đồng : </strong>{" "}
+                        <strong>Loại hợp đồng</strong>:{" "}
                         {job?.loaiHopdong || "N/A"}
                       </div>
                       <div>
-                        <strong>Kỹ năng : </strong>
-                        {job?.skills?.length > 0
-                          ? job.skills.map((skill, index) => (
-                              <span key={skill.id || `skill-${index}`}>
-                                {skill.ten || "N/A"}
-                                {index < job.skills.length - 1 && ", "}
-                              </span>
-                            ))
-                          : "N/A"}
+                        <strong>Kỹ năng</strong>:{" "}
+                        {job?.skills?.map((skill) => skill.ten).join(", ") ||
+                          "N/A"}
                       </div>
                       <div>
-                        <strong>Địa chỉ:</strong> {job?.diaChiLamviec || "N/A"}
+                        <strong>Địa chỉ</strong>: {job?.diaChiLamviec || "N/A"}
                       </div>
                     </div>
 
@@ -300,21 +313,12 @@ function JobDetails() {
                       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                         Mô tả công việc
                       </h2>
-                      <p className="text-gray-700">
-                        {job?.mota || "Thông tin không có sẵn."}
-                      </p>
-                    </div>
-
-                    <div className="flex justify-end space-x-4 mt-6">
-                      <button
-                        className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none"
-                        onClick={handleNop}
-                      >
-                        Nộp hồ sơ
-                      </button>
-                      <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
-                        Lưu
-                      </button>
+                      <p
+                        className="text-gray-700"
+                        dangerouslySetInnerHTML={{
+                          __html: job?.mota || "Thông tin không có sẵn.",
+                        }}
+                      />
                     </div>
                   </div>
                 ) : (
@@ -331,31 +335,51 @@ function JobDetails() {
             )}
           </div>
 
-          {/*       
           <aside className="w-full lg:w-64 bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
               Việc làm tương tự
-            </h3>
-            {similarJobs.map((job, index) => (
-              <div
-                key={job.title || index}
-                className="mb-4 p-3 border rounded-lg shadow-sm"
-              >
-                <h4 className="text-lg font-semibold text-gray-800">
-                  {job.title}
-                </h4>
-                <p className="text-sm text-gray-600">{job.company}</p>
-                <p className="text-sm text-gray-600">Khu vực: {job.location}</p>
-                <p className="text-sm text-gray-600">Mức lương: {job.salary}</p>
+            </h1>
+            {currentJobs.map((job, index) => (
+              <div key={index} className="mb-4 p-3 border rounded-lg shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800">
+                  {job.tieude}
+                </h3>
+                <img src={job.employer.logo} className="h-16 mx-auto mb-4" />
+                <p className="text-sm text-gray-600">{job.employer.ten}</p>
                 <p className="text-sm text-gray-600">
-                  Hạn nộp hồ sơ: {job.deadline}
+                  Khu vực: {job.diaChiLamviec}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Mức lương: {job.mucluong}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Hạn nộp hồ sơ:{" "}
+                  {new Date(job.Ngayhethan).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                 </p>
               </div>
             ))}
-          </aside> */}
+            <div className="flex justify-center mt-4 space-x-2">
+              {[...Array(totalPages)].map((_, pageIndex) => (
+                <button
+                  key={pageIndex}
+                  onClick={() => handlePageChange(pageIndex + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === pageIndex + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-800"
+                  }`}
+                >
+                  {pageIndex + 1}
+                </button>
+              ))}
+            </div>
+          </aside>
         </div>
       </div>
-
       <Modal
         title="Nộp hồ sơ"
         open={isModalOpen}

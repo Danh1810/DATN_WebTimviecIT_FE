@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
 import Select from "react-select";
@@ -6,9 +12,14 @@ import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
 import { Modal, Button } from "antd";
-
+import Quill from "quill";
+import "react-toastify/dist/ReactToastify.css";
+import "quill/dist/quill.snow.css";
 function TTDNTD() {
+  const quillRef = useRef(null);
+  const [quillInstance, setQuillInstance] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible1, setIsModalVisible1] = useState(false);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -35,8 +46,6 @@ function TTDNTD() {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    // doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
-    // doc.setFont("Roboto");
     doc.setFont("Roboto-Regular");
 
     doc.setFontSize(18);
@@ -86,7 +95,6 @@ function TTDNTD() {
   const fetchJobPosts = async () => {
     try {
       const response = await axios.get("/tintd/ntd", { params: { id: id } });
-      console.log("🚀 ~ fetchJobPosts ~ response:", response);
       setJobPosts(response.data);
     } catch (error) {
       console.error("Error fetching job posts:", error);
@@ -116,12 +124,6 @@ function TTDNTD() {
       [name]: value, // Cập nhật trường đang thay đổi
     });
   };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setJobPost((prev) => ({ ...prev, [name]: value }));
-  };
-
   const [selectedPost, setSelectedPost] = useState(null);
   const [selectedPostcs, setSelectedPostcs] = useState(null);
   const [selectedhoso, setSelectedhosot] = useState(null);
@@ -130,21 +132,16 @@ function TTDNTD() {
     const post = jobPosts.find((post) => post.id === id);
     setSelectedPost(post); // Lưu bài đăng được chọn vào state
   };
-  const Chinhsua = (id) => {
-    const post = jobPosts.find((post) => post.id === id);
-    setSelectedPostcs(post); // Lưu bài đăng được chọn vào state
-  };
+
   const xemhoso = async (id) => {
     console.log("🚀 ~ xemhoso ~ id:", id);
     try {
       const response = await axios.get("/Ut/hosout", { params: { id: id } });
-      console.log("🚀 ~ xemhoso ~ response:", response.data);
       setSelectedhosot(response.data);
     } catch (error) {
       toast.error("Lỗi duyệt :", error);
     }
   };
-  console.log("🚀 ~ TTDNTD ~ selectedhoso:", selectedhoso);
   const xemhosochitiet = async (id) => {
     console.log("🚀 ~ xemhoso ~ id:", id);
     try {
@@ -169,7 +166,6 @@ function TTDNTD() {
     }
   };
 
-  // Fetch danh sách cấp bậc
   const fetchLevels = async () => {
     try {
       const response = await axios.get("/capbac");
@@ -182,20 +178,6 @@ function TTDNTD() {
       console.error("Error fetching levels:", error);
     }
   };
-  // const handleShowFile = (fileHoso) => {
-  //   setSelectedFile(fileHoso); // Lưu file hồ sơ được chọn
-  //   setShowModal(true); // Mở modal
-  // };
-
-  // // Xử lý đóng modal
-  // const handleCloseModal = () => {
-  //   setShowModal(false); // Đóng modal
-  //   setSelectedFile(null); // Xoá file đã chọn
-  // };
-  const handleMultiSelectChange = (selectedOptions, { name }) => {
-    setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
-  };
-
   const closeModal = () => {
     setSelectedPost(null); // Đóng modal
   };
@@ -211,9 +193,9 @@ function TTDNTD() {
   const handleSua = async () => {
     try {
       const response = await axios.put("/tintd/update", selectedPostcs);
-      console.log("🚀 ~ handleSua ~ response:", response);
       if (response.code === 0) {
         alert("Cập nhật thành công!");
+        setSelectedPostcs(null);
       } else {
         alert("Đã xảy ra lỗi khi cập nhật.");
       }
@@ -221,6 +203,99 @@ function TTDNTD() {
       console.error("Error fetching levels:", error);
     }
   };
+  const [currentApplicant, setCurrentApplicant] = useState(null);
+  const handleOpenModal = (id) => {
+    const post = selectedhoso.find((post) => post.id === id);
+    setCurrentApplicant(post);
+    setIsModalVisible1(true);
+  };
+  const [formData, setFormData] = useState({
+    idUngTuyen: null,
+    noiDung: "",
+  });
+  useEffect(() => {
+    if (currentApplicant) {
+      setFormData((prevData) => ({
+        ...prevData,
+        idUngTuyen: currentApplicant.id,
+      }));
+    }
+  }, [currentApplicant]);
+
+  const handleChangeut = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible1(false);
+  };
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("/phanhoi", formData);
+      console.log("🚀 ~ handleFormSubmit ~ formData:", formData);
+      console.log("🚀 ~ handleFormSubmit ~ response:", response);
+      toast.success("Đăng thành công hãy chờ quản trị viên duyệt");
+    } catch (error) {
+      console.error("Error adding job post:", error);
+    }
+  };
+  const Chinhsua = (id) => {
+    const post = jobPosts.find((post) => {
+      return post.id === id;
+    });
+    console.log("🚀 ~ Chinhsua ~ post:", post);
+    setSelectedPostcs(post);
+    // Lưu bài đăng được chọn vào state
+  };
+
+  useEffect(() => {
+    if (!quillRef.current || !selectedPostcs) return; // Đảm bảo ref và dữ liệu hợp lệ
+    if (!quillInstance) {
+      // Khởi tạo Quill
+      const newQuillInstance = new Quill(quillRef.current, {
+        theme: "snow",
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ["bold", "italic", "underline", "strike"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["link", "image"],
+          ],
+        },
+      });
+      console.log("🚀 ~ TTDNTD ~ selectedPostcs:", selectedPostcs);
+      setQuillInstance(newQuillInstance);
+
+      // Lắng nghe sự kiện text-change
+      newQuillInstance.on("text-change", () => {
+        const content = newQuillInstance.root.innerHTML;
+        setSelectedPostcs((prev) => ({
+          ...prev,
+          mota: content,
+        }));
+      });
+    }
+
+    // Cập nhật nội dung nếu có `mota`
+    if (selectedPostcs.mota && quillInstance) {
+      quillInstance.root.innerHTML = selectedPostcs.mota;
+      console.log(
+        "🚀 ~ useEffect ~ quillInstance.root.innerHTM:",
+        quillInstance.root.innerHTM
+      );
+    }
+
+    // Cleanup khi component unmount
+    return () => {
+      if (quillInstance) {
+        quillInstance.off("text-change");
+        quillInstance.root.innerHTML = "";
+        setQuillInstance(null);
+      }
+    };
+  }, [selectedPostcs]); // Loại bỏ quillInstance khỏi dependency array
 
   useEffect(() => {
     fetchJobPosts();
@@ -254,9 +329,6 @@ function TTDNTD() {
                   Tên bài đăng
                 </th>
                 <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
-                  Mô tả
-                </th>
-                <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
                   Ngày Hết hạn
                 </th>
                 <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
@@ -271,7 +343,6 @@ function TTDNTD() {
               {jobPosts.map((post) => (
                 <tr key={post.id} className="border-b">
                   <td className="px-4 py-2 text-left">{post.tieude}</td>
-                  <td className="px-4 py-2 text-left">{post.mota}</td>
                   <td className="px-4 py-2 text-left">
                     {new Date(post.Ngayhethan).toLocaleDateString()}
                   </td>
@@ -349,6 +420,12 @@ function TTDNTD() {
                         >
                           Từ chối
                         </button>
+                        <button
+                          onClick={() => handleOpenModal(app.id)}
+                          className="bg-red-500 text-white px-3 py-1 rounded"
+                        >
+                          Phản hồi ứng tuyển
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -366,184 +443,209 @@ function TTDNTD() {
           </div>
         )}
         {selectedhosoxem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="container mx-auto p-4 bg-white max-h-[90vh] overflow-y-auto">
-              <form className="mb-6 p-4 border rounded shadow">
-                <h2 className="text-xl font-semibold mb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+              {/* Header */}
+              <div className="bg-gray-100 p-4 border-b flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">
                   {selectedhosoxem.tenhoso}
                 </h2>
+                <button
+                  onClick={closeModal2}
+                  className="text-gray-600 hover:text-red-500 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
 
-                <div className="mb-6 flex flex-col items-center">
-                  <div className="w-48 h-48 rounded-full overflow-hidden border mb-4">
+              {/* Content Container */}
+              <div className="p-6">
+                {/* Profile Header */}
+                <div className="flex items-center space-x-6 mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
                     <img
                       src={
                         jobSeekers.find(
                           (rec) => rec.id === selectedhosoxem.NguoitimviecId
                         )?.anhDaiDien || "N/A"
                       }
-                      // selectedhosoxem.anhDaiDien ||
-                      // "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
-                      // Ảnh mặc định nếu không có ảnh
                       alt="Avatar"
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <label className="text-sm">
-                    {jobSeekers.find(
-                      (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                    )?.anhDaiDien
-                      ? "Ảnh đã tải lên"
-                      : "Chưa tải ảnh"}
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-medium">Họ và Tên:</label>
-                    <label className="block">
+                    <h3 className="text-xl font-semibold text-gray-800">
                       {jobSeekers.find(
                         (rec) => rec.id === selectedhosoxem.NguoitimviecId
                       )?.hoVaTen || "N/A"}
-                    </label>
+                    </h3>
+                    <p className="text-gray-600">
+                      {selectedhosoxem.capBacHienTai || "Chưa xác định"}
+                    </p>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block font-medium">Ngày Sinh:</label>
-                    <label className="block">
-                      {jobSeekers.find(
-                        (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                      )?.ngaySinh || "N/A"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">Tỉnh/Thành phố:</label>
-                    <label className="block">
-                      {jobSeekers.find(
-                        (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                      )?.thanhPho || "N/A"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">Địa chỉ:</label>
-                    <label className="block">
-                      {jobSeekers.find(
-                        (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                      )?.diaChi || "N/A"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">Giới Tính:</label>
-                    <label className="block">
-                      {jobSeekers.find(
-                        (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                      )?.gioiTinh || "N/A"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">Số điện thoại:</label>
-                    <label className="block">
-                      {jobSeekers.find(
-                        (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                      )?.soDienThoai || "N/A"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">
-                      Kỹ năng lập trình:
-                    </label>
-                    <label className="block">
-                      {selectedhosoxem.kyNangLapTrinh || "Chưa nhập"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">
-                      Cấp bậc hiện tại:
-                    </label>
-                    <label className="block">
-                      {selectedhosoxem.capBacHienTai || "Chưa nhập"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">
-                      Chứng chỉ nghề nghiệp:
-                    </label>
-                    <label className="block">
-                      {selectedhosoxem.chungChiNgheNghiep || "Chưa nhập"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">
-                      Dự án đã tham gia:
-                    </label>
-                    <label className="block">
-                      {selectedhosoxem.duAnDaThamGia || "Chưa nhập"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium">File Hồ Sơ</label>
-                    {selectedhosoxem.fileHoso ? (
+                {/* Profile Details Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Personal Information */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Thông Tin Cá Nhân
+                    </h4>
+                    <div className="space-y-3">
                       <div>
-                        <Button
-                          type="link"
-                          onClick={showModal}
-                          className="text-blue-500 underline"
-                        >
-                          Xem hồ sơ
-                        </Button>
-                        <Modal
-                          title="Xem Hồ Sơ"
-                          visible={isModalVisible}
-                          onCancel={handleCancel}
-                          footer={null} // Loại bỏ footer của modal
-                          width="90vw" // Chiều rộng chiếm 90% viewport
-                          bodyStyle={{ height: "90vh", padding: 0 }} // Chiều cao chiếm 90% viewport
-                        >
-                          <iframe
-                            src={`${selectedhosoxem.fileHoso}#view=FitH`} // Đảm bảo PDF hiển thị với tỷ lệ 100%
-                            style={{ width: "100%", height: "100%" }}
-                            title="Hồ sơ PDF"
-                            frameBorder="0"
-                          />
-                        </Modal>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Ngày Sinh:
+                        </label>
+                        <p className="text-gray-900">
+                          {jobSeekers.find(
+                            (rec) => rec.id === selectedhosoxem.NguoitimviecId
+                          )?.ngaySinh || "N/A"}
+                        </p>
                       </div>
-                    ) : (
-                      <label className="block">Chưa nhập</label>
-                    )}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Giới Tính:
+                        </label>
+                        <p className="text-gray-900">
+                          {jobSeekers.find(
+                            (rec) => rec.id === selectedhosoxem.NguoitimviecId
+                          )?.gioiTinh || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Địa chỉ:
+                        </label>
+                        <p className="text-gray-900">
+                          {jobSeekers.find(
+                            (rec) => rec.id === selectedhosoxem.NguoitimviecId
+                          )?.diaChi || "N/A"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block font-medium">Ngày cập nhật:</label>
-                    <label className="block">
-                      {selectedhosoxem.ngayCapNhat || "Chưa nhập"}
-                    </label>
+                  {/* Contact Information */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Thông Tin Liên Hệ
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Số điện thoại:
+                        </label>
+                        <p className="text-gray-900">
+                          {jobSeekers.find(
+                            (rec) => rec.id === selectedhosoxem.NguoitimviecId
+                          )?.soDienThoai || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Tỉnh/Thành phố:
+                        </label>
+                        <p className="text-gray-900">
+                          {jobSeekers.find(
+                            (rec) => rec.id === selectedhosoxem.NguoitimviecId
+                          )?.thanhPho || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Professional Skills */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Kỹ Năng Nghề Nghiệp
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Kỹ năng lập trình:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoxem.kyNangLapTrinh || "Chưa nhập"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Projects and Goals */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Dự Án & Mục Tiêu
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Dự án đã tham gia:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoxem.duAnDaThamGia || "Chưa nhập"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Mục tiêu nghề nghiệp:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoxem.mucTieuNgheNghiep || "Chưa nhập"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <label className="block font-medium">
-                    Mục tiêu nghề nghiệp:
-                  </label>
-                  <label className="block">
-                    {selectedhosoxem.mucTieuNgheNghiep || "Chưa nhập"}
-                  </label>
+                {/* File Attachment */}
+                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                    Tài Liệu Đính Kèm
+                  </h4>
+                  {selectedhosoxem.fileHoso ? (
+                    <div>
+                      <Button
+                        type="link"
+                        onClick={showModal}
+                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        Xem hồ sơ chi tiết
+                      </Button>
+                      <Modal
+                        title="Chi Tiết Hồ Sơ"
+                        visible={isModalVisible}
+                        onCancel={handleCancel}
+                        footer={null}
+                        width="90vw"
+                        bodyStyle={{ height: "90vh", padding: 0 }}
+                      >
+                        <iframe
+                          src={`${selectedhosoxem.fileHoso}#view=FitH`}
+                          style={{ width: "100%", height: "100%" }}
+                          title="Hồ sơ PDF"
+                          frameBorder="0"
+                        />
+                      </Modal>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">Chưa có tài liệu đính kèm</p>
+                  )}
                 </div>
-
-                <button
-                  onClick={closeModal2}
-                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
-                >
-                  Đóng
-                </button>
-              </form>
+              </div>
             </div>
           </div>
         )}
@@ -648,20 +750,7 @@ function TTDNTD() {
                       required
                     />
                   </div>
-                  <div>
-                    <label htmlFor="mota" className="block font-semibold mb-1">
-                      Mô tả
-                    </label>
-                    <textarea
-                      id="mota"
-                      name="mota"
-                      value={selectedPostcs.mota}
-                      onChange={handleChange1}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                      placeholder="Nhập mô tả công việc"
-                      required
-                    />
-                  </div>
+
                   <div>
                     <label
                       htmlFor="mucluong"
@@ -767,6 +856,22 @@ function TTDNTD() {
                   className="focus:ring-2 focus:ring-blue-500"
                 />
               </div> */}
+                  <div>
+                    <label htmlFor="mota" className="block font-semibold mb-1">
+                      Mô tả
+                    </label>
+                    <div
+                      ref={quillRef}
+                      value={selectedPostcs.mota}
+                      className="w-full border rounded"
+                      style={{
+                        minHeight: "150px",
+                        maxHeight: "300px",
+                        overflowY: "auto",
+                        padding: "10px",
+                      }}
+                    ></div>
+                  </div>
                 </div>
                 <div className="flex space-x-4">
                   <button
@@ -787,6 +892,45 @@ function TTDNTD() {
             </div>
           </div>
         )}
+        <Modal
+          title="Phản hồi ứng tuyển"
+          visible={isModalVisible1}
+          onCancel={handleCloseModal}
+          footer={null}
+        >
+          <div className="max-w-md mx-auto bg-white p-6 rounded-md shadow-md mt-10">
+            <h2 className="text-xl font-bold mb-4 text-gray-700">
+              Phản hồi ứng tuyển
+            </h2>
+            <form onSubmit={handleFormSubmit}>
+              <div className="mb-4">
+                <label
+                  htmlFor="noiDung"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Nội dung phản hồi
+                </label>
+                <textarea
+                  id="noiDung"
+                  name="noiDung"
+                  value={formData.noiDung}
+                  onChange={handleChangeut}
+                  rows="4"
+                  className="mt-1 p-2 w-full border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập nội dung phản hồi"
+                  required
+                />
+              </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Gửi Phản Hồi
+              </button>
+            </form>
+          </div>
+        </Modal>
       </>
     </div>
   );

@@ -1,32 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Luucongviec = () => {
-  const [profiles, setProfiles] = useState([]);
   const id = localStorage.getItem("id");
-  const [isOpen, setIsOpen] = useState(false);
+
   const [jobSeekers, setJobSeekers] = useState([]);
-  const [isXem, setisxem] = useState(false);
+
   const [lcv, setlcv] = useState([]); // Danh sách hồ sơ
-  const [formData, setFormData] = useState({
-    anhDaiDien: "",
-    hoVaTen: "",
-    ngaySinh: "",
-    thanhPho: "",
-    diaChi: "",
-    gioiTinh: "",
-    soDienThoai: "",
-    kyNangLapTrinh: "",
-    capBacHienTai: "",
-    mucTieuNgheNghiep: "",
-    chungChiNgheNghiep: "",
-    duAnDaThamGia: "",
-    linkHoSoOnline: "",
-    ngayCapNhat: "",
-  });
   const [jobPosts, setJobPosts] = useState([]);
-  const [editId, setEditId] = useState(null); // ID hồ sơ đang chỉnh sửa
+
   const fetchJobSeekers = async () => {
     try {
       const response = await axios.get("/ngtviec");
@@ -35,6 +19,7 @@ const Luucongviec = () => {
       console.error("Error fetching job seekers:", error);
     }
   };
+
   const fetchJobPosts = async () => {
     try {
       const response = await axios.get("/tintd");
@@ -54,9 +39,18 @@ const Luucongviec = () => {
       console.error("Error fetching CV data:", error);
     }
   };
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const XoaTinTD = async (id) => {
+    try {
+      await axios.delete("/lcv", {
+        params: {
+          id: id,
+        },
+      });
+      toast.success("Xóa thành công");
+      fetchlcv();
+    } catch (error) {
+      toast.error(`Lỗi xóa: ${error.message}`);
+    }
   };
   useEffect(() => {
     fetchlcv();
@@ -117,7 +111,13 @@ const Luucongviec = () => {
                 </div>
                 {/* Phần bên phải */}
                 <div>
-                  <button className="flex items-center text-red-500 hover:text-red-600 font-medium">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent link navigation when clicking the button
+                      XoaTinTD(item.id); // Pass the product ID to the function
+                    }}
+                    className="flex items-center text-red-500 hover:text-red-600 font-medium"
+                  >
                     ❤️ Hủy lưu
                   </button>
                 </div>

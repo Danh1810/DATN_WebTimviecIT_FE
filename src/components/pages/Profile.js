@@ -83,6 +83,7 @@ const ProfileForm = () => {
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value);
     });
+    console.log("🚀 ~ Object.entries ~ formDataToSend:", formDataToSend);
 
     try {
       await axios.put("ngtviec/update", formDataToSend);

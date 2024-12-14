@@ -26,10 +26,11 @@ function Layout({ children }) {
           path: "/ntd/qlttd/tao-bai-dang",
         },
         { label: "Các bài đăng", key: "ttd", path: "/ntd/qlttd/cac-bai-dang" },
+        { label: "Mua", key: "mua", path: "/ntd/muabaidang" },
       ],
     },
-    { label: "Mua", key: "mua", path: "/ntd/muabaidang" },
     { label: "Tìm kiếm ứng viên", key: "tkuv", path: "/ntd/tkuv" },
+    { label: "Lịch sử thanh toán", key: "lstt", path: "/ntd/lstt" },
   ];
 
   const name = localStorage.getItem("username") || "Nhà Tuyển Dụng";

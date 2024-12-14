@@ -1,17 +1,13 @@
 import Login from "../pages/LoginPage";
 import Singup from "../pages/SingupPage";
 import Home from "../pages/HomePage";
-import Pro from "../pages/Profile";
-//import ForgotPassword from "@/components/pages/auth/ForgotPassword";
 import AuthLayout from "../layouts/AuthLayout";
 import Base from "../layouts/BaseLayout";
-import db from "../pages/Dashboard/DashboardPage";
-import singupe from "../pages/Employers/Home";
 import chitiet from "../pages/Chitiet";
-import dl from "../pages/DulieuPage/index";
-import dn from "../pages/User/DashboardNTV";
 import SearchBar from "../pages/TimkiemPage";
 import VerifyEmail from "../pages/verifymail";
+import App from "../pages/Congty";
+import SignupNTD from "../pages/DangkyNTD";
 
 export const authRoutes = [
   { path: "/home", component: Home, layout: Base },
@@ -27,6 +23,8 @@ export const authRoutes = [
   // { path: "/dn", component: dn, layout: AuthLayout },
   { path: "/ser", component: SearchBar, layout: Base },
   { path: "/verify", component: VerifyEmail, layout: AuthLayout },
+  { path: "/ct/:id", component: App, layout: Base },
+  { path: "/se", component: SignupNTD, layout: AuthLayout },
 
   // { path: "/forgotpassword", component: ForgotPassword, layout: AuthLayout },
 ];

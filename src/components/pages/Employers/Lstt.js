@@ -4,14 +4,15 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
 function PaymentHistory() {
+  const id = localStorage.getItem("id");
   const [paymentHistory, setPaymentHistory] = useState([]); // List of payment history records
   const [employers, setEmployers] = useState([]); // List of employers for dropdown
   const [payments, setPayments] = useState([]); // List of payment options for dropdown
   const [newPayment, setNewPayment] = useState({
     MaNTT: "",
-    MaTT: "",
-    trangthai: "pending",
+    trangthai: "",
     sotien: "",
+    goimua: "",
     Ngaythanhtoan: "",
     Soluongmua: 1,
   });
@@ -28,9 +29,6 @@ function PaymentHistory() {
     // Prepare headers and data for table
     const headers = [["Employer", "", "Status", "Amount", "Date", "Quantity"]];
     const rows = paymentHistory.map((record) => [
-      employers.find((emp) => emp.id === record.MaNTT)?.ten || "N/A",
-      payments.find((pay) => pay.id === record.MaTT)?.ten ||
-        `Payment #${record.MaTT}`,
       record.trangthai,
       record.sotien,
       new Date(record.Ngaythanhtoan).toLocaleDateString(),
@@ -63,183 +61,49 @@ function PaymentHistory() {
   // Fetch payment history
   const fetchPaymentHistory = async () => {
     try {
-      const response = await axios.get("/lstt");
+      const response = await axios.get("/lstt/ntd", { params: { id: id } });
+      console.log("🚀 ~ fetchPaymentHistory ~ response:", response.data);
       setPaymentHistory(response.data);
     } catch (error) {
       console.error("Error fetching payment history:", error);
     }
   };
 
-  // Fetch employers for dropdown
-  const fetchEmployers = async () => {
-    try {
-      const response = await axios.get("/nhatd");
-      setEmployers(response.data);
-    } catch (error) {
-      console.error("Error fetching employers:", error);
-    }
-  };
-
-  // Fetch payment options for dropdown
-
   useEffect(() => {
     fetchPaymentHistory();
-    fetchEmployers();
-    fetchPayments();
-  }, []);
+  }, [id]);
 
   // Handle form field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewPayment((prev) => ({ ...prev, [name]: value }));
-  };
 
   // Add a new payment history record
-  const handleAddPayment = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("/lstt", newPayment);
-      setPaymentHistory((prev) => [...prev, response.data]);
-      setNewPayment({
-        MaNTT: "",
-        MaTT: "",
-        trangthai: "pending",
-        sotien: "",
-        Ngaythanhtoan: "",
-        Soluongmua: 1,
-      });
-    } catch (error) {
-      console.error("Error adding payment record:", error);
-    }
-  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold text-center mb-6">
         Quản lý Lịch sử Thanh Toán
       </h1>
-
-      {/* Form to add a new payment history record */}
-      <form
-        onSubmit={handleAddPayment}
-        className="bg-white p-6 rounded-lg shadow-md mb-6"
-      >
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block font-semibold mb-1">Nhà Tuyển Dụng</label>
-            <select
-              name="MaNTT"
-              value={newPayment.MaNTT}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            >
-              <option value="">-- Chọn Nhà Tuyển Dụng --</option>
-              {employers.map((employer) => (
-                <option key={employer.id} value={employer.id}>
-                  {employer.ten}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Thanh Toán</label>
-            <select
-              name="MaTT"
-              value={newPayment.MaTT}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            >
-              <option value="">-- Chọn Thanh Toán --</option>
-              {payments.map((payment) => (
-                <option key={payment.id} value={payment.id}>
-                  {payment.ten || `Payment #${payment.id}`}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Trạng Thái</label>
-            <select
-              name="trangthai"
-              value={newPayment.trangthai}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            >
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Số Tiền</label>
-            <input
-              type="number"
-              name="sotien"
-              value={newPayment.sotien}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập số tiền"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Ngày Thanh Toán</label>
-            <input
-              type="date"
-              name="Ngaythanhtoan"
-              value={newPayment.Ngaythanhtoan}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Số Lượng Mua</label>
-            <input
-              type="number"
-              name="Soluongmua"
-              value={newPayment.Soluongmua}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập số lượng"
-            />
-          </div>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Thêm Lịch Sử Thanh Toán
-        </button>
-      </form>
-
       {/* Table to display payment history */}
-      <table className="min-w-full bg-white border rounded-lg shadow-md">
+      <table className="min-w-full bg-white border rounded-lg shadow-md border-collapse">
+        <colgroup>
+          <col className="w-1/5" />
+          <col className="w-1/5" />
+          <col className="w-1/5" />
+          <col className="w-1/5" />
+          <col className="w-1/5" />
+        </colgroup>
         <thead>
-          <tr className="border-b">
-            <th className="px-4 py-2">Nhà Tuyển Dụng</th>
-            <th className="px-4 py-2">Thanh Toán</th>
-            <th className="px-4 py-2">Trạng Thái</th>
-            <th className="px-4 py-2">Số Tiền</th>
-            <th className="px-4 py-2">Ngày Thanh Toán</th>
-            <th className="px-4 py-2">Số Lượng Mua</th>
+          <tr className="border-b bg-gray-100">
+            <th className="px-4 py-2 text-left">Gói mua</th>
+            <th className="px-4 py-2 text-left">Trạng Thái</th>
+            <th className="px-4 py-2 text-left">Số Tiền</th>
+            <th className="px-4 py-2 text-left">Ngày Thanh Toán</th>
+            <th className="px-4 py-2 text-left">Số Lượng Mua</th>
           </tr>
         </thead>
         <tbody>
           {paymentHistory.map((record) => (
-            <tr key={`${record.MaNTT}-${record.MaTT}`} className="border-b">
-              <td className="px-4 py-2">
-                {employers.find((emp) => emp.id === record.MaNTT)?.ten || "N/A"}
-              </td>
-              <td className="px-4 py-2">
-                {payments.find((pay) => pay.id === record.MaTT)?.description ||
-                  `Payment #${record.MaTT}`}
-              </td>
+            <tr key={record.MaNTT} className="border-b hover:bg-gray-50">
+              <td className="px-4 py-2">{record.goimua}</td>
               <td className="px-4 py-2">{record.trangthai}</td>
               <td className="px-4 py-2">{record.sotien}</td>
               <td className="px-4 py-2">

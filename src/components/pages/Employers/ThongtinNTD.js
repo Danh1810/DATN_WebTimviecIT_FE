@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import axios from "../../services/axios";
 import { toast } from "react-toastify";
+import Quill from "quill";
+import "react-toastify/dist/ReactToastify.css";
+import "quill/dist/quill.snow.css";
 
 function EmployerManagement() {
+  const quillRef = useRef(null);
+  const quillInstanceRef = useRef(null);
   const id = localStorage.getItem("id");
+  console.log("🚀 ~ EmployerManagement ~ id:", id);
   const [previewImage, setPreviewImage] = useState(null);
   const [employer, setEmployer] = useState({
     ten: "",
@@ -13,6 +19,7 @@ function EmployerManagement() {
     website: "",
     linhvuc: "",
     logo: "",
+    thongtin: "",
     MaND: id,
   });
   const [employers, setEmployers] = useState(null);
@@ -22,79 +29,6 @@ function EmployerManagement() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmployer((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = async (e) => {
-    const { name, files } = e.target;
-
-    if (files.length > 0) {
-      const file = files[0];
-
-      try {
-        // Nén file trước khi lưu vào state
-        const compressedFile = await compressImageWithCanvas(file, 500, 500);
-
-        // Cập nhật state
-        setEmployer((prev) => ({ ...prev, [name]: compressedFile }));
-        setPreviewImage(URL.createObjectURL(compressedFile));
-      } catch (error) {
-        console.error("Error compressing image:", error);
-        alert("Failed to process the image. Please try again.");
-      }
-    } else {
-      // Xóa state khi không có file
-      setEmployer((prev) => ({ ...prev, [name]: null }));
-      setPreviewImage(null);
-    }
-  };
-
-  // Hàm nén ảnh bằng Canvas
-  const compressImageWithCanvas = (file, maxWidth, maxHeight) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-
-          // Tính toán kích thước mới
-          let { width, height } = img;
-          if (width > maxWidth || height > maxHeight) {
-            if (width / height > maxWidth / maxHeight) {
-              width = maxWidth;
-              height = Math.round(maxWidth * (img.height / img.width));
-            } else {
-              height = maxHeight;
-              width = Math.round(maxHeight * (img.width / img.height));
-            }
-          }
-
-          // Resize ảnh
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Chuyển canvas thành Blob
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                resolve(new File([blob], file.name, { type: file.type }));
-              } else {
-                reject(new Error("Failed to create Blob"));
-              }
-            },
-            file.type,
-            0.8 // Chất lượng ảnh (0.1 - 1.0)
-          );
-        };
-        img.src = event.target.result;
-      };
-
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
   };
 
   const fetchData = async () => {
@@ -117,6 +51,13 @@ function EmployerManagement() {
       setLoading(false);
     }
   };
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files[0]) {
+      setEmployer((prev) => ({ ...prev, [name]: files[0] }));
+      setPreviewImage(URL.createObjectURL(files[0]));
+    }
+  };
 
   const handleSubmit = async (e) => {
     console.time("ntd");
@@ -127,12 +68,14 @@ function EmployerManagement() {
     }
 
     const formData = new FormData();
+
     Object.entries(employer).forEach(([key, value]) => {
       formData.append(key, value);
     });
-
     try {
-      const response = await axios.post("/nhatd", formData);
+      const response = await axios.post("/nhatd", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setEmployers(response.data.data);
       setEmployer({
         ten: "",
@@ -174,7 +117,7 @@ function EmployerManagement() {
         formData.append(key, value);
       }
     });
-
+    console.log("🚀 ~ Object.entries ~ formData:", formData);
     try {
       const response = await axios.put("/nhatd/update", formData);
       console.log("🚀 ~ handleUpdate ~ response:", response);
@@ -189,6 +132,48 @@ function EmployerManagement() {
       );
     }
   };
+  const quillConfig = useMemo(
+    () => ({
+      theme: "snow",
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, 3, false] }],
+          ["bold", "italic", "underline", "strike"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["link", "image"],
+        ],
+      },
+    }),
+    []
+  );
+
+  // Separate effect for Quill initialization
+  useEffect(() => {
+    // Only initialize Quill if the ref is available
+    if (quillRef.current && !quillInstanceRef.current) {
+      const quill = new Quill(quillRef.current, quillConfig);
+      quillInstanceRef.current = quill;
+
+      // Set initial content
+      quill.root.innerHTML = employer.thongtin || "";
+
+      // Add text change event listener
+      const handleTextChange = () => {
+        setEmployer((prev) => ({
+          ...prev,
+          thongtin: quill.root.innerHTML,
+        }));
+      };
+
+      quill.on("text-change", handleTextChange);
+
+      // Cleanup function
+      return () => {
+        quill.off("text-change", handleTextChange);
+        quillInstanceRef.current = null;
+      };
+    }
+  }, [quillConfig, employer.thongtin]);
 
   useEffect(() => {
     fetchData();
@@ -203,54 +188,105 @@ function EmployerManagement() {
       {!employers || isEditing ? (
         <form
           onSubmit={isEditing ? handleUpdate : handleSubmit}
-          className="bg-white p-6 rounded-lg shadow-md"
+          className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto"
         >
-          <div className="mb-6 flex flex-col items-center">
-            <div className="w-48 h-48 rounded-full overflow-hidden border mb-4">
-              <img
-                src={
-                  previewImage ||
-                  employer.logo ||
-                  "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
-                }
-                alt="Avatar"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <input
-              type="file"
-              name="logo"
-              onChange={handleFileChange}
-              className="text-sm"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            {[
-              { label: "Tên nhà tuyển dụng", name: "ten", type: "text" },
-              { label: "Email", name: "email", type: "email" },
-              { label: "Số điện thoại", name: "sdt", type: "text" },
-              { label: "Địa chỉ", name: "diachi", type: "text" },
-              { label: "Website", name: "website", type: "text" },
-              { label: "Lĩnh vực", name: "linhvuc", type: "text" },
-            ].map(({ label, name, type }) => (
-              <div key={name}>
-                <label className="block font-semibold mb-1">{label}</label>
-                <input
-                  type={type}
-                  name={name}
-                  value={employer[name]}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                  placeholder={`Nhập ${label.toLowerCase()}`}
+          <div className="flex flex-col md:flex-row gap-6 mb-6">
+            {/* Image Upload Section */}
+            <div className="flex flex-col items-center w-full md:w-1/3">
+              <div className="w-48 h-48 rounded-full overflow-hidden border-2 border-gray-300 mb-4 shadow-md">
+                <img
+                  src={
+                    previewImage ||
+                    employer.logo ||
+                    "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
+                  }
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
                 />
               </div>
-            ))}
+              <div className="w-full">
+                <label
+                  htmlFor="logo-upload"
+                  className="block w-full bg-blue-500 text-white text-center py-2 rounded cursor-pointer hover:bg-blue-600 transition-colors"
+                >
+                  Tải ảnh logo
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    name="logo"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Form Fields Section */}
+            <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                {
+                  label: "Tên nhà tuyển dụng",
+                  name: "ten",
+                  type: "text",
+                  required: true,
+                },
+                {
+                  label: "Email",
+                  name: "email",
+                  type: "email",
+                  required: true,
+                },
+                {
+                  label: "Số điện thoại",
+                  name: "sdt",
+                  type: "text",
+                  required: true,
+                },
+                { label: "Địa chỉ", name: "diachi", type: "text" },
+                { label: "Website", name: "website", type: "text" },
+                { label: "Lĩnh vực", name: "linhvuc", type: "text" },
+              ].map(({ label, name, type, required }) => (
+                <div key={name}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {label}{" "}
+                    {required && <span className="text-red-500">*</span>}
+                  </label>
+                  <input
+                    type={type}
+                    name={name}
+                    value={employer[name]}
+                    onChange={handleChange}
+                    required={required}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    placeholder={`Nhập ${label.toLowerCase()}`}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex justify-end gap-4">
+
+          {/* Quill Editor Section */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Thông tin chi tiết
+            </label>
+            <div
+              ref={quillRef}
+              className="w-full border border-gray-300 rounded-md"
+              style={{
+                minHeight: "200px",
+                maxHeight: "400px",
+                overflowY: "auto",
+              }}
+            ></div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-4">
             <button
               type="button"
               onClick={() => {
-                setIsEditing(false); // Thoát khỏi chế độ chỉnh sửa
+                setIsEditing(false);
                 setEmployer({
                   ten: "",
                   email: "",
@@ -259,16 +295,16 @@ function EmployerManagement() {
                   website: "",
                   linhvuc: "",
                   logo: "",
-                }); // Xóa dữ liệu form (nếu cần)
+                });
                 setPreviewImage(null);
               }}
-              className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               {isEditing ? "Cập nhật" : "Lưu"}
             </button>

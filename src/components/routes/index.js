@@ -7,16 +7,14 @@ import {
 } from "react-router-dom";
 
 import { authRoutes } from "./authRoutes";
-import Home from "../pages/Employers/Home";
-import DashboardPage from "../pages/Dashboard/DashboardPage";
-import { Link } from "react-router-dom"; // Import Link for routing
+
 import { AdminRoutes } from "./AdminRoutes";
 import { EmployersRoutes } from "./EmployersRoutes";
 import Layout from "../layouts/BaseLayout";
 import Example from "../pages/HomePage";
 import EmployerLayout from "../layouts/EmployerLayout";
 import Overview from "../pages/Dashboard/Overview";
-import TTDNTD from "../pages/Employers/QuanlyTinTD";
+
 import EmployerManagement from "../pages/Employers/ThongtinNTD";
 
 import AdminLayout from "../layouts/AdminLayout";
