@@ -79,7 +79,9 @@ const ProfileForm = () => {
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    console.log("🚀 ~ Object.entries ~ formDat:", formData.anhDaiDien);
     const formDataToSend = new FormData();
+
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value);
     });

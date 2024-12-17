@@ -39,7 +39,6 @@ function Layout({ children }) {
     <div>
       <nav className="bg-gray-700 text-white flex items-center justify-between p-4">
         {/* Left Side: Logo */}
-
         <div
           onClick={() => (window.location.href = "/home")}
           className="flex items-center space-x-4"
@@ -60,7 +59,7 @@ function Layout({ children }) {
               onClick={() => setIsOpportunityOpen(!isOpportunityOpen)}
               className="flex items-center space-x-1 hover:text-gray-200"
             >
-              <span>Việc Làm</span>
+              <span className="font-extrabold">Việc Làm</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
             {isOpportunityOpen && (
@@ -81,7 +80,7 @@ function Layout({ children }) {
               onClick={() => setIsToolOpen(!isToolOpen)}
               className="flex items-center space-x-1 hover:text-gray-200"
             >
-              <span>Công ty</span>
+              <span className="font-extrabold">Công ty</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
             {isToolOpen && (
@@ -96,23 +95,22 @@ function Layout({ children }) {
             )}
           </div>
 
-          {/* Blog Link */}
-          <Link to="/blog" className="hover:text-gray-200">
-            Blog
-          </Link>
-
-          {/* Contact Link */}
-          <Link to="/contact" className="hover:text-gray-200">
-            Liên hệ
-          </Link>
+          {/* New Employer Registration Link */}
+          <a
+            href="/se"
+            className="text-white hover:text-gray-200 font-extrabold flex items-center"
+          >
+            Đăng Ký Nhà Tuyển Dụng
+          </a>
         </div>
+
         {/* Right Side: User & Language Options */}
         <div className="flex items-center space-x-6 pr-4">
           {/* User Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsRegionOpen(!isRegionOpen)}
-              className="flex items-center space-x-1 hover:text-gray-200"
+              className="flex items-center space-x-1 hover:text-gray-200 font-extrabold"
             >
               {auth.isAuth ? (
                 <>
@@ -152,7 +150,7 @@ function Layout({ children }) {
                       Đăng nhập
                     </a>
                     <a
-                      href="/signup"
+                      href="/singup"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Đăng ký

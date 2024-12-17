@@ -4,10 +4,8 @@ import { toast } from "react-toastify";
 import Quill from "quill";
 import "react-toastify/dist/ReactToastify.css";
 import "quill/dist/quill.snow.css";
-
+import { Editor } from "@tinymce/tinymce-react";
 function EmployerManagement() {
-  const quillRef = useRef(null);
-  const quillInstanceRef = useRef(null);
   const id = localStorage.getItem("id");
   console.log("🚀 ~ EmployerManagement ~ id:", id);
   const [previewImage, setPreviewImage] = useState(null);
@@ -132,49 +130,9 @@ function EmployerManagement() {
       );
     }
   };
-  const quillConfig = useMemo(
-    () => ({
-      theme: "snow",
-      modules: {
-        toolbar: [
-          [{ header: [1, 2, 3, false] }],
-          ["bold", "italic", "underline", "strike"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["link", "image"],
-        ],
-      },
-    }),
-    []
-  );
-
-  // Separate effect for Quill initialization
-  useEffect(() => {
-    // Only initialize Quill if the ref is available
-    if (quillRef.current && !quillInstanceRef.current) {
-      const quill = new Quill(quillRef.current, quillConfig);
-      quillInstanceRef.current = quill;
-
-      // Set initial content
-      quill.root.innerHTML = employer.thongtin || "";
-
-      // Add text change event listener
-      const handleTextChange = () => {
-        setEmployer((prev) => ({
-          ...prev,
-          thongtin: quill.root.innerHTML,
-        }));
-      };
-
-      quill.on("text-change", handleTextChange);
-
-      // Cleanup function
-      return () => {
-        quill.off("text-change", handleTextChange);
-        quillInstanceRef.current = null;
-      };
-    }
-  }, [quillConfig, employer.thongtin]);
-
+  const handleEditorChange = (content) => {
+    setEmployer((prev) => ({ ...prev, thongtin: content }));
+  };
   useEffect(() => {
     fetchData();
   }, []);
@@ -270,15 +228,26 @@ function EmployerManagement() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Thông tin chi tiết
             </label>
-            <div
-              ref={quillRef}
-              className="w-full border border-gray-300 rounded-md"
-              style={{
-                minHeight: "200px",
-                maxHeight: "400px",
-                overflowY: "auto",
-              }}
-            ></div>
+            <div>
+              <Editor
+                apiKey="hmiu80d3r5jkhc7nvtrs6d0v221yd3esxb0cc9qo6owjail8"
+                value={employer.thongtin}
+                onEditorChange={handleEditorChange}
+                init={{
+                  height: 300,
+                  menubar: true,
+                  plugins: [
+                    "advlist autolink lists link image charmap print preview anchor",
+                    "searchreplace visualblocks code fullscreen",
+                    "insertdatetime media table paste code help wordcount",
+                  ],
+                  toolbar:
+                    "undo redo | formatselect | bold italic backcolor | \
+                              alignleft aligncenter alignright alignjustify | \
+                              bullist numlist outdent indent | removeformat | help",
+                }}
+              />
+            </div>
           </div>
 
           {/* Action Buttons */}

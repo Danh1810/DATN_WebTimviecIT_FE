@@ -8,6 +8,7 @@ import TransactionHistory from "../pages/Employers/thanhtoandone";
 import Layout from "../layouts/AuthLayout";
 import App1 from "../pages/Employers/TKUV";
 import PaymentHistory from "../pages/Employers/Lstt";
+import EmployerDashboard from "../pages/Employers/Dashboard";
 
 export const EmployersRoutes = [
   {
@@ -43,6 +44,11 @@ export const EmployersRoutes = [
   {
     path: "/ntd/lstt",
     component: PaymentHistory,
+    layout: EmployerLayout,
+  },
+  {
+    path: "/ntd/db",
+    component: EmployerDashboard,
     layout: EmployerLayout,
   },
 ];

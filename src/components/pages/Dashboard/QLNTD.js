@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-
+import { toast } from "react-toastify";
 function EmployerManagement() {
   const [employer, setEmployer] = useState({
     ten: "",
@@ -15,7 +15,8 @@ function EmployerManagement() {
   });
   const [employers, setEmployers] = useState([]);
   const [availableMaNDs, setAvailableMaNDs] = useState([]); // New state for available MaNDs
-
+  const [filteredJobPosts, setFilteredJobPosts] = useState([]); // Danh sách đã lọc
+  const [statusFilter, setStatusFilter] = useState("all");
   // Export employer data to PDF
   const exportToPDF = () => {
     // Khởi tạo tài liệu PDF
@@ -76,7 +77,13 @@ function EmployerManagement() {
   const fetchEmployers = async () => {
     try {
       const response = await axios.get("/nhatd");
+      console.log("🚀 ~ fetchEmployers ~ response:", response.data);
       setEmployers(response.data);
+      setFilteredJobPosts(
+        response.data.filter(
+          (post) => statusFilter === "all" || post.trangthai === statusFilter
+        )
+      ); // Áp dụng bộ lọc
     } catch (error) {
       console.error("Error fetching employers:", error);
     }
@@ -97,7 +104,16 @@ function EmployerManagement() {
     console.log("🚀 ~ xemChiTiet ~  post:", post);
     setntd(post); // Lưu bài đăng được chọn vào state
   };
-
+  const handleStatusFilterChange = (status) => {
+    setStatusFilter(status);
+    if (status === "all") {
+      setFilteredJobPosts(employers);
+    } else {
+      setFilteredJobPosts(
+        employers.filter((post) => post.trangthai === status)
+      );
+    }
+  };
   useEffect(() => {
     fetchEmployers();
     fetchMaNDs();
@@ -128,12 +144,39 @@ function EmployerManagement() {
       console.error("Error adding employer:", error);
     }
   };
+  const handleSubmitduyet = async (id) => {
+    const post = employers.find((post) => post.id === id);
+
+    try {
+      setntd(null);
+      await axios.post("/nhatd/duyet", post);
+      toast.success("Duyệt thành công");
+      fetchEmployers(); // Tải lại danh sách
+    } catch (error) {
+      toast.error(`Lỗi duyệt: ${error.message}`);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold text-center mb-6">
         Quản lý nhà tuyển dụng
       </h1>
+      <div className="flex items-center mb-4">
+        <label htmlFor="filterStatus" className="mr-2 font-semibold">
+          Lọc theo trạng thái:
+        </label>
+        <select
+          id="filterStatus"
+          className="border rounded px-4 py-2"
+          onChange={(e) => handleStatusFilterChange(e.target.value)}
+        >
+          <option value="all">Tất cả</option>
+          <option value="Đã duyệt">Đã duyệt</option>
+          <option value="Chờ duyệt">Chờ duyệt</option>
+          <option value="rejected">Đã từ chối</option>
+        </select>
+      </div>
 
       <div className="text-right mb-4">
         <button
@@ -143,105 +186,6 @@ function EmployerManagement() {
           Export to PDF
         </button>
       </div>
-      {/* <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md"
-      >
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block font-semibold mb-1">
-              Tên nhà tuyển dụng
-            </label>
-            <input
-              type="text"
-              name="ten"
-              value={employer.ten}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập tên"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={employer.email}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập email"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Số điện thoại</label>
-            <input
-              type="text"
-              name="sdt"
-              value={employer.sdt}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập số điện thoại"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Địa chỉ</label>
-            <input
-              type="text"
-              name="diachi"
-              value={employer.diachi}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập địa chỉ"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Mã người dùng</label>
-            <select
-              name="MaND"
-              value={employer.MaND}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            >
-              <option value="">Chọn mã người dùng</option>
-              {availableMaNDs.map((user) => (
-                <option key={user.MaND} value={user.MaND}>
-                  {user.MaND} - {user.ten}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Logo</label>
-            <input
-              type="text"
-              name="logo"
-              value={employer.logo}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Link logo"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">
-              Số lượng đăng bài
-            </label>
-            <input
-              type="number"
-              name="Soluongdangbai"
-              value={employer.Soluongdangbai}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Số lượng đăng bài"
-            />
-          </div>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Lưu
-        </button>
-      </form> */}
 
       {/* Employer Table */}
       <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
@@ -249,14 +193,16 @@ function EmployerManagement() {
           <tr className="border-b bg-gray-100">
             <th className="px-4 py-3 text-left">Tên</th>
             <th className="px-4 py-3 text-left">Địa chỉ</th>
+            <th className="px-4 py-3 text-left">Trạng thái</th>
             <th className="px-4 py-3 text-center w-1/4">Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          {employers.map((emp) => (
+          {filteredJobPosts.map((emp) => (
             <tr key={emp.id} className="border-b">
               <td className="px-4 py-3">{emp.ten}</td>
               <td className="px-4 py-3">{emp.diachi}</td>
+              <td className="px-4 py-3">{emp.trangthai}</td>
               <td className="px-4 py-3 text-center">
                 <div className="flex justify-center gap-2">
                   <button
@@ -317,10 +263,10 @@ function EmployerManagement() {
                 ))}
               </div>
               <button
-                // onClick={handleEdit}
+                onClick={() => handleSubmitduyet(ntd.id)}
                 className="bg-blue-500 text-white px-4 py-2 rounded"
               >
-                Chỉnh sửa
+                Duyệt
               </button>
               <button
                 onClick={() => setntd(null)}

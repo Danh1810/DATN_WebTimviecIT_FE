@@ -15,6 +15,7 @@ function Layout({ children }) {
 
   // Menu Items
   const menuItems = [
+    { label: "Thống kê", key: "tk", path: "/ntd/db" },
     { label: "Thông tin", key: "Overview", path: "/ntd/thongtin" },
     {
       label: "Quản lý tin tuyển dụng",

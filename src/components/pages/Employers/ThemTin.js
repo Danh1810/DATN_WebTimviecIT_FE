@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import axios from "../../services/axios";
 import { ToastContainer, toast } from "react-toastify";
-import Quill from "quill";
+import { Editor } from "@tinymce/tinymce-react";
 import "react-toastify/dist/ReactToastify.css";
-import "quill/dist/quill.snow.css";
 
 function App() {
   const id = localStorage.getItem("id");
-  const quillRef = useRef(null);
 
   const [jobPost, setJobPost] = useState({
     tieude: "",
@@ -26,7 +24,6 @@ function App() {
   const [jobPosts, setJobPosts] = useState([]);
   const [skills, setSkills] = useState([]);
   const [levels, setLevels] = useState([]);
-  const [recruiters, setRecruiters] = useState([]);
   const [employers, setEmployers] = useState(null);
 
   const fetchJobPosts = async () => {
@@ -64,19 +61,10 @@ function App() {
     }
   };
 
-  const fetchRecruiters = async () => {
-    try {
-      const response = await axios.get("/nhatd");
-      setRecruiters(response.data);
-    } catch (error) {
-      toast.error("Error fetching recruiters");
-    }
-  };
-
   const fetchData = async () => {
     try {
       const response = await axios.get("/nhatd/detail", {
-        params: { id },
+        params: { id: id },
       });
       setEmployers(response.data || null);
     } catch (error) {
@@ -91,6 +79,10 @@ function App() {
 
   const handleMultiSelectChange = (selectedOptions, { name }) => {
     setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
+  };
+
+  const handleEditorChange = (content) => {
+    setJobPost((prev) => ({ ...prev, mota: content }));
   };
 
   const handleSubmit = async (e) => {
@@ -130,34 +122,17 @@ function App() {
   };
 
   useEffect(() => {
-    const quill = new Quill(quillRef.current, {
-      theme: "snow",
-      modules: {
-        toolbar: [
-          [{ header: [1, 2, 3, false] }],
-          ["bold", "italic", "underline", "strike"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["link", "image"],
-        ],
-      },
-    });
-
-    quill.root.innerHTML = jobPost.mota || "";
-
-    quill.on("text-change", () => {
-      handleChange({
-        target: { name: "mota", value: quill.root.innerHTML },
-      });
-    });
-  }, []);
-
-  useEffect(() => {
     fetchJobPosts();
     fetchSkills();
     fetchLevels();
-    fetchRecruiters();
     fetchData();
-  }, []);
+  }, [id]);
+
+  if (!employers) {
+    return <div>Loading...</div>;
+  }
+
+  const canPostJob = employers && employers.trangthai !== "Chờ duyệt";
 
   return (
     <div className="container mx-auto p-4 relative">
@@ -172,107 +147,144 @@ function App() {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md"
-      >
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block font-semibold mb-1">Tiêu đề</label>
-            <input
-              type="text"
-              name="tieude"
-              value={jobPost.tieude}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập tiêu đề"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Mức lương</label>
-            <input
-              type="text"
-              name="mucluong"
-              value={jobPost.mucluong}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập mức lương"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Kinh nghiệm</label>
-            <input
-              type="text"
-              name="kinhNghiem"
-              value={jobPost.kinhNghiem}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập kinh nghiệm"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Địa chỉ làm việc</label>
-            <input
-              type="text"
-              name="diaChiLamviec"
-              value={jobPost.diaChiLamviec}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Nhập địa chỉ làm việc"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Loại hợp đồng</label>
-            <select
-              name="loaiHopdong"
-              value={jobPost.loaiHopdong}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            >
-              <option value="">Chọn loại hợp đồng</option>
-              <option value="Toàn thời gian">Toàn thời gian</option>
-              <option value="Bán thời gian">Bán thời gian</option>
-              <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
-            </select>
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Kỹ năng</label>
-            <Select
-              name="Kynang"
-              isMulti
-              options={skills}
-              value={jobPost.Kynang}
-              onChange={handleMultiSelectChange}
-              placeholder="Chọn kỹ năng"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Cấp bậc</label>
-            <Select
-              name="Capbac"
-              isMulti
-              options={levels}
-              value={jobPost.Capbac}
-              onChange={handleMultiSelectChange}
-              placeholder="Chọn cấp bậc"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Mô tả</label>
-          <div
-            ref={quillRef}
-            className="w-full border rounded"
-            style={{ minHeight: "150px", padding: "10px" }}
-          ></div>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      {!canPostJob ? (
+        <label className="block text-center text-red-500">
+          Doanh nghiệp chưa được kiểm duyệt
+        </label>
+      ) : (
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-lg shadow-md"
         >
-          Đăng tin
-        </button>
-      </form>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block font-semibold mb-1">Tiêu đề</label>
+              <input
+                type="text"
+                name="tieude"
+                value={jobPost.tieude}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                placeholder="Nhập tiêu đề"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Mức lương</label>
+              <input
+                type="text"
+                name="mucluong"
+                value={jobPost.mucluong}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                placeholder="Nhập mức lương"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Kinh nghiệm</label>
+              <input
+                type="text"
+                name="kinhNghiem"
+                value={jobPost.kinhNghiem}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                placeholder="Nhập kinh nghiệm"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">
+                Địa chỉ làm việc
+              </label>
+              <input
+                type="text"
+                name="diaChiLamviec"
+                value={jobPost.diaChiLamviec}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                placeholder="Nhập địa chỉ làm việc"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Loại hợp đồng</label>
+              <select
+                name="loaiHopdong"
+                value={jobPost.loaiHopdong}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Chọn loại hợp đồng</option>
+                <option value="Toàn thời gian">Toàn thời gian</option>
+                <option value="Bán thời gian">Bán thời gian</option>
+                <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Kỹ năng</label>
+              <div className="relative z-10">
+                <Select
+                  name="Kynang"
+                  isMulti
+                  options={skills}
+                  value={jobPost.Kynang}
+                  onChange={handleMultiSelectChange}
+                  placeholder="Chọn kỹ năng"
+                  styles={{
+                    menu: (provided) => ({
+                      ...provided,
+                      zIndex: 9999, // Ensure dropdown is above other elements
+                    }),
+                  }}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Cấp bậc</label>
+              <div className="relative z-10">
+                <Select
+                  name="Capbac"
+                  isMulti
+                  options={levels}
+                  value={jobPost.Capbac}
+                  onChange={handleMultiSelectChange}
+                  placeholder="Chọn cấp bậc"
+                  styles={{
+                    menu: (provided) => ({
+                      ...provided,
+                      zIndex: 9999, // Ensure dropdown is above other elements
+                    }),
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">Mô tả</label>
+            <Editor
+              apiKey="hmiu80d3r5jkhc7nvtrs6d0v221yd3esxb0cc9qo6owjail8"
+              value={jobPost.mota}
+              onEditorChange={handleEditorChange}
+              init={{
+                height: 300,
+                menubar: true,
+                plugins: [
+                  "advlist autolink lists link image charmap print preview anchor",
+                  "searchreplace visualblocks code fullscreen",
+                  "insertdatetime media table paste code help wordcount",
+                ],
+                toolbar:
+                  "undo redo | formatselect | bold italic backcolor | \
+                alignleft aligncenter alignright alignjustify | \
+                bullist numlist outdent indent | removeformat | help",
+              }}
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Đăng tin
+          </button>
+        </form>
+      )}
     </div>
   );
 }

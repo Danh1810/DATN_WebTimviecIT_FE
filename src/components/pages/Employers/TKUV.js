@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "../../services/axios";
 import Select from "react-select";
 
@@ -63,12 +63,22 @@ const Filter = React.memo(({ filters, onFilterChange }) => (
   </div>
 ));
 
-const SearchBar = ({ cities, selectedCity, onCityChange, onInputChange }) => (
+const SearchBar = ({
+  cities,
+  selectedCity,
+  onCityChange,
+  onInputChange,
+  searchTerm,
+  onSearchTermChange,
+  onSearch,
+}) => (
   <div className="flex items-center gap-4 p-4 bg-white shadow">
     <input
       type="text"
       placeholder="Tìm kiếm"
       className="flex-grow px-4 py-2 border rounded"
+      value={searchTerm}
+      onChange={(e) => onSearchTermChange(e.target.value)}
     />
     <Select
       options={cities}
@@ -79,13 +89,16 @@ const SearchBar = ({ cities, selectedCity, onCityChange, onInputChange }) => (
       isClearable
       isSearchable
     />
-    <button className="px-4 py-2 text-white bg-orange-500 rounded">
+    <button
+      className="px-4 py-2 text-white bg-orange-500 rounded"
+      onClick={onSearch}
+    >
       Tìm kiếm
     </button>
   </div>
 );
 
-const HosoxemList = ({ hosoxem }) => (
+const HosoxemList = ({ hosoxem, onFavorite, onView }) => (
   <div className="p-4">
     <h2 className="mb-4 text-lg font-semibold">
       Kết quả tìm thấy: {hosoxem.length} hồ sơ
@@ -105,8 +118,18 @@ const HosoxemList = ({ hosoxem }) => (
           <p className="text-gray-400">
             {new Date(hs.ngayCapNhat).toLocaleDateString()}
           </p>
-          <button className="text-gray-500 hover:text-red-500">❤️</button>
-          <button className="ml-4 text-gray-500 hover:text-blue-500">👁</button>
+          <button
+            onClick={() => onFavorite(hs.id)}
+            className="text-gray-500 hover:text-red-500"
+          >
+            ❤️
+          </button>
+          <button
+            onClick={() => onView(hs.id)}
+            className="ml-4 text-gray-500 hover:text-blue-500"
+          >
+            👁
+          </button>
         </div>
       </div>
     ))}
@@ -123,6 +146,7 @@ function App() {
   ]);
   const [selectedCity, setSelectedCity] = useState(null);
   const [filters, setFilters] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchhoso = async () => {
@@ -146,7 +170,7 @@ function App() {
     setSelectedCity(selectedOption);
     if (selectedOption) {
       const filtered = selectedhosoxem.filter(
-        (hs) => hs.nguoitimviec.thanhPho === selectedOption.value
+        (hs) => hs.nguoitimviec?.thanhPho === selectedOption.value
       );
       setFilteredHosoxem(filtered);
     } else {
@@ -161,14 +185,32 @@ function App() {
     }
   };
 
-  useEffect(() => {
+  const handleSearch = () => {
     const filtered = selectedhosoxem.filter((hs) => {
-      return Object.keys(filters).every((key) => {
+      const matchesSearch =
+        !searchTerm ||
+        hs.hoVaTen?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hs.tenhoso?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesFilters = Object.keys(filters).every((key) => {
         return filters[key] === "" || hs[key]?.toString() === filters[key];
       });
+
+      return matchesSearch && matchesFilters;
     });
+
     setFilteredHosoxem(filtered);
-  }, [filters, selectedhosoxem]);
+  };
+
+  const handleFavorite = (id) => {
+    // Implement favorite logic
+    console.log(`Favorited profile with id: ${id}`);
+  };
+
+  const handleView = (id) => {
+    // Implement view profile logic
+    console.log(`Viewed profile with id: ${id}`);
+  };
 
   return (
     <div className="flex">
@@ -181,8 +223,15 @@ function App() {
           selectedCity={selectedCity}
           onCityChange={handleCityChange}
           onInputChange={handleInputChange}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          onSearch={handleSearch}
         />
-        <HosoxemList hosoxem={filteredHosoxem} />
+        <HosoxemList
+          hosoxem={filteredHosoxem}
+          onFavorite={handleFavorite}
+          onView={handleView}
+        />
       </main>
     </div>
   );
