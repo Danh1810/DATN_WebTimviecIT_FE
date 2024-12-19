@@ -4,6 +4,7 @@ import App from "../pages/Dashboard/QLTintd";
 import JobStatsDashboard from "../pages/Dashboard/Overview";
 import JobLevelManagement from "../pages/Dashboard/QLCB";
 import EmployerManagement from "../pages/Dashboard/QLNTD";
+import PaymentHistory from "../pages/Dashboard/lsgd";
 
 export const AdminRoutes = [
   {
@@ -29,6 +30,11 @@ export const AdminRoutes = [
   {
     path: "/dashboard/admin/ntd",
     component: EmployerManagement,
+    layout: AdminLayout,
+  },
+  {
+    path: "/dashboard/admin/lsgd",
+    component: PaymentHistory,
     layout: AdminLayout,
   },
 ];

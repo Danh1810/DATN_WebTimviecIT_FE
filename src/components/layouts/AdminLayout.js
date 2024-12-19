@@ -54,6 +54,11 @@ function AdminLayout({ children }) {
       key: "ntd",
       path: "/dashboard/admin/ntd",
     },
+    {
+      label: "Quản lý Lịch sử giao dịch",
+      key: "lsgb",
+      path: "/dashboard/admin/lsgd",
+    },
   ];
 
   const handleMenuClick = (item) => {

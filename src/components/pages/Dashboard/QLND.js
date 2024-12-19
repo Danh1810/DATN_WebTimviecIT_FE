@@ -17,6 +17,11 @@ function UserManagement() {
     MaQuyen: "",
     Trangthai: "active",
   });
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
+  const toggleDropdown = (userId) => {
+    setOpenDropdownId(openDropdownId === userId ? null : userId);
+  };
   const [searchTerm, setSearchTerm] = useState(""); // Search state
   const fetchUsers = async () => {
     try {
@@ -281,32 +286,51 @@ function UserManagement() {
           </thead>
           <tbody>
             {filteredUsers.map((user) => (
-              <tr key={user.id} className="border-b">
+              <tr key={user.id} className="border-b relative">
                 <td className="px-4 py-2 truncate">{user.email}</td>
                 <td className="px-4 py-2 truncate">{user.username}</td>
                 <td className="px-4 py-2 truncate">
                   {roles.find((rec) => rec.id === user.MaQuyen)?.mota || "N/A"}
                 </td>
                 <td className="px-4 py-2 text-center">{user.Trangthai}</td>
-                <td className="px-4 py-2 text-center">
+                <td className="px-4 py-2 text-center relative">
                   <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded "
-                    onClick={() => xemChiTiet(user.id)}
+                    onClick={() => toggleDropdown(user.id)}
+                    className="px-2 py-1 bg-gray-200 rounded"
                   >
-                    Xem chi tiết
+                    Thao tác ▼
                   </button>
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded "
-                    onClick={() => Chinhsua(user.id)}
-                  >
-                    Chỉnh sửa
-                  </button>
-                  <button
-                    className="bg-green-500 text-white px-3 py-1 rounded"
-                    onClick={() => xoanguoidung(user.id)}
-                  >
-                    Xóa
-                  </button>
+                  {openDropdownId === user.id && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
+                      <button
+                        onClick={() => {
+                          xemChiTiet(user.id);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        Xem chi tiết
+                      </button>
+                      <button
+                        onClick={() => {
+                          Chinhsua(user.id);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        Chỉnh sửa
+                      </button>
+                      <button
+                        onClick={() => {
+                          xoanguoidung(user.id);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}

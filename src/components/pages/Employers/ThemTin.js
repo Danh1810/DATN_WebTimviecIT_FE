@@ -19,6 +19,7 @@ function App() {
     Kynang: [],
     Capbac: [],
     Ma: id,
+    noibatnline: "",
   });
 
   const [jobPosts, setJobPosts] = useState([]);
@@ -78,7 +79,11 @@ function App() {
   };
 
   const handleMultiSelectChange = (selectedOptions, { name }) => {
-    setJobPost((prev) => ({ ...prev, [name]: selectedOptions }));
+    console.log("🚀 ~ handleMultiSelectChange ~ name:", name);
+    setJobPost((prev) => ({
+      ...prev,
+      [name]: selectedOptions, // Đúng với multi-select
+    }));
   };
 
   const handleEditorChange = (content) => {
@@ -102,6 +107,8 @@ function App() {
 
       const response = await axios.post("/tintd", postData);
       setJobPosts((prev) => [...prev, response.data]);
+
+      // Reset form
       setJobPost({
         tieude: "",
         mota: "",
@@ -120,7 +127,6 @@ function App() {
       toast.error("Error submitting job post");
     }
   };
-
   useEffect(() => {
     fetchJobPosts();
     fetchSkills();
@@ -230,7 +236,7 @@ function App() {
                   styles={{
                     menu: (provided) => ({
                       ...provided,
-                      zIndex: 9999, // Ensure dropdown is above other elements
+                      zIndex: 9999,
                     }),
                   }}
                 />
@@ -249,10 +255,33 @@ function App() {
                   styles={{
                     menu: (provided) => ({
                       ...provided,
-                      zIndex: 9999, // Ensure dropdown is above other elements
+                      zIndex: 9999,
                     }),
                   }}
                 />
+              </div>
+            </div>
+            {/* New checkbox for Featured Job */}
+            <div>
+              <label className="block font-semibold mb-1">Tin nổi bật</label>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="noibatnline"
+                  checked={jobPost.noibatnline || false}
+                  onChange={(e) => {
+                    handleChange({
+                      target: {
+                        name: "noibatnline",
+                        value: e.target.checked,
+                      },
+                    });
+                  }}
+                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">
+                  Đánh dấu là tin tuyển dụng nổi bật
+                </span>
               </div>
             </div>
           </div>
@@ -272,8 +301,8 @@ function App() {
                 ],
                 toolbar:
                   "undo redo | formatselect | bold italic backcolor | \
-                alignleft aligncenter alignright alignjustify | \
-                bullist numlist outdent indent | removeformat | help",
+              alignleft aligncenter alignright alignjustify | \
+              bullist numlist outdent indent | removeformat | help",
               }}
             />
           </div>

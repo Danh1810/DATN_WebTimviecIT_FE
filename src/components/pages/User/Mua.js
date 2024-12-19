@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 
 const Thanhtoan = () => {
@@ -9,23 +9,17 @@ const Thanhtoan = () => {
     soluong: "",
     goimua: "",
   });
+  const [paymentTypes, setPaymentTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Define pricing for each option
-  const priceMapping = {
-    goi1: 50000, // Price for Gói 1
-    goi2: 100000, // Price for Gói 2
-  };
-
+  const defaultPrice = 100000;
   const handleChange = (e) => {
     const { name, value } = e.target;
     const newFormData = { ...formData, [name]: value };
 
-    // Update pricing when "soluong" or "goimua" changes
-    if (name === "soluong" || name === "goimua") {
-      const price = priceMapping[newFormData.goimua] || 0; // Default price if no package selected
-      newFormData.sotien = newFormData.soluong * price;
+    if (name === "soluong") {
+      // Tính toán số tiền dựa trên số lượng
+      newFormData.sotien = value * defaultPrice;
     }
 
     setFormData(newFormData);
@@ -38,9 +32,12 @@ const Thanhtoan = () => {
 
     try {
       // Make the POST request to the backend
-      const response = await axios.post("/create_payment_url", formData, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        "/create_payment_url", // Full backend URL
+        formData,
+        { withCredentials: true } // Include credentials (if cookies/session are used)
+      );
+      console.log("🚀 ~ handleSubmit ~ response:", response);
 
       // Check the response for the payment URL
       if (response.paymentUrl) {
@@ -50,6 +47,7 @@ const Thanhtoan = () => {
         setError("Failed to initiate payment. Please try again.");
       }
     } catch (error) {
+      // Log error for debugging and display user-friendly message
       console.error("Error during payment initiation:", error);
       setError(
         error.response?.data?.message ||
@@ -99,8 +97,7 @@ const Thanhtoan = () => {
           <option value="" disabled>
             -- Chọn gói mua --
           </option>
-          <option value="goi1">Bình thường</option>
-          <option value="goi2">Nổi Bật</option>
+          <option value="goi3">Gói Nộp hồ sơ</option>
         </select>
       </div>
 

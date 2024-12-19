@@ -46,7 +46,7 @@ export default function Example() {
           "Content-Type": "application/json", // Set header to handle JSON payload
         },
       });
-      toast.success("Duyệt thành công"); // Notify success
+      toast.success("Lưu thành công"); // Notify success
       fetchJobPosts(); // Reload the job posts
       console.log("🚀 ~ handleSearch ~ response:", response.data);
     } catch (error) {
@@ -74,6 +74,7 @@ export default function Example() {
   const fetchJobPosts = async () => {
     try {
       const response = await axios.get("/tintd");
+      console.log("🚀 ~ fetchJobPosts ~ response:", response.data);
       setJobPosts(response.data);
     } catch (error) {
       console.error("Error fetching job posts:", error);
@@ -140,9 +141,13 @@ export default function Example() {
               <Link
                 key={product.id}
                 to={`/tintuyendung/${product.id}`} // URL dẫn đến trang chi tiết
-                className="group border border-gray-300 rounded-lg p-4 flex flex-col"
+                className={`group border border-gray-300 rounded-lg p-4 flex flex-col ${
+                  product.noibat === true
+                    ? "bg-red-100 border-red-500"
+                    : "bg-white border-gray-200"
+                }`}
               >
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start ">
                   <div className="flex justify-center items-center w-24 h-24 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
                     <img
                       src={product.employer.logo} // Đường dẫn logo công ty
