@@ -208,6 +208,7 @@ const CVManagement = () => {
       ngayCapNhat: "",
       kinhNghiemLamViec: "",
     });
+    setEditId(null);
   };
   const Xoahoso = async (id) => {
     try {

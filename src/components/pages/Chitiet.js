@@ -23,43 +23,20 @@ function JobDetails() {
   const [jobSeekers, setJobSeekers] = useState([]);
   const [isXem, setisxem] = useState([id]);
   const [hoso, sethoso] = useState([]);
-  const similarJobs = [
-    {
-      title: "Front-end Developer",
-      company: "Công ty TNHH ABC",
-      location: "Hà Nội",
-      salary: "8 - 12 triệu",
-      deadline: "10/11/2024",
-    },
-    {
-      title: "Front-end Developer",
-      company: "Công ty XYZ",
-      location: "Đà Nẵng",
-      salary: "10 - 15 triệu",
-      deadline: "15/11/2024",
-    },
-    {
-      title: "Front-end Developer",
-      company: "Công ty TNHH DEF",
-      location: "TP. HCM",
-      salary: "12 - 18 triệu",
-      deadline: "20/11/2024",
-    },
-  ];
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/ngtviec/detail", {
-          params: { id: userid },
-        }); // URL API để lấy dữ liệu
-        setName(response.data.hoVaTen);
-        setPhone(response.data.soDienThoai); // Gán dữ liệu vào state
-      } catch (error) {
-        console.error("Error fetching saved data:", error);
-      }
-    };
-    fetchData();
-  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/ngtviec/detail", {
+        params: { id: userid },
+      });
+
+      setJobSeekers(response.data);
+      setName(response.data.hoVaTen);
+      setPhone(response.data.soDienThoai);
+    } catch (error) {
+      console.error("Error fetching saved data:", error);
+    }
+  };
 
   // Fetch job details by ID
   const fetchJobDetails = async () => {
@@ -76,14 +53,6 @@ function JobDetails() {
       setError("Không thể tải thông tin tuyển dụng."); // Set error message
     } finally {
       setLoading(false); // Stop loading
-    }
-  };
-  const fetchJobSeekers = async () => {
-    try {
-      const response = await axios.get("/ngtviec");
-      setJobSeekers(response.data);
-    } catch (error) {
-      console.error("Error fetching job seekers:", error);
     }
   };
   const [jobPosts, setJobPosts] = useState([]);
@@ -130,6 +99,7 @@ function JobDetails() {
     formData.append("MaTTD", id);
     formData.append("MaHS", selectedHoSoId);
     formData.append("trangthai", "Đã nộp");
+    // formData.append("idntv",)
 
     try {
       await axios.post("/Ut", formData);
@@ -155,9 +125,9 @@ function JobDetails() {
 
   useEffect(() => {
     fetchJobDetails();
-    fetchJobSeekers();
     fetchhoso();
     fetchJobPosts();
+    fetchData();
   }, [id]);
 
   return (
@@ -390,6 +360,12 @@ function JobDetails() {
       >
         <form>
           <div className="mb-4">
+            <div className="absolute top-0 left-0 flex flex-col gap-2 bg-blue-100 text-blue-700 p-4 rounded-tr-xl rounded-bl-xl shadow-lg">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{jobSeekers.Soluongnophoso}</span>
+                <span className="text-sm">lượt nộp hồ sơ</span>
+              </div>
+            </div>
             <label className="block font-medium text-gray-700 mb-1">
               Họ và tên <span className="text-red-500">*</span>
             </label>

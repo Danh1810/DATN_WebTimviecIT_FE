@@ -1,4 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "../../services/axios";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import "../../slice/Roboto-Regular-normal.js";
+import { toast } from "react-toastify";
 import {
   BarChart,
   Bar,
@@ -17,9 +22,11 @@ import {
 } from "recharts";
 
 const PlatformDashboard = () => {
+  const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [timeRange, setTimeRange] = useState("year"); // "year" or "month"
-
+  const [employers, setEmployers] = useState([]);
+  const [paymentHistory, setPaymentHistory] = useState([]); // List of payment history records
   // Dữ liệu theo năm (2024)
   const yearlyData = [
     { month: "T1", jobs: 4800, applications: 15000, matches: 720 },
@@ -38,6 +45,34 @@ const PlatformDashboard = () => {
     { year: "2024", frontend: 32, backend: 35, devops: 42, mobile: 33 },
   ];
 
+  const [jobSeekers, setJobSeekers] = useState([]);
+  const [jobPosts, setJobPosts] = useState([]);
+  const fetchJobPosts = async () => {
+    try {
+      const response = await axios.get("/tintd/admin");
+      console.log("🚀 ~ fetchJobPosts ~ response:", response.data);
+      setJobPosts(response.data);
+    } catch (error) {
+      toast.error("Lỗi tải danh sách bài đăng");
+    }
+  };
+  const fetchPaymentHistory = async () => {
+    try {
+      const response = await axios.get("/lstt");
+      console.log("🚀 ~ fetchPaymentHistory ~ response:", response.data);
+      setPaymentHistory(response.data);
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+    }
+  };
+  const fetchJobSeekers = async () => {
+    try {
+      const response = await axios.get("/ngtviec");
+      setJobSeekers(response.data);
+    } catch (error) {
+      console.error("Error fetching job seekers:", error);
+    }
+  };
   // Dữ liệu tăng trưởng theo tháng (2024)
   const monthlyGrowthData = [
     { week: "Tuần 1", newJobs: 120, newCandidates: 450 },
@@ -46,17 +81,34 @@ const PlatformDashboard = () => {
     { week: "Tuần 4", newJobs: 180, newCandidates: 550 },
   ];
 
-  // ... (previous components remain the same)
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get("/nguoidung");
+      console.log("🚀 ~ fetchUsers ~ response:", response.data);
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  const fetchEmployers = async () => {
+    try {
+      const response = await axios.get("/nhatd");
+      console.log("🚀 ~ fetchEmployers ~ response:", response.data);
+      setEmployers(response.data);
+    } catch (error) {
+      console.error("Error fetching employers:", error);
+    }
+  };
 
   // Thêm tab mới cho thống kê theo thời gian
-  const jobCategoryData = [
-    { name: "Web Developer", value: 35 },
-    { name: "Mobile Developer", value: 20 },
-    { name: "DevOps/SysAdmin", value: 15 },
-    { name: "Data Engineer", value: 12 },
-    { name: "QA/Tester", value: 10 },
-    { name: "Others", value: 8 },
-  ];
+  // const jobCategoryData = [
+  //   { name: "Web Developer", value: 35 },
+  //   { name: "Mobile Developer", value: 20 },
+  //   { name: "DevOps/SysAdmin", value: 15 },
+  //   { name: "Data Engineer", value: 12 },
+  //   { name: "QA/Tester", value: 10 },
+  //   { name: "Others", value: 8 },
+  // ];
 
   // Dữ liệu mức lương theo kinh nghiệm
   const salaryData = [
@@ -83,6 +135,121 @@ const PlatformDashboard = () => {
     "#8884d8",
     "#82ca9d",
   ];
+  function countByMaQuyenWithNameValue(data) {
+    const roleMap = {
+      1: "Admin",
+      2: "Nhà tuyển dụng",
+      3: "Người tìm việc",
+    };
+
+    const counts = {};
+
+    // Đếm số lượng MaQuyen
+    data.forEach((item) => {
+      if (counts[item.MaQuyen]) {
+        counts[item.MaQuyen]++;
+      } else {
+        counts[item.MaQuyen] = 1;
+      }
+    });
+
+    // Chuyển đổi kết quả thành mảng name-value
+    return Object.entries(counts).map(([key, value]) => ({
+      name: roleMap[key] || `Unknown (${key})`, // Sử dụng roleMap để lấy tên
+      value: value,
+    }));
+  }
+  const result = countByMaQuyenWithNameValue(users);
+  function countJobsByLocation(jobsData) {
+    const locationCount = {};
+
+    // Iterate over jobs and count by diaChiLamviec
+    jobsData.forEach((job) => {
+      const locations = job.diaChiLamviec.split(","); // Split multiple locations
+      locations.forEach((location) => {
+        location = location.trim(); // Trim whitespace
+        if (locationCount[location]) {
+          locationCount[location]++;
+        } else {
+          locationCount[location] = 1;
+        }
+      });
+    });
+
+    // Convert the result to an array of objects with name and jobs
+    const result = Object.entries(locationCount).map(([name, jobs]) => ({
+      name,
+      jobs,
+    }));
+
+    return result;
+  }
+  const vldiachi = countJobsByLocation(jobPosts);
+  console.log("🚀 ~ PlatformDashboard ~ vldiachi:", vldiachi);
+  console.log("🚀 ~ PlatformDashboard ~ result:", result);
+  function countJobsBySkill(jobsData) {
+    const skillCount = {};
+
+    // Iterate over jobs and count by skills
+    jobsData.forEach((job) => {
+      if (job.skills && Array.isArray(job.skills)) {
+        job.skills.forEach((skill) => {
+          const skillName = skill.ten;
+          if (skillCount[skillName]) {
+            skillCount[skillName]++;
+          } else {
+            skillCount[skillName] = 1;
+          }
+        });
+      }
+    });
+
+    // Convert the result to an array of objects with name and jobs
+    const result = Object.entries(skillCount).map(([name, jobs]) => ({
+      name,
+      jobs,
+    }));
+
+    return result;
+  }
+  const skilljob = countJobsBySkill(jobPosts);
+  function countJobsByStatus(jobsData) {
+    const statusCount = {};
+
+    // Iterate over jobs and count by trangthai
+    jobsData.forEach((job) => {
+      const status = job.trangthai;
+      if (statusCount[status]) {
+        statusCount[status]++;
+      } else {
+        statusCount[status] = 1;
+      }
+    });
+
+    // Convert the result to an array of objects with name and jobs
+    const result = Object.entries(statusCount).map(([name, jobs]) => ({
+      name,
+      jobs,
+    }));
+
+    return result;
+  }
+  const trngthai = countJobsByStatus(jobPosts);
+  console.log("🚀 ~ PlatformDashboard ~ trngthai:", trngthai);
+  function calculateTotalAmount(transactions) {
+    return transactions.reduce((total, transaction) => {
+      const amount = parseFloat(transaction.sotien) || 0; // Lấy giá trị số tiền hoặc 0 nếu không có
+      return total + amount;
+    }, 0); // Bắt đầu từ tổng là 0
+  }
+  const totalAmount = calculateTotalAmount(paymentHistory);
+  useEffect(() => {
+    fetchJobPosts();
+    fetchJobSeekers();
+    fetchUsers();
+    fetchEmployers();
+    fetchPaymentHistory();
+  }, []);
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
@@ -102,7 +269,7 @@ const PlatformDashboard = () => {
             >
               Tổng Quan
             </button>
-            <button
+            {/* <button
               className={`px-4 py-2 rounded ${
                 activeTab === "trends"
                   ? "bg-blue-600 text-white"
@@ -121,12 +288,11 @@ const PlatformDashboard = () => {
               onClick={() => setActiveTab("time-stats")}
             >
               Thống Kê Thời Gian
-            </button>
+            </button> */}
           </div>
         </header>
-        {activeTab === "time-stats" && (
+        {/* {activeTab === "time-stats" && (
           <div className="grid grid-cols-1 gap-6 mt-6">
-            {/* Điều khiển thời gian */}
             <div className="bg-white shadow-md rounded-lg p-4">
               <div className="flex space-x-4">
                 <button
@@ -152,7 +318,7 @@ const PlatformDashboard = () => {
               </div>
             </div>
 
-            {/* Biểu đồ tăng trưởng */}
+           
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Tăng Trưởng Việc Làm & Ứng Viên
@@ -182,7 +348,7 @@ const PlatformDashboard = () => {
               </AreaChart>
             </div>
 
-            {/* Xu hướng lương */}
+         
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Xu Hướng Lương Theo Năm (Triệu VNĐ)
@@ -219,15 +385,13 @@ const PlatformDashboard = () => {
                 />
               </LineChart>
             </div>
-
-            {/* Thống kê chi tiết tháng hiện tại */}
             {timeRange === "month" && (
               <div className="bg-white shadow-md rounded-lg p-6">
                 <h2 className="text-xl font-semibold mb-4">
                   Chi Tiết Tháng Hiện Tại
                 </h2>
                 <div className="grid grid-cols-2 gap-6">
-                  {/* Tăng trưởng theo tuần */}
+              
                   <div>
                     <h3 className="text-lg font-medium mb-3">
                       Tăng Trưởng Theo Tuần
@@ -251,7 +415,7 @@ const PlatformDashboard = () => {
                     </BarChart>
                   </div>
 
-                  {/* Thống kê tháng */}
+              
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Tổng Kết Tháng</h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -297,7 +461,7 @@ const PlatformDashboard = () => {
               </div>
             )}
           </div>
-        )}
+        )} */}
         {activeTab === "overview" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Tổng quan thị trường */}
@@ -308,42 +472,56 @@ const PlatformDashboard = () => {
               <div className="space-y-3">
                 <div>
                   <span className="text-gray-600">Tổng số việc làm:</span>
-                  <span className="text-blue-600 font-bold ml-2">5,280</span>
+                  <span className="text-blue-600 font-bold ml-2">
+                    {jobPosts.length}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-600">
                     Nhà tuyển dụng đang tuyển:
                   </span>
-                  <span className="text-green-600 font-bold ml-2">1,850</span>
+                  <span className="text-green-600 font-bold ml-2">
+                    {employers.length}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Ứng viên active:</span>
-                  <span className="text-purple-600 font-bold ml-2">12,500</span>
+                  <span className="text-purple-600 font-bold ml-2">
+                    {jobSeekers.length}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Matching thành công:</span>
-                  <span className="text-orange-600 font-bold ml-2">850</span>
+                  <span className="text-gray-600">Tổng số người dùng:</span>
+                  <span className="text-orange-600 font-bold ml-2">
+                    {users.length}
+                  </span>
+                </div>
+                <div className="bg-orange-100 rounded-lg p-4 text-center shadow-sm">
+                  <h3 className="text-xl font-bold text-blue-600">
+                    {totalAmount}
+                  </h3>
+                  <p className="text-gray-600">Tổng doanh thu</p>
                 </div>
               </div>
             </div>
 
             {/* Phân bố ngành nghề */}
             <div className="bg-white shadow-md rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Phân Bố Ngành Nghề</h2>
+              <h2 className="text-xl font-semibold mb-4">Phân Bố Users</h2>
               <PieChart width={350} height={250}>
                 <Pie
-                  data={jobCategoryData}
+                  data={result}
                   cx={175}
                   cy={125}
-                  labelLine={false}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) =>
                     `${name} (${(percent * 100).toFixed(0)}%)`
                   }
+                  style={{ fontSize: "12px" }} // Giảm kích thước font
                 >
-                  {jobCategoryData.map((entry, index) => (
+                  {result.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -360,42 +538,35 @@ const PlatformDashboard = () => {
                 Top Khu Vực Tuyển Dụng
               </h2>
               <div className="space-y-4">
-                {[
-                  { name: "Hồ Chí Minh", jobs: 2500, growth: "+15%" },
-                  { name: "Hà Nội", jobs: 1800, growth: "+12%" },
-                  { name: "Đà Nẵng", jobs: 580, growth: "+8%" },
-                  { name: "Khác", jobs: 400, growth: "+5%" },
-                ].map((region, index) => (
+                {vldiachi.map((region, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between"
                   >
                     <div>
                       <h3 className="font-medium">{region.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {region.jobs} việc làm
-                      </p>
                     </div>
-                    <span className="text-green-600">{region.growth}</span>
+                    <span className="text-green-600">
+                      {region.jobs} việc làm
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Thống kê mức lương */}
+            {/* Thống kê trạng thái công việc */}
             <div className="bg-white shadow-md rounded-lg p-6 col-span-2">
               <h2 className="text-xl font-semibold mb-4">
-                Mức Lương Theo Kinh Nghiệm
+                Trạng Thái Công Việc
               </h2>
-              <BarChart width={600} height={300} data={salaryData}>
+              <BarChart width={600} height={300} data={trngthai}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="exp" />
-                <YAxis unit="M" />
+                <XAxis dataKey="name" />
+                <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="junior" fill="#8884d8" name="Junior" />
-                <Bar dataKey="middle" fill="#82ca9d" name="Middle" />
-                <Bar dataKey="senior" fill="#ffc658" name="Senior" />
+                <Bar dataKey="jobs" fill="#8884d8" name="Số lượng công việc" />
               </BarChart>
             </div>
 
@@ -403,7 +574,7 @@ const PlatformDashboard = () => {
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Top Skills Yêu Cầu</h2>
               <div className="space-y-3">
-                {techTrendData.map((tech, index) => (
+                {skilljob.map((tech, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between"
@@ -411,9 +582,9 @@ const PlatformDashboard = () => {
                     <span className="font-medium">{tech.name}</span>
                     <div className="text-right">
                       <div className="text-blue-600">{tech.jobs} việc làm</div>
-                      <div className="text-sm text-gray-500">
+                      {/* <div className="text-sm text-gray-500">
                         {tech.candidates} ứng viên
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 ))}
@@ -422,9 +593,9 @@ const PlatformDashboard = () => {
           </div>
         )}
 
-        {activeTab === "trends" && (
+        {/* {activeTab === "trends" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Xu hướng tuyển dụng */}
+         
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Xu Hướng Công Nghệ Hot
@@ -457,7 +628,7 @@ const PlatformDashboard = () => {
               </div>
             </div>
 
-            {/* Mức lương thị trường */}
+        
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Mức Lương Trung Bình Theo Vị Trí
@@ -511,7 +682,7 @@ const PlatformDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

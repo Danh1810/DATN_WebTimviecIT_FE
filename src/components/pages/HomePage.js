@@ -130,7 +130,7 @@ export default function Example() {
       </div>
       <div className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <a className="text-3xl font-semibold leading-6 text-blue-900">
-          VIỆC LÀM TỐT NHẤT
+          VIỆC LÀM MỚI NHẤT
         </a>
       </div>
       <div className="bg-white">
@@ -234,7 +234,7 @@ export default function Example() {
 
       <div className="mx-auto max-w-7xl p-8 lg:px-10 bg-slate-200 rounded-lg shadow-md">
         <a className="text-3xl font-semibold leading-6 text-blue-900 block mb-8 text-center">
-          VIỆC LÀM MỚI NHẤT
+          VIỆC LÀM TỐT NHẤT
         </a>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

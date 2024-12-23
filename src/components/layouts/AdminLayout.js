@@ -38,7 +38,7 @@ function AdminLayout({ children }) {
   };
 
   const menuItems = [
-    { label: "Overview", key: "Overview", path: "/dashboard/overview" },
+    { label: "Thống kê", key: "Overview", path: "/dashboard/overview" },
     {
       label: "Quản lý tin tuyển dụng",
       key: "Tintuyendung",

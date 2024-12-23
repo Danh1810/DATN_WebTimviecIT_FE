@@ -4,7 +4,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
-
+import { Editor } from "@tinymce/tinymce-react";
 function App() {
   const [jobPosts, setJobPosts] = useState([]); // Danh sách bài đăng
   const [recruiters, setRecruiters] = useState([]); // Danh sách nhà tuyển dụng
@@ -89,7 +89,10 @@ function App() {
 
   // Xem chi tiết bài đăng
   const xemChiTiet = (id) => {
-    const post = jobPosts.find((post) => post.id === id);
+    const post = jobPosts.find((post) => {
+      return post.id === id;
+    });
+    console.log("🚀 ~ xemChiTiet ~ post:", post.noibat);
     setSelectedPost(post);
   };
 
@@ -239,71 +242,78 @@ function App() {
       {/* Modal chi tiết */}
       {selectedPost && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-1/3">
-            <h2 className="text-xl font-bold mb-4">{selectedPost.tieude}</h2>
-            <p className="mb-4">
-              <strong>Nhà tuyển dụng:</strong>{" "}
-              {recruiters.find((rec) => rec.id === selectedPost.MaNTD)?.ten ||
-                "N/A"}
-            </p>
-            <div>
-              <h1 className="text-2xl font-bold mb-4">
-                {selectedPost?.title || "Thông tin tuyển dụng"}
-              </h1>
-              <div className="grid grid-cols-2 gap-4 bg-purple-50 p-4 rounded-lg">
-                <div>
-                  <strong>Kinh nghiệm</strong>{" "}
-                  {selectedPost?.kinhNghiem || "N/A"}
+          <div className="bg-white rounded-lg shadow-lg p-6 w-1/3 max-h-[90vh] flex flex-col">
+            <div className="overflow-y-auto flex-1">
+              <p>{selectedPost.noibat ? "true" : "false"}</p>
+              <h2 className="text-xl font-bold mb-4">{selectedPost.tieude}</h2>
+              <p className="mb-4">
+                <strong>Nhà tuyển dụng:</strong>{" "}
+                {recruiters.find((rec) => rec.id === selectedPost.MaNTD)?.ten ||
+                  "N/A"}
+              </p>
+              <div>
+                <h1 className="text-2xl font-bold mb-4">
+                  {selectedPost?.title || "Thông tin tuyển dụng"}
+                </h1>
+                <div className="grid grid-cols-2 gap-4 bg-purple-50 p-4 rounded-lg">
+                  <div>
+                    <strong>Kinh nghiệm</strong>{" "}
+                    {selectedPost?.kinhNghiem || "N/A"}
+                  </div>
+                  <div>
+                    <strong>Cấp bậc : </strong>
+                    {selectedPost?.levels?.length > 0
+                      ? selectedPost.levels.map((level, index) => (
+                          <span key={index}>
+                            {level.ten || "N/A"}
+                            {index < selectedPost.levels.length - 1 &&
+                              ", "}{" "}
+                          </span>
+                        ))
+                      : "N/A"}
+                  </div>
+                  <div>
+                    <strong>Loại hợp đồng : </strong>{" "}
+                    {selectedPost?.loaiHopdong || "N/A"}
+                  </div>
+                  <div>
+                    <strong>Kỹ năng : </strong>
+                    {selectedPost?.skills?.length > 0
+                      ? selectedPost.skills.map((skill, index) => (
+                          <span key={index}>
+                            {skill.ten || "N/A"}
+                            {index < selectedPost.skills.length - 1 &&
+                              ", "}{" "}
+                          </span>
+                        ))
+                      : "N/A"}
+                  </div>
+                  <div>
+                    <strong>Địa chỉ:</strong>{" "}
+                    {selectedPost?.diaChiLamviec || "N/A"}
+                  </div>
                 </div>
-                <div>
-                  <strong>Cấp bậc : </strong>
-                  {selectedPost?.levels?.length > 0
-                    ? selectedPost.levels.map((level, index) => (
-                        <span key={index}>
-                          {level.ten || "N/A"}
-                          {index < selectedPost.levels.length - 1 && ", "}{" "}
-                          {/* Thêm dấu phẩy nếu không phải phần tử cuối */}
-                        </span>
-                      ))
-                    : "N/A"}
+                <div className="mt-6">
+                  <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                    Mô tả công việc
+                  </h2>
+                  <p
+                    className="text-gray-700"
+                    dangerouslySetInnerHTML={{
+                      __html: selectedPost.mota || "Thông tin không có sẵn.",
+                    }}
+                  ></p>
                 </div>
-                <div>
-                  <strong>Loại hợp đồng : </strong>{" "}
-                  {selectedPost?.loaiHopdong || "N/A"}
-                </div>
-                <div>
-                  <strong>Kỹ năng : </strong>
-                  {selectedPost?.skills?.length > 0
-                    ? selectedPost.skills.map((skill, index) => (
-                        <span key={index}>
-                          {skill.ten || "N/A"}
-                          {index < selectedPost.skills.length - 1 && ", "}{" "}
-                          {/* Thêm dấu phẩy nếu không phải phần tử cuối */}
-                        </span>
-                      ))
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Địa chỉ:</strong>{" "}
-                  {selectedPost?.diaChiLamviec || "N/A"}
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                  Mô tả công việc
-                </h2>
-                <p className="text-gray-700">
-                  {selectedPost?.mota || "Thông tin không có sẵn."}
-                </p>
               </div>
             </div>
-            <button
-              className="bg-red-500 text-white px-4 py-2 rounded"
-              onClick={closeModal}
-            >
-              Đóng
-            </button>
+            <div className="mt-4 pt-4 border-t">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={closeModal}
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}

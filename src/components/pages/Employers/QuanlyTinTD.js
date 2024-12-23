@@ -139,14 +139,17 @@ function TTDNTD() {
     try {
       const response = await axios.get("/Ut/hosout", { params: { id: id } });
       setSelectedhosot(response.data);
+      console.log("🚀 ~ xemhoso ~ response.data:", response.data);
     } catch (error) {
       toast.error("Lỗi duyệt :", error);
     }
   };
-  const xemhosochitiet = async (id) => {
+  const xemhosochitiet = async (id, id1) => {
     console.log("🚀 ~ xemhoso ~ id:", id);
     try {
-      const response = await axios.get("/hoso/xem", { params: { id: id } });
+      const response = await axios.get("/hoso/xem", {
+        params: { id: id, id1: id1 },
+      });
       setSelectedhosoxem(response.data);
     } catch (error) {
       toast.error("Lỗi duyệt :", error);
@@ -223,16 +226,13 @@ function TTDNTD() {
       }));
     }
   }, [currentApplicant]);
-
-  const handleChangeut = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
   const [selectedFile, setSelectedFile] = useState(null);
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFormData(file);
-    setSelectedFile(file);
+    const { name, files } = e.target;
+    if (files[0]) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+      setSelectedFile(files[0]); // Corrected this line
+    }
   };
   const handleCloseModal = () => {
     setIsModalVisible1(false);
@@ -240,12 +240,32 @@ function TTDNTD() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/phanhoi", formData);
-      console.log("🚀 ~ handleFormSubmit ~ formData:", formData);
+      // Tạo FormData object
+      const data = new FormData();
+      data.append("idUngTuyen", formData.idUngTuyen);
+      data.append("noiDung", formData.noiDung);
+      if (formData.filedinhkem) {
+        data.append("filedinhkem", formData.filedinhkem); // Thêm file nếu có
+      }
+
+      setIsModalVisible1(false);
+      const response = await axios.post("/phanhoi", data, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Đảm bảo header đúng
+        },
+      });
+
       console.log("🚀 ~ handleFormSubmit ~ response:", response);
-      toast.success("Đăng thành công hãy chờ quản trị viên duyệt");
+      setFormData({
+        idUngTuyen: null,
+        noiDung: "",
+        filedinhkem: null, // Reset filedinhkem về null
+      });
+      setSelectedFile(null);
+      toast.success("Phản hồi thành công.");
     } catch (error) {
-      console.error("Error adding job post:", error);
+      console.error("Error adding feedback:", error);
+      toast.error("Có lỗi xảy ra khi gửi phản hồi!");
     }
   };
   const Chinhsua = (id) => {
@@ -361,41 +381,54 @@ function TTDNTD() {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedhoso.map((app) => (
-                    <tr key={app.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
-                        {jobSeekers.find(
-                          (rec) => rec.id === app.UT_NTV.NguoitimviecId
-                        )?.hoVaTen || "N/A"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
-                        {new Date(app.NgayNop).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
-                        {app.trangthai}
-                      </td>
-                      <td className="px-4 py-2 sticky left-0 bg-white">
-                        <button
-                          className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-                          onClick={() => xemhosochitiet(app.UT_NTV.id)}
-                        >
-                          Xem chi tiết
-                        </button>
-                        <button
-                          className="bg-red-500 text-white px-3 py-1 rounded"
-                          onClick={() => console.log("Từ chối:", app.id)}
-                        >
-                          Từ chối
-                        </button>
-                        <button
-                          onClick={() => handleOpenModal(app.id)}
-                          className="bg-green-500 text-white px-3 py-1 rounded"
-                        >
-                          Phản hồi ứng tuyển
-                        </button>
+                  {selectedhoso.length > 0 ? (
+                    selectedhoso.map((app) => (
+                      <tr key={app.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
+                          {jobSeekers.find(
+                            (rec) => rec.id === app.UT_NTV.NguoitimviecId
+                          )?.hoVaTen || "N/A"}
+                        </td>
+                        <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
+                          {new Date(app.NgayNop).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
+                          {app.trangthai}
+                        </td>
+                        <td className="px-4 py-2 sticky left-0 bg-white">
+                          <button
+                            className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                            onClick={() =>
+                              xemhosochitiet(app.UT_NTV.id, app.id)
+                            }
+                          >
+                            Xem chi tiết
+                          </button>
+                          <button
+                            className="bg-red-500 text-white px-3 py-1 rounded"
+                            onClick={() => console.log("Từ chối:", app.id)}
+                          >
+                            Từ chối
+                          </button>
+                          <button
+                            onClick={() => handleOpenModal(app.id)}
+                            className="bg-green-500 text-white px-3 py-1 rounded"
+                          >
+                            Phản hồi ứng tuyển
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="px-4 py-3 text-gray-500 text-center border border-gray-300"
+                      >
+                        Chưa có hồ sơ ứng tuyển nào
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
               <div className="flex justify-end p-4">
@@ -409,6 +442,7 @@ function TTDNTD() {
             </div>
           </div>
         )}
+
         {selectedhosoxem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
@@ -926,8 +960,7 @@ function TTDNTD() {
                 </label>
                 <input
                   type="file"
-                  id="fileUpload"
-                  name="fileUpload"
+                  name="filedinhkem"
                   onChange={handleFileChange}
                   className="w-full text-lg text-gray-600 
             file:mr-4 file:py-3 file:px-6

@@ -92,6 +92,19 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (jobPosts.noibatnline === true) {
+      // Nếu bài đăng đã được đặt nổi bật, kiểm tra số lượng nổi bật
+      if (employers.Soluongnoibat === 0) {
+        toast.error("Bạn đã hết lượt nổi bật");
+        return;
+      }
+    } else {
+      // Nếu bài đăng không nổi bật, kiểm tra số lượng đăng bài
+      if (employers.Soluongdangbai === 0) {
+        toast.error("Bạn đã hết lượt đăng bài");
+        return;
+      }
+    }
 
     if (!jobPost.tieude || !jobPost.mota || !jobPost.mucluong) {
       toast.error("Please fill in all required fields");
@@ -148,8 +161,15 @@ function App() {
       </h1>
 
       {employers && (
-        <div className="absolute top-0 left-0 bg-blue-100 text-blue-600 px-4 py-2 rounded-tr-lg rounded-bl-lg shadow-md">
-          Số lượng đăng tuyển: {employers.Soluongdangbai}
+        <div className="absolute top-0 left-0 flex flex-col gap-2 bg-blue-100 text-blue-700 p-4 rounded-tr-xl rounded-bl-xl shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{employers.Soluongdangbai}</span>
+            <span className="text-sm">lượt đăng bài bình thường</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{employers.Soluongnoibat}</span>
+            <span className="text-sm">lượt đăng bài nổi bật</span>
+          </div>
         </div>
       )}
 

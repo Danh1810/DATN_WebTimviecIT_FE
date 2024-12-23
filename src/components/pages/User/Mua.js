@@ -7,7 +7,7 @@ const Thanhtoan = () => {
     id: id,
     sotien: "",
     soluong: "",
-    goimua: "",
+    goimua: "goi3",
   });
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,57 +59,44 @@ const Thanhtoan = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-6 bg-white p-6 rounded shadow-md"
-    >
-      <div>
-        <label className="block font-semibold mb-1">Số lượng</label>
-        <input
-          type="number"
-          name="soluong"
-          value={formData.soluong}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          placeholder="Nhập số lượng"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold mb-1">Số tiền</label>
-        <input
-          type="number"
-          name="sotien"
-          value={formData.sotien}
-          readOnly
-          className="w-full p-2 border rounded bg-gray-100"
-          placeholder="Số tiền sẽ tự động tính"
-        />
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">Chọn gói mua</label>
-        <select
-          name="goimua"
-          value={formData.goimua}
-          onChange={handleChange}
-          className="w-full p-2 border rounded bg-gray-50"
-        >
-          <option value="" disabled>
-            -- Chọn gói mua --
-          </option>
-          <option value="goi3">Gói Nộp hồ sơ</option>
-        </select>
-      </div>
-
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      <button
-        type="submit"
-        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-        disabled={loading}
+    <div className="min h-screen">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 bg-white p-6 rounded shadow-md"
       >
-        {loading ? "Đang xử lý..." : "Thanh toán"}
-      </button>
-    </form>
+        <div>
+          <label className="block font-semibold mb-1">Số lượng</label>
+          <input
+            type="number"
+            name="soluong"
+            value={formData.soluong}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            placeholder="Nhập số lượng"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">Số tiền</label>
+          <input
+            type="number"
+            name="sotien"
+            value={formData.sotien}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100"
+            placeholder="Số tiền sẽ tự động tính"
+          />
+        </div>
+
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <button
+          type="submit"
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+          disabled={loading}
+        >
+          {loading ? "Đang xử lý..." : "Thanh toán"}
+        </button>
+      </form>
+    </div>
   );
 };
 

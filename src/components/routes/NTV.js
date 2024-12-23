@@ -7,6 +7,7 @@ import CVManagement from "../pages/User/hoso";
 import Luucongviec from "../pages/User/Luucongviec";
 import JobApplicationForm from "../pages/User/Congviecungtuyen";
 import SearchBar from "../pages/TimkiemPage";
+import Thanhtoan from "../pages/User/Mua";
 export const NtvRoutes = [
   {
     path: "/profile",
@@ -37,6 +38,11 @@ export const NtvRoutes = [
   {
     path: "/vieclamut",
     component: JobApplicationForm,
+    layout: Layout,
+  },
+  {
+    path: "/tt",
+    component: Thanhtoan,
     layout: Layout,
   },
 ];

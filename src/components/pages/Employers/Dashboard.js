@@ -326,7 +326,7 @@ const EmployerDashboard = () => {
             >
               Kỹ Năng
             </button>
-            <button
+            {/* <button
               className={`px-4 py-2 rounded ${
                 activeTab === "analytics"
                   ? "bg-blue-600 text-white"
@@ -335,14 +335,14 @@ const EmployerDashboard = () => {
               onClick={() => setActiveTab("analytics")}
             >
               Phân Tích
-            </button>
+            </button> */}
           </div>
         </header>
 
         {activeTab === "overview" && (
           <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Thống kê tuyển dụng IT */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+             
               <div className="bg-white shadow-md rounded-lg p-6">
                 <h2 className="text-xl font-semibold mb-4">
                   Hiệu Suất Tuyển Dụng
@@ -371,7 +371,7 @@ const EmployerDashboard = () => {
                 </div>
               </div>
 
-              {/* Biểu đồ nguồn ứng viên IT */}
+             
               <div className="bg-white shadow-md rounded-lg p-6">
                 <h2 className="text-xl font-semibold mb-4">
                   Nguồn Ứng Viên IT
@@ -400,7 +400,7 @@ const EmployerDashboard = () => {
                 </PieChart>
               </div>
 
-              {/* Thống kê vị trí IT */}
+            
               <div className="bg-white shadow-md rounded-lg p-6">
                 <h2 className="text-xl font-semibold mb-4">
                   Trạng Thái Tuyển Dụng
@@ -424,8 +424,8 @@ const EmployerDashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            </div> */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
               <div className="bg-blue-100 rounded-lg p-4 text-center shadow-sm">
                 <h3 className="text-xl font-bold text-blue-600">
                   {jobPosts.length}
@@ -438,10 +438,10 @@ const EmployerDashboard = () => {
                 </h3>
                 <p className="text-gray-600">Ứng viên đã nộp hồ sơ </p>
               </div>
-              <div className="bg-yellow-100 rounded-lg p-4 text-center shadow-sm">
+              {/* <div className="bg-yellow-100 rounded-lg p-4 text-center shadow-sm">
                 <h3 className="text-xl font-bold text-yellow-600">85%</h3>
                 <p className="text-gray-600">Số lượt xem tin</p>
-              </div>
+              </div> */}
               <div className="bg-orange-100 rounded-lg p-4 text-center shadow-sm">
                 <h3 className="text-xl font-bold text-blue-600">
                   {result.totalAmount.toFixed(2)}
@@ -456,17 +456,15 @@ const EmployerDashboard = () => {
               </div>
               <div className="bg-green-100 rounded-lg p-4 text-center shadow-sm">
                 <h3 className="text-xl font-bold text-green-600">
-                  {
-                    jobPostsmonth.find((item) => item.month === currentMonth1)
-                      ?.slhoso
-                  }
+                  {jobPostsmonth.find((item) => item.month === currentMonth1)
+                    ?.slhoso || 0}
                 </h3>
                 <p className="text-gray-600">Ứng viên đã nộp tháng này</p>
               </div>
-              <div className="bg-yellow-100 rounded-lg p-4 text-center shadow-sm">
+              {/* <div className="bg-yellow-100 rounded-lg p-4 text-center shadow-sm">
                 <h3 className="text-xl font-bold text-yellow-600">85%</h3>
                 <p className="text-gray-600">Số lượt xem tin tháng này</p>
-              </div>
+              </div> */}
               <div className="bg-orange-100 rounded-lg p-4 text-center shadow-sm">
                 <h3 className="text-xl font-bold text-blue-600">
                   {currentMonthTotal.toFixed(2)}
@@ -474,51 +472,54 @@ const EmployerDashboard = () => {
                 <p className="text-gray-600">Số tiền đã chi tháng này</p>
               </div>
             </div>
-            <table className="w-full mx-auto border-collapse bg-white shadow-md rounded-lg overflow-hidden">
-              <thead>
-                <tr className="bg-blue-100 text-gray-700 border-b">
-                  <th className="px-4 py-2 text-left text-sm font-semibold">
-                    Tin Tuyển Dụng
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">
-                    Ứng Tuyển
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">
-                    Trạng thái
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {ti.map((row, index) => (
-                  <tr
-                    key={index}
-                    className={`${
-                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                    } hover:bg-blue-50 transition-colors`}
-                  >
-                    <td className="px-4 py-3 text-sm text-gray-800">
-                      {row.tieude}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-800">
-                      {row.applications || "-"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-800">
-                      {row.trangthai || "-"}
-                    </td>
+            <div className="bg-white shadow-md rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Danh Sách Tin</h2>
+              <table className="w-full mx-auto border-collapse bg-white shadow-md rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-blue-100 text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left text-sm font-semibold">
+                      Tin Tuyển Dụng
+                    </th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold">
+                      Số lượng hồ sơ
+                    </th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold">
+                      Trạng thái
+                    </th>
                   </tr>
-                ))}
-                {ti.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan="4"
-                      className="px-6 py-8 text-center text-sm text-gray-500"
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {ti.map((row, index) => (
+                    <tr
+                      key={index}
+                      className={`${
+                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      } hover:bg-blue-50 transition-colors`}
                     >
-                      Không có dữ liệu
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      <td className="px-4 py-3 text-sm text-gray-800">
+                        {row.tieude}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800">
+                        {row.applications || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800">
+                        {row.trangthai || "-"}
+                      </td>
+                    </tr>
+                  ))}
+                  {ti.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="px-6 py-8 text-center text-sm text-gray-500"
+                      >
+                        Không có dữ liệu
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -557,7 +558,7 @@ const EmployerDashboard = () => {
           </div>
         )}
 
-        {activeTab === "analytics" && (
+        {/* {activeTab === "analytics" && (
           <div className="bg-white shadow-md rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">
               Phân Tích Theo Vị Trí
@@ -573,7 +574,7 @@ const EmployerDashboard = () => {
               <Bar dataKey="hired" fill="#ffc658" name="Tuyển Dụng" />
             </BarChart>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

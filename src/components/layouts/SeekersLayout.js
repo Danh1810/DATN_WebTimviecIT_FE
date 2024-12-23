@@ -183,6 +183,7 @@ function Layout({ children }) {
                 { key: "/hoso", label: "Hồ sơ cá nhân" },
                 { key: "/vieclamut", label: "Việc làm đã ứng tuyển" },
                 { key: "/luucv", label: "Việc làm đã lưu" },
+                { key: "/tt", label: "Mua số lượt nộp hồ sơ" },
                 // { key: "/lstt", label: "Lịch sử thanh toán" },
               ].map((menu) => (
                 <button
@@ -210,7 +211,7 @@ function Layout({ children }) {
             <div className="mb-6 md:mb-0">
               <a href="/" className="flex items-center">
                 <img
-                  src="/images/logo.svg"
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREfsesMJwwXL8130hzXhA8LtGBG1HMN6lKLA&s"
                   className="h-10 me-3"
                   alt="ViecLamIT Logo"
                 />
