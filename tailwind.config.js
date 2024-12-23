@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+import tailwindScrollbar from "tailwind-scrollbar";
+import tailwindScrollbarHide from "tailwind-scrollbar-hide";
+
 export default {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}", // Adjust this path as needed
@@ -9,7 +12,7 @@ export default {
     },
   },
   plugins: [
-    require("tailwind-scrollbar"), // Enables custom scrollbar styling
-    require("tailwind-scrollbar-hide"), // Allows you to hide scrollbars if needed
+    tailwindScrollbar, // Enables custom scrollbar styling
+    tailwindScrollbarHide, // Allows you to hide scrollbars if needed
   ],
 };
