@@ -1,8 +1,7 @@
 import axios from "axios";
 
-// const baseURL = "http://localhost:3002/api/v1";
-const baseURL = process.env.REACT_APP_SERVER_URL;
-// const baseURL = "https://datn-be-42k8.onrender.com/api/v1";
+const baseURL = "https://datn-webtimviecit-be.onrender.com/vieclamit";
+
 const instance = axios.create({
   baseURL: baseURL,
 });
