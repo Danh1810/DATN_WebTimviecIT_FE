@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const baseURL = "https://datn-webtimviecit-be.onrender.com/vieclamit";
-
+// const baseURL = "https://locahost:3060/vieclamit";
 const instance = axios.create({
   baseURL: baseURL,
 });
