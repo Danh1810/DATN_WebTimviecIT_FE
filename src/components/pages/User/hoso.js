@@ -9,7 +9,7 @@ const CVManagement = () => {
   const [hoso, sethoso] = useState([]);
   const [formData, setFormData] = useState({
     tenhoso: "",
-    kyNangLapTrinh: "",
+    kyNangLapTrinh: [],
     capBacHienTai: "",
     mucTieuNgheNghiep: "",
     trinhDoHocVan: "",
@@ -45,8 +45,40 @@ const CVManagement = () => {
       console.error("Error fetching CV data:", error);
     }
   };
-  const [selectedhosoNTV, setSelectedhoNTV] = useState(null);
+  const programmingSkills = [
+    { value: "javascript", label: "JavaScript" },
+    { value: "python", label: "Python" },
+    { value: "java", label: "Java" },
+    { value: "csharp", label: "C#" },
+    { value: "php", label: "PHP" },
+    { value: "ruby", label: "Ruby" },
+    { value: "golang", label: "Golang" },
+    { value: "swift", label: "Swift" },
+    { value: "kotlin", label: "Kotlin" },
+  ];
 
+  const workTypes = [
+    { value: "fulltime", label: "Toàn thời gian" },
+    { value: "parttime", label: "Bán thời gian" },
+    { value: "remote", label: "Từ xa" },
+    { value: "hybrid", label: "Hybrid" },
+  ];
+
+  const levels = [
+    { value: "fresher", label: "Fresher" },
+    { value: "junior", label: "Junior" },
+    { value: "middle", label: "Middle" },
+    { value: "senior", label: "Senior" },
+    { value: "teamlead", label: "Team Lead" },
+    { value: "manager", label: "Manager" },
+  ];
+  const [selectedhosoNTV, setSelectedhoNTV] = useState(null);
+  const handleSkillsChange = (selectedSkills) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      kyNangLapTrinh: selectedSkills,
+    }));
+  };
   const xemChiTiet1 = (id) => {
     const post = hoso.find((post) => post.id === id);
     setSelectedhoNTV(post); // Lưu bài đăng được chọn vào state
@@ -313,10 +345,9 @@ const CVManagement = () => {
               onSubmit={editId ? handleUpdateCV : handleAddhoso}
             >
               <h2 className="text-xl font-semibold mb-4">
-                {editId ? "Chỉnh sửa hồ sơ" : "Thêm mới hồ sơ"}
+                {formData.editId ? "Chỉnh sửa hồ sơ" : "Thêm mới hồ sơ"}
               </h2>
-
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">Tên hồ sơ</label>
                 <input
                   type="text"
@@ -326,30 +357,64 @@ const CVManagement = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-
-              <div>
-                <label className="block font-medium">Kỹ năng lập trình</label>
-                <input
-                  type="text"
+              <div className="mb-4">
+                <label className="block font-medium mb-2">
+                  Kỹ năng lập trình
+                </label>
+                <select
+                  multiple
                   name="kyNangLapTrinh"
                   value={formData.kyNangLapTrinh}
+                  onChange={(e) => {
+                    const values = Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    );
+                    handleSkillsChange(values);
+                  }}
+                  className="w-full border rounded px-2 py-1 h-32 overflow-auto"
+                >
+                  {programmingSkills.map((skill) => (
+                    <option key={skill.value} value={skill.value}>
+                      {skill.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              ;
+              <div className="mb-4">
+                <label className="block font-medium">Hình thức làm việc</label>
+                <select
+                  name="hinhThucLamViec"
+                  value={formData.hinhThucLamViec}
                   onChange={handleChange}
                   className="w-full border rounded px-2 py-1"
-                />
+                >
+                  <option value="">Chọn hình thức làm việc</option>
+                  {workTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">Cấp bậc hiện tại</label>
-                <input
-                  type="text"
+                <select
                   name="capBacHienTai"
                   value={formData.capBacHienTai}
                   onChange={handleChange}
                   className="w-full border rounded px-2 py-1"
-                />
+                >
+                  <option value="">Chọn cấp bậc</option>
+                  {levels.map((level) => (
+                    <option key={level.value} value={level.value}>
+                      {level.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">
                   Mục tiêu nghề nghiệp
                 </label>
@@ -361,8 +426,7 @@ const CVManagement = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">Trình độ học vấn</label>
                 <input
                   type="text"
@@ -372,8 +436,7 @@ const CVManagement = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">
                   Kinh nghiệm làm việc
                 </label>
@@ -384,7 +447,7 @@ const CVManagement = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">Dự án đã tham gia</label>
                 <textarea
                   name="duAnDaThamGia"
@@ -393,8 +456,7 @@ const CVManagement = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-
-              <div>
+              <div className="mb-4">
                 <label className="block font-medium">Tải lên CV</label>
                 <input
                   type="file"
@@ -403,11 +465,10 @@ const CVManagement = () => {
                   className="w-full border rounded px-2 py-1"
                 />
               </div>
-
               <div className="mt-4 flex justify-end space-x-4">
                 <button
                   type="button"
-                  onClick={closeModal}
+                  onClick={() => setIsOpen(false)}
                   className="bg-gray-500 text-white px-4 py-2 rounded"
                 >
                   Đóng
@@ -416,7 +477,7 @@ const CVManagement = () => {
                   type="submit"
                   className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
-                  {editId ? "Cập nhật" : "Thêm mới"}
+                  {formData.editId ? "Cập nhật" : "Thêm mới"}
                 </button>
               </div>
             </form>

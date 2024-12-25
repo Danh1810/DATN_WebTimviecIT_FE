@@ -284,6 +284,114 @@ function TTDNTD() {
     setFormData((prev) => ({ ...prev, noiDung: content }));
   };
 
+  function calculateSkillMatch(candidateSkills, jobSkills) {
+    // Extract skills from jobSkills array
+    const jobSkillNames = jobSkills.map((skill) => skill.ten);
+    console.log("🚀 ~ calculateSkillMatch ~ jobSkillNames:", jobSkillNames);
+
+    // Find intersection of candidate skills and job skills
+    const intersection = candidateSkills.filter((skill) =>
+      jobSkillNames.includes(skill)
+    );
+    console.log("🚀 ~ calculateSkillMatch ~ intersection:", intersection);
+    // Return match percentage
+    return (intersection.length / jobSkillNames.length) * 100;
+  }
+
+  function calculateSalaryMatch(candidateSalary, jobSalary) {
+    // Mức chênh lệch cho phép (10% của mức lương công việc)
+    const tolerance = jobSalary * 0.1;
+
+    if (
+      candidateSalary >= jobSalary - tolerance &&
+      candidateSalary <= jobSalary + tolerance
+    ) {
+      return 100; // Hoàn toàn phù hợp
+    } else if (candidateSalary < jobSalary - tolerance) {
+      return (candidateSalary / jobSalary) * 100; // Tính tỷ lệ phù hợp
+    } else {
+      return (jobSalary / candidateSalary) * 100;
+    }
+  }
+
+  const weights = {
+    skills: 0.5,
+    level: 0.2,
+    salary: 0.2,
+    workType: 0.1,
+  };
+  function calculateMatchPercentage(candidate, job, weights) {
+    // Default weights nếu không được cung cấp
+    const defaultWeights = {
+      skills: 0.5, // 50% trọng số
+      level: 0.2, // 20% trọng số
+      salary: 0.2, // 20% trọng số
+      workType: 0.1, // 10% trọng số
+    };
+    weights = { ...defaultWeights, ...weights };
+
+    let totalMatch = 0;
+
+    // Tính độ phù hợp cho từng tiêu chí
+    // 1. Kỹ năng (Skills)
+    const skillsMatch =
+      calculateSkillMatch(candidate.kyNangLapTrinh, job.skills) *
+      weights.skills;
+    totalMatch += skillsMatch;
+    console.log("🚀 ~ calculateMatchPercentage ~ skillsMatch:", skillsMatch);
+    // 2. Cấp bậc (Level)
+    if (candidate.capBacHienTai && Array.isArray(job.levels)) {
+      // Check if the candidate's level is included in any job level description
+      const levelMatch = job.levels.some(
+        (level) =>
+          level.ten &&
+          level.ten
+            .toLowerCase()
+            .includes(candidate.capBacHienTai.toLowerCase())
+      )
+        ? 100 * weights.level
+        : 0;
+
+      totalMatch += levelMatch;
+
+      // Log the level match for debugging
+      console.log("🚀 ~ calculateMatchPercentage ~ levelMatch:", levelMatch);
+    } else {
+      console.log(
+        "🚨 Missing or invalid data: candidate.capBacHienTai or job.levels is undefined or not an array."
+      );
+    }
+    // // 3. Mức lương (Salary)
+    const salaryMatch =
+      calculateSalaryMatch(candidate.Mucluongmongmuon, job.mucluong) *
+      weights.salary;
+    totalMatch += salaryMatch;
+    console.log("🚀 ~ calculateMatchPercentage ~ salaryMatch:", salaryMatch);
+    // // 4. Hình thức làm việc (Work Type)
+    const workTypeMatch =
+      candidate.hinhThuclamviec === job.loaiHopdong
+        ? 100 * weights.workType
+        : 0;
+    totalMatch += workTypeMatch;
+    console.log(
+      "🚀 ~ calculateMatchPercentage ~ workTypeMatch:",
+      workTypeMatch
+    );
+    // Trả về kết quả làm tròn đến 2 chữ số thập phân
+    return Math.round(totalMatch * 100) / 100;
+  }
+
+  if (selectedhoso && selectedhoso.length > 0) {
+    const matchPercentage = calculateMatchPercentage(
+      selectedhoso[0].UT_NTV,
+      selectedhoso[0].UT_TTD,
+      weights
+    );
+    console.log("Match Percentage:", matchPercentage);
+  } else {
+    console.error("selectedhoso is null, undefined, or empty.");
+  }
+
   useEffect(() => {
     fetchJobPosts();
     fetchRecruiters();
@@ -362,78 +470,100 @@ function TTDNTD() {
 
         {selectedhoso && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl">
-              <table className="min-w-full bg-white border border-gray-300 rounded-lg">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 border border-gray-300 text-left bg-gray-100 text-gray-700 font-semibold">
-                      Họ Tên
-                    </th>
-                    <th className="px-4 py-3 border border-gray-300 text-left bg-gray-100 text-gray-700 font-semibold">
-                      Ngày Nộp
-                    </th>
-                    <th className="px-4 py-3 border border-gray-300 text-left bg-gray-100 text-gray-700 font-semibold">
-                      Trạng Thái
-                    </th>
-                    <th className="px-4 py-3 border border-gray-300 text-left bg-gray-100 text-gray-700 font-semibold">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedhoso.length > 0 ? (
-                    selectedhoso.map((app) => (
-                      <tr key={app.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
-                          {jobSeekers.find(
-                            (rec) => rec.id === app.UT_NTV.NguoitimviecId
-                          )?.hoVaTen || "N/A"}
-                        </td>
-                        <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
-                          {new Date(app.NgayNop).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-3 border border-gray-300 text-gray-800 text-center">
-                          {app.trangthai}
-                        </td>
-                        <td className="px-4 py-2 sticky left-0 bg-white">
-                          <button
-                            className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-                            onClick={() =>
-                              xemhosochitiet(app.UT_NTV.id, app.id)
-                            }
-                          >
-                            Xem chi tiết
-                          </button>
-                          <button
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                            onClick={() => console.log("Từ chối:", app.id)}
-                          >
-                            Từ chối
-                          </button>
-                          <button
-                            onClick={() => handleOpenModal(app.id)}
-                            className="bg-green-500 text-white px-3 py-1 rounded"
-                          >
-                            Phản hồi ứng tuyển
-                          </button>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl">
+              <div className="p-4 sm:p-6">
+                <table className="min-w-full bg-white rounded-lg overflow-hidden">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-6 py-4 border-b text-left text-sm font-semibold text-gray-600">
+                        Họ Tên
+                      </th>
+                      <th className="px-6 py-4 border-b text-left text-sm font-semibold text-gray-600">
+                        Ngày Nộp
+                      </th>
+                      <th className="px-6 py-4 border-b text-left text-sm font-semibold text-gray-600">
+                        Trạng Thái
+                      </th>
+                      <th className="px-6 py-4 border-b text-left text-sm font-semibold text-gray-600">
+                        Tỷ lệ phù hợp
+                      </th>
+                      <th className="px-6 py-4 border-b text-left text-sm font-semibold text-gray-600">
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedhoso.length > 0 ? (
+                      selectedhoso.map((app) => (
+                        <tr
+                          key={app.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 border-b text-gray-800">
+                            {jobSeekers.find(
+                              (rec) => rec.id === app.UT_NTV.NguoitimviecId
+                            )?.hoVaTen || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 border-b text-gray-800">
+                            {new Date(app.NgayNop).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 border-b">
+                            <span
+                              className={`px-3 py-1 rounded-full text-sm ${
+                                !app.trangthai
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {app.trangthai || "Chưa phản hồi"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 border-b text-gray-800">
+                            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                              {calculateMatchPercentage(app.UT_NTV, app.UT_TTD)}
+                              %
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 border-b space-x-2">
+                            <button
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
+                              onClick={() =>
+                                xemhosochitiet(app.UT_NTV.id, app.id)
+                              }
+                            >
+                              Xem chi tiết
+                            </button>
+                            <button
+                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
+                              onClick={() => console.log("Từ chối:", app.id)}
+                            >
+                              Từ chối
+                            </button>
+                            <button
+                              onClick={() => handleOpenModal(app.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
+                            >
+                              Phản hồi ứng tuyển
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="px-6 py-8 text-gray-500 text-center border-b"
+                        >
+                          Chưa có hồ sơ ứng tuyển nào
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="px-4 py-3 text-gray-500 text-center border border-gray-300"
-                      >
-                        Chưa có hồ sơ ứng tuyển nào
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              <div className="flex justify-end p-4">
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end px-6 py-4 bg-gray-50 rounded-b-lg">
                 <button
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none"
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                   onClick={closeModal1}
                 >
                   Đóng
