@@ -118,7 +118,7 @@ const ProfileForm = () => {
                 src={
                   previewImage ||
                   formData.anhDaiDien ||
-                  "https://res.cloudinary.com/dlxczbtva/image/upload/v1704720124/oneweedshop/vcgfoxlfcoipwxywcimv.jpg"
+                  "https://res.cloudinary.com/dlxczbtva/image/upload/v1735207547/webtimviecit/anh-profile-tiet-lo-g-ve-ban-1_dsmrcf.jpg"
                 }
                 alt="Avatar"
                 className="w-full h-full object-cover"

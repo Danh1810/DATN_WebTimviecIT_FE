@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+import { Search } from "lucide-react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
 import Select from "react-select";
@@ -391,6 +392,63 @@ function TTDNTD() {
   } else {
     console.error("selectedhoso is null, undefined, or empty.");
   }
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [matchFilter, setMatchFilter] = useState("all");
+  const itemsPerPage = 5;
+
+  // Kiểm tra và đảm bảo selectedhoso là array
+  const safeData = Array.isArray(selectedhoso) ? selectedhoso : [];
+
+  // Lọc dữ liệu theo các điều kiện
+  const filteredData = safeData.filter((app) => {
+    const jobSeeker = jobSeekers.find(
+      (js) => js?.id === app?.UT_NTV?.NguoitimviecId
+    );
+    const name = jobSeeker?.hoVaTen?.toLowerCase() || "";
+    const searchMatch = name.includes(searchTerm.toLowerCase());
+
+    // Lọc theo trạng thái
+    const statusMatch =
+      statusFilter === "all" ||
+      (statusFilter === "pending" && !app?.trangthai) ||
+      (statusFilter === "responded" && app?.trangthai);
+
+    // Lọc theo ngày nộp
+    const appDate = new Date(app?.NgayNop);
+    const today = new Date();
+    const daysDiff = Math.floor((today - appDate) / (1000 * 60 * 60 * 24));
+    const dateMatch =
+      dateFilter === "all" ||
+      (dateFilter === "today" && daysDiff === 0) ||
+      (dateFilter === "week" && daysDiff <= 7) ||
+      (dateFilter === "month" && daysDiff <= 30);
+
+    // Lọc theo tỷ lệ phù hợp
+    const matchRate = calculateMatchPercentage?.(app?.UT_NTV, app?.UT_TTD) || 0;
+    const matchRateMatch =
+      matchFilter === "all" ||
+      (matchFilter === "high" && matchRate >= 80) ||
+      (matchFilter === "medium" && matchRate >= 50 && matchRate < 80) ||
+      (matchFilter === "low" && matchRate < 50);
+
+    return searchMatch && statusMatch && dateMatch && matchRateMatch;
+  });
+
+  // Reset trang khi thay đổi bộ lọc
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, dateFilter, matchFilter]);
+
+  // Tính toán số trang và dữ liệu hiện tại
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   useEffect(() => {
     fetchJobPosts();
@@ -472,6 +530,63 @@ function TTDNTD() {
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl">
               <div className="p-4 sm:p-6">
+                <div className="mb-4 space-y-3">
+                  <div className="flex gap-4">
+                    {/* Tìm kiếm */}
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        placeholder="Tìm kiếm theo tên ứng viên..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-md"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Lọc theo trạng thái */}
+                    <select
+                      className="px-4 py-2 border rounded-md min-w-[160px]"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                      <option value="all">Tất cả trạng thái</option>
+                      <option value="pending">Chưa phản hồi</option>
+                      <option value="responded">Đã phản hồi</option>
+                    </select>
+
+                    {/* Lọc theo ngày nộp */}
+                    <select
+                      className="px-4 py-2 border rounded-md min-w-[160px]"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                    >
+                      <option value="all">Tất cả thời gian</option>
+                      <option value="today">Hôm nay</option>
+                      <option value="week">Tuần này</option>
+                      <option value="month">Tháng này</option>
+                    </select>
+
+                    {/* Lọc theo tỷ lệ phù hợp */}
+                    <select
+                      className="px-4 py-2 border rounded-md min-w-[160px]"
+                      value={matchFilter}
+                      onChange={(e) => setMatchFilter(e.target.value)}
+                    >
+                      <option value="all">Tất cả tỷ lệ</option>
+                      <option value="high">Phù hợp cao (≥80%)</option>
+                      <option value="medium">
+                        Phù hợp trung bình (50-79%)
+                      </option>
+                      <option value="low">Phù hợp thấp (50%)</option>
+                    </select>
+                  </div>
+
+                  {/* Hiển thị thông tin lọc */}
+                  <div className="text-sm text-gray-500">
+                    Tìm thấy {totalItems} hồ sơ phù hợp
+                  </div>
+                </div>
                 <table className="min-w-full bg-white rounded-lg overflow-hidden">
                   <thead>
                     <tr className="bg-gray-50">
@@ -493,8 +608,8 @@ function TTDNTD() {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedhoso.length > 0 ? (
-                      selectedhoso.map((app) => (
+                    {currentData.length > 0 ? (
+                      currentData.map((app) => (
                         <tr
                           key={app.id}
                           className="hover:bg-gray-50 transition-colors"
@@ -560,6 +675,45 @@ function TTDNTD() {
                     )}
                   </tbody>
                 </table>
+                {totalItems > 0 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="text-sm text-gray-600">
+                      Hiển thị {Math.min(itemsPerPage, totalItems)} /{" "}
+                      {totalItems} hồ sơ
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className="px-3 py-1 border rounded disabled:opacity-50"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                      >
+                        Trước
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            className={`px-3 py-1 rounded ${
+                              currentPage === page
+                                ? "bg-blue-600 text-white"
+                                : "border hover:bg-gray-50"
+                            }`}
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
+                      <button
+                        className="px-3 py-1 border rounded disabled:opacity-50"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                      >
+                        Tiếp
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end px-6 py-4 bg-gray-50 rounded-b-lg">
                 <button
