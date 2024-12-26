@@ -2,66 +2,65 @@ import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+// import { Input } from "@/components/ui/input";
+import { Search, Filter } from "lucide-react";
 
 function PaymentHistory() {
-  const [paymentHistory, setPaymentHistory] = useState([]); // List of payment history records
-  const [employers, setEmployers] = useState([]); // List of employers for dropdown
-  const [payments, setPayments] = useState([]); // List of payment options for dropdown
-  const [newPayment, setNewPayment] = useState({
-    MaNTT: "",
-    trangthai: "",
-    sotien: "",
-    goimua: "",
-    Ngaythanhtoan: "",
-    Soluongmua: 1,
-  });
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
-  // Export payment history to PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.setFont("Roboto-Regular");
-    // Set title and metadata
     doc.setFontSize(18);
-    doc.text("Lịch sử thanh toán ", 14, 20);
+    doc.text("Lịch sử thanh toán", 14, 20);
     doc.setFontSize(12);
 
-    // Prepare headers and data for table
-    const headers = [["Employer", "", "Status", "Amount", "Date", "Quantity"]];
-    const rows = paymentHistory.map((record) => [
+    const headers = [
+      [
+        "Người thanh toán",
+        "Gói mua",
+        "Trạng thái",
+        "Số tiền",
+        "Ngày thanh toán",
+        "Số lượng",
+      ],
+    ];
+    const rows = filteredData.map((record) => [
+      record.users.username,
+      record.goimua,
       record.trangthai,
-      record.sotien,
-      new Date(record.Ngaythanhtoan).toLocaleDateString(),
+      new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(record.sotien),
+      new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN"),
       record.Soluongmua,
     ]);
 
-    // Add table to PDF
     doc.autoTable({
       head: headers,
       body: rows,
       startY: 30,
       theme: "striped",
-      styles: {
-        font: "Roboto-Regular",
-        fontSize: 10,
-        cellPadding: 3,
-      },
+      styles: { font: "Roboto-Regular", fontSize: 10, cellPadding: 3 },
       headStyles: {
-        fillColor: [22, 160, 133], // Màu nền tiêu đề bảng
+        fillColor: [22, 160, 133],
         textColor: 255,
         fontSize: 11,
         fontStyle: "bold",
       },
     });
 
-    // Save the PDF
     doc.save("payment_history.pdf");
   };
 
-  // Fetch payment history
   const fetchPaymentHistory = async () => {
     try {
       const response = await axios.get("/lstt");
-      console.log("🚀 ~ fetchPaymentHistory ~ response:", response.data);
       setPaymentHistory(response.data);
     } catch (error) {
       console.error("Error fetching payment history:", error);
@@ -72,107 +71,165 @@ function PaymentHistory() {
     fetchPaymentHistory();
   }, []);
 
-  // Handle form field changes
+  const filteredData = paymentHistory.filter((record) => {
+    const matchesSearch =
+      record.users.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.goimua.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === "" || record.trangthai === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
-  // Add a new payment history record
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold text-center mb-6">
         Quản lý Lịch sử Thanh Toán
       </h1>
-      {/* Table to display payment history */}
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider"
-            >
-              Người thanh toán
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Gói mua
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Trạng Thái
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Số Tiền
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Ngày Thanh Toán
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Số Lượng Mua
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {paymentHistory.map((record) => (
-            <tr
-              key={record.id}
-              className="hover:bg-gray-50 transition-colors duration-200"
-            >
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {record.users.username}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {record.goimua}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span
-                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                  ${
-                    record.trangthai === "Thành công"
-                      ? "bg-green-100 text-green-800"
-                      : record.trangthai === "Đang xử lý"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {record.trangthai}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(record.sotien)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN")}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {record.Soluongmua}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
-      {/* Button to export table data to PDF */}
-      <button
-        onClick={exportToPDF}
-        className="bg-green-500 text-white px-4 py-2 rounded mt-4"
-      >
-        Export to PDF
-      </button>
+      <div className="flex gap-4 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên hoặc gói mua..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full border rounded-lg"
+          />
+        </div>
+
+        <div className="relative">
+          <Filter className="absolute left-2 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="h-10 pl-8 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Lọc trạng thái</option>
+            <option value="Thành công">Thành công</option>
+            <option value="Đang xử lý">Đang xử lý</option>
+            <option value="Thất bại">Thất bại</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">
+                Người thanh toán
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Gói mua
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng Thái
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Số Tiền
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày Thanh Toán
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Số Lượng Mua
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentItems.map((record) => (
+              <tr
+                key={record.id}
+                className="hover:bg-gray-50 transition-colors duration-200"
+              >
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.users.username}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.goimua}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                    ${
+                      record.trangthai === "Thành công"
+                        ? "bg-green-100 text-green-800"
+                        : record.trangthai === "Đang xử lý"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {record.trangthai}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(record.sotien)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN")}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.Soluongmua}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center justify-between mt-4">
+        <div className="flex gap-2 items-center">
+          <select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            className="h-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+          <span className="text-sm text-gray-600">mục mỗi trang</span>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50"
+          >
+            Trước
+          </button>
+          <span className="px-3 py-1">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50"
+          >
+            Sau
+          </button>
+        </div>
+
+        <button
+          onClick={exportToPDF}
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors duration-200"
+        >
+          Export to PDF
+        </button>
+      </div>
     </div>
   );
 }

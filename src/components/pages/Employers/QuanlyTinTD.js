@@ -22,7 +22,12 @@ function TTDNTD() {
   const [quillInstance, setQuillInstance] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVisible1, setIsModalVisible1] = useState(false);
-
+  const [searchTerm1, setSearchTerm1] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [currentPage1, setCurrentPage1] = useState(1);
+  const [allJobPosts, setAllJobPosts] = useState([]);
+  const postsPerPage = 5;
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -42,6 +47,7 @@ function TTDNTD() {
     Kynang: [],
     Capbac: [],
   });
+
   const [jobSeekers, setJobSeekers] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
@@ -98,9 +104,60 @@ function TTDNTD() {
     try {
       const response = await axios.get("/tintd/ntd", { params: { id: id } });
       setJobPosts(response.data);
+      setAllJobPosts(response.data);
     } catch (error) {
       console.error("Error fetching job posts:", error);
     }
+  }; // Original list of job posts
+  const handleSearch = (event) => {
+    const searchValue = event.target.value;
+    setSearchTerm1(searchValue);
+
+    if (searchValue.trim() === "") {
+      // Reset to the original unfiltered list
+      setJobPosts(allJobPosts);
+    } else {
+      // Filter based on the search term
+      const filtered = allJobPosts.filter((post) =>
+        post.tieude.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setJobPosts(filtered);
+    }
+    setCurrentPage1(1); // Reset to the first page
+  };
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete("/tintd", {
+        params: {
+          id: id,
+        },
+      });
+      toast.success("Xóa thành công");
+      fetchJobPosts(); // Tải lại danh sách
+    } catch (error) {
+      toast.error(`Lỗi xóa: ${error.message}`);
+    }
+  };
+  const indexOfLastPost = currentPage1 * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = jobPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages1 = Math.ceil(jobPosts.length / postsPerPage);
+
+  const toggleStatus = (id) => {
+    setJobPosts((posts) =>
+      posts.map((post) => {
+        if (post.id === id) {
+          const newStatus =
+            post.trangthai === "Đang tuyển" ? "Tạm dừng" : "Đang tuyển";
+          return { ...post, trangthai: newStatus };
+        }
+        return post;
+      })
+    );
+    toast({
+      title: "Cập nhật trạng thái",
+      description: "Đã thay đổi trạng thái bài đăng",
+    });
   };
   const fetchJobSeekers = async () => {
     try {
@@ -474,8 +531,18 @@ function TTDNTD() {
       </div>
 
       <>
+        <div className="mb-4 relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm bài đăng..."
+            className="pl-10 pr-4 py-2 w-full border rounded-lg"
+            value={searchTerm1}
+            onChange={handleSearch}
+          />
+        </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
+          <table className="min-w-full bg-white border rounded-lg shadow-md">
             <thead>
               <tr className="border-b">
                 <th className="px-4 py-2 sticky top-0 bg-white z-10 text-left">
@@ -493,31 +560,53 @@ function TTDNTD() {
               </tr>
             </thead>
             <tbody>
-              {jobPosts.map((post) => (
-                <tr key={post.id} className="border-b">
+              {currentPosts.map((post) => (
+                <tr key={post.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2 text-left">{post.tieude}</td>
                   <td className="px-4 py-2 text-left">
                     {new Date(post.Ngayhethan).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-2 text-left">{post.trangthai}</td>
                   <td className="px-4 py-2 text-left">
+                    <span
+                      className={`px-2 py-1 rounded-full text-sm ${
+                        post.trangthai === "Đang tuyển"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {post.trangthai}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-left space-x-2">
                     <button
-                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                       onClick={() => xemChiTiet(post.id)}
                     >
                       Xem chi tiết
                     </button>
                     <button
-                      className="bg-red-500 text-white px-3 py-1 rounded"
+                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                       onClick={() => Chinhsua(post.id)}
                     >
                       Chỉnh sửa
                     </button>
                     <button
-                      className="bg-green-500 text-white px-3 py-1 rounded"
+                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
                       onClick={() => xemhoso(post.id)}
                     >
                       Xem hồ sơ
+                    </button>
+                    <button
+                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                      onClick={() => toggleStatus(post.id)}
+                    >
+                      {post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Mở lại"}
+                    </button>
+                    <button
+                      className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+                      onClick={() => handleDelete(post.id)}
+                    >
+                      Xóa
                     </button>
                   </td>
                 </tr>
@@ -525,7 +614,27 @@ function TTDNTD() {
             </tbody>
           </table>
         </div>
-
+        <div className="flex justify-center mt-4 space-x-2">
+          <button
+            className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+            onClick={() => setCurrentPage1((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage1 === 1}
+          >
+            Trước
+          </button>
+          <span className="px-3 py-1">
+            Trang {currentPage1} / {totalPages1}
+          </span>
+          <button
+            className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+            onClick={() =>
+              setCurrentPage1((prev) => Math.min(prev + 1, totalPages1))
+            }
+            disabled={currentPage1 === totalPages1}
+          >
+            Sau
+          </button>
+        </div>
         {selectedhoso && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl">

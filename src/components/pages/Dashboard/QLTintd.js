@@ -5,6 +5,7 @@ import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
 import { Editor } from "@tinymce/tinymce-react";
+import { Loader2, Eye, Check, Trash2, X } from "lucide-react";
 function App() {
   const [jobPosts, setJobPosts] = useState([]); // Danh sách bài đăng
   const [recruiters, setRecruiters] = useState([]); // Danh sách nhà tuyển dụng
@@ -73,6 +74,7 @@ function App() {
       toast.error(`Lỗi duyệt: ${error.message}`);
     }
   };
+
   const XoaTinTD = async (id) => {
     try {
       await axios.delete("/tintd", {
@@ -142,6 +144,54 @@ function App() {
   const closeModal = () => {
     setSelectedPost(null);
   };
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedPostId, setSelectedPostId] = useState(null);
+
+  const onClose = () => {
+    setRejectModalOpen(false); // Close the modal
+    setRejectReason(""); // Reset the reason field
+  };
+  const openRejectModal = (postId) => {
+    setSelectedPostId(postId);
+    setRejectModalOpen(true);
+  };
+  const handleSubmittc = async () => {
+    if (!selectedPostId) {
+      toast.error("Vui lòng chọn bài đăng để từ chối.");
+      return;
+    }
+
+    const post = jobPosts.find((post) => post.id === selectedPostId);
+    console.log("🚀 ~ handleSubmittc ~ post:", post);
+
+    if (!post) {
+      toast.error("Không tìm thấy bài đăng.");
+      return;
+    }
+
+    if (!rejectReason.trim()) {
+      toast.error("Vui lòng nhập lý do từ chối.");
+      return;
+    }
+
+    try {
+      // Send both the post ID and the rejection reason
+      await axios.post("/tintd/tuchoi", {
+        post: post,
+        reason: rejectReason,
+      });
+
+      toast.success("Từ chối thành công!");
+      fetchJobPosts(); // Reload the job posts list
+      setRejectModalOpen(false); // Close the modal after submission
+      setRejectReason(""); // Reset the reason field
+    } catch (error) {
+      toast.error(
+        `Lỗi từ chối: ${error.response?.data?.message || error.message}`
+      );
+    }
+  };
 
   useEffect(() => {
     fetchRecruiters();
@@ -154,7 +204,6 @@ function App() {
       <h1 className="text-2xl font-bold text-center mb-6">
         Quản lý tin tuyển dụng
       </h1>
-
       {/* Bộ lọc */}
       <div className="flex items-center mb-4">
         <label htmlFor="filterStatus" className="mr-2 font-semibold">
@@ -168,10 +217,10 @@ function App() {
           <option value="all">Tất cả</option>
           <option value="Đã duyệt">Đã duyệt</option>
           <option value="Chờ duyệt">Chờ duyệt</option>
-          <option value="rejected">Đã từ chối</option>
+          <option value="Đã từ chối">Đã từ chối</option>
+          <option value="Đã hết hạn">Đã hết hạn</option>
         </select>
       </div>
-
       {/* Export PDF */}
       <div className="text-right mb-4">
         <button
@@ -181,7 +230,6 @@ function App() {
           Export to PDF
         </button>
       </div>
-
       {/* Bảng danh sách bài đăng */}
       <div className="overflow-x-auto">
         {loading ? (
@@ -212,25 +260,45 @@ function App() {
                   <td className="px-4 py-2 w-1/10 text-center">
                     {post.trangthai}
                   </td>
-                  <td className="px-4 py-2 w-1/10 text-center">
-                    <button
-                      className="bg-blue-500 text-white px-3 py-1 rounded"
-                      onClick={() => xemChiTiet(post.id)}
-                    >
-                      Xem chi tiết
-                    </button>
-                    <button
-                      className="bg-green-500 text-white px-3 py-1 rounded"
-                      onClick={() => handleSubmit(post.id)}
-                    >
-                      Duyệt
-                    </button>
-                    <button
-                      className="bg-red-500 text-white px-3 py-1 rounded"
-                      onClick={() => XoaTinTD(post.id)}
-                    >
-                      Xóa
-                    </button>
+                  <td className="px-4 py-3 w-1/10">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                        onClick={() => xemChiTiet(post.id)}
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="h-5 w-5" />
+                      </button>
+                      <button
+                        className="p-2 text-green-600 hover:bg-green-50 rounded"
+                        onClick={() => handleSubmit(post.id)}
+                        title="Duyệt tin"
+                      >
+                        <Check className="h-5 w-5" />
+                      </button>
+                      <button
+                        className="p-2 text-orange-600 hover:bg-orange-50 rounded"
+                        onClick={() => openRejectModal(post.id)}
+                        title="Từ chối"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <button
+                        className="p-2 text-red-600 hover:bg-red-50 rounded"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Bạn có chắc chắn muốn xóa tin tuyển dụng này?"
+                            )
+                          ) {
+                            XoaTinTD(post.id);
+                          }
+                        }}
+                        title="Xóa tin"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -238,8 +306,35 @@ function App() {
           </table>
         )}
       </div>
-
-      {/* Modal chi tiết */}
+      {rejectModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-full">
+            <h3 className="text-lg font-semibold mb-4">
+              Từ chối tin tuyển dụng
+            </h3>
+            <textarea
+              className="w-full h-32 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Nhập lý do từ chối..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                onClick={onClose}
+              >
+                Hủy
+              </button>
+              <button
+                className="px-4 py-2 bg-orange-500 text-white hover:bg-orange-600 rounded"
+                onClick={handleSubmittc}
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {selectedPost && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-1/3 max-h-[90vh] flex flex-col">

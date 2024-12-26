@@ -27,24 +27,7 @@ const PlatformDashboard = () => {
   const [timeRange, setTimeRange] = useState("year"); // "year" or "month"
   const [employers, setEmployers] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]); // List of payment history records
-  // Dữ liệu theo năm (2024)
-  const yearlyData = [
-    { month: "T1", jobs: 4800, applications: 15000, matches: 720 },
-    { month: "T2", jobs: 5100, applications: 16200, matches: 780 },
-    { month: "T3", jobs: 5280, applications: 17500, matches: 850 },
-    { month: "T4", jobs: 5500, applications: 18200, matches: 890 },
-    // ... các tháng tiếp theo
-  ];
-
-  // Dữ liệu lương theo năm
-  const yearlySalaryTrends = [
-    { year: "2020", frontend: 18, backend: 20, devops: 25, mobile: 19 },
-    { year: "2021", frontend: 22, backend: 24, devops: 28, mobile: 23 },
-    { year: "2022", frontend: 25, backend: 28, devops: 32, mobile: 26 },
-    { year: "2023", frontend: 28, backend: 32, devops: 38, mobile: 29 },
-    { year: "2024", frontend: 32, backend: 35, devops: 42, mobile: 33 },
-  ];
-
+  const [employers1, setEmployers1] = useState([]);
   const [jobSeekers, setJobSeekers] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
   const fetchJobPosts = async () => {
@@ -99,33 +82,22 @@ const PlatformDashboard = () => {
       console.error("Error fetching employers:", error);
     }
   };
+  function countByField(companies, field = "linhvuc") {
+    const countMap = {};
 
-  // Thêm tab mới cho thống kê theo thời gian
-  // const jobCategoryData = [
-  //   { name: "Web Developer", value: 35 },
-  //   { name: "Mobile Developer", value: 20 },
-  //   { name: "DevOps/SysAdmin", value: 15 },
-  //   { name: "Data Engineer", value: 12 },
-  //   { name: "QA/Tester", value: 10 },
-  //   { name: "Others", value: 8 },
-  // ];
+    companies.forEach((company) => {
+      const key = company[field] || "Khác"; // Nếu không có trường thì gán "Khác"
+      countMap[key] = (countMap[key] || 0) + 1;
+    });
 
-  // Dữ liệu mức lương theo kinh nghiệm
-  const salaryData = [
-    { exp: "Fresher", junior: 8, middle: 0, senior: 0 },
-    { exp: "1-2 năm", junior: 12, middle: 18, senior: 0 },
-    { exp: "3-5 năm", junior: 0, middle: 25, senior: 35 },
-    { exp: "5+ năm", junior: 0, middle: 30, senior: 50 },
-  ];
-
-  // Dữ liệu ngôn ngữ/công nghệ hot
-  const techTrendData = [
-    { name: "JavaScript", jobs: 1200, candidates: 800 },
-    { name: "Java", jobs: 950, candidates: 600 },
-    { name: "Python", jobs: 850, candidates: 700 },
-    { name: "React", jobs: 800, candidates: 500 },
-    { name: "Node.js", jobs: 600, candidates: 400 },
-  ];
+    // Chuyển đổi object thành mảng các đối tượng {linhvuc, count}
+    return Object.keys(countMap).map((key) => ({
+      [field]: key,
+      count: countMap[key],
+    }));
+  }
+  const count = countByField(employers, "linhvuc");
+  console.log(count);
 
   const COLORS = [
     "#0088FE",
@@ -185,8 +157,7 @@ const PlatformDashboard = () => {
     return result;
   }
   const vldiachi = countJobsByLocation(jobPosts);
-  console.log("🚀 ~ PlatformDashboard ~ vldiachi:", vldiachi);
-  console.log("🚀 ~ PlatformDashboard ~ result:", result);
+
   function countJobsBySkill(jobsData) {
     const skillCount = {};
 
@@ -235,7 +206,7 @@ const PlatformDashboard = () => {
     return result;
   }
   const trngthai = countJobsByStatus(jobPosts);
-  console.log("🚀 ~ PlatformDashboard ~ trngthai:", trngthai);
+
   function calculateTotalAmount(transactions) {
     return transactions.reduce((total, transaction) => {
       const amount = parseFloat(transaction.sotien) || 0; // Lấy giá trị số tiền hoặc 0 nếu không có
@@ -535,7 +506,7 @@ const PlatformDashboard = () => {
             {/* Thống kê khu vực */}
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
-                Top Khu Vực Tuyển Dụng
+                Các Khu Vực Tuyển Dụng
               </h2>
               <div className="space-y-4">
                 {vldiachi.map((region, index) => (
@@ -569,10 +540,30 @@ const PlatformDashboard = () => {
                 <Bar dataKey="jobs" fill="#8884d8" name="Số lượng công việc" />
               </BarChart>
             </div>
+            <div className="bg-white shadow-md rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                Các Lĩnh Vực Tuyển Dụng
+              </h2>
+              <div className="space-y-4">
+                {count.map((region, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <div>
+                      <h3 className="font-medium">{region.linhvuc}</h3>
+                    </div>
+                    <span className="text-green-600">
+                      {region.count} việc làm
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Top công nghệ */}
             <div className="bg-white shadow-md rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Top Skills Yêu Cầu</h2>
+              <h2 className="text-xl font-semibold mb-4">Các Skills Yêu Cầu</h2>
               <div className="space-y-3">
                 {skilljob.map((tech, index) => (
                   <div

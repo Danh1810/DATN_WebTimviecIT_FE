@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "../../services/axios";
 import Select from "react-select";
+import { useDebounce } from "use-debounce";
 
 const FILTERS = [
   {
@@ -33,7 +34,11 @@ const FILTERS = [
     key: "hinhThuc",
     options: ["Toàn thời gian", "Bán thời gian", "Freelance"],
   },
-  { label: "Giới tính", key: "gioiTinh", options: ["Nam", "Nữ", "Khác"] },
+  {
+    label: "Giới tính",
+    key: "gioiTinh",
+    options: ["Nam", "Nữ", "Khác"],
+  },
   {
     label: "Tình trạng hôn nhân",
     key: "honNhan",
@@ -42,24 +47,29 @@ const FILTERS = [
 ];
 
 const Filter = React.memo(({ filters, onFilterChange }) => (
-  <div className="p-4 bg-gray-100">
-    <h2 className="mb-2 text-lg font-semibold">Bộ lọc nâng cao:</h2>
-    {FILTERS.map((filter) => (
-      <div key={filter.key} className="mb-4">
-        <label className="block mb-1 text-sm">{filter.label}</label>
-        <select
-          className="w-full px-4 py-2 border rounded"
-          onChange={(e) => onFilterChange(filter.key, e.target.value)}
-        >
-          <option value="">Tất cả {filter.label.toLowerCase()}</option>
-          {filter.options.map((option, index) => (
-            <option key={index} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-    ))}
+  <div className="p-4 bg-gray-100 sticky top-0">
+    <h2 className="mb-4 text-lg font-semibold">Bộ lọc nâng cao</h2>
+    <div className="space-y-4">
+      {FILTERS.map((filter) => (
+        <div key={filter.key}>
+          <label className="block mb-2 text-sm font-medium">
+            {filter.label}
+          </label>
+          <select
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-orange-500"
+            onChange={(e) => onFilterChange(filter.key, e.target.value)}
+            value={filters[filter.key] || ""}
+          >
+            <option value="">Tất cả</option>
+            {filter.options.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+      ))}
+    </div>
   </div>
 ));
 
@@ -70,75 +80,82 @@ const SearchBar = ({
   onInputChange,
   searchTerm,
   onSearchTermChange,
-  onSearch,
 }) => (
-  <div className="flex items-center gap-4 p-4 bg-white shadow">
-    <input
-      type="text"
-      placeholder="Tìm kiếm"
-      className="flex-grow px-4 py-2 border rounded"
-      value={searchTerm}
-      onChange={(e) => onSearchTermChange(e.target.value)}
-    />
-    <Select
-      options={cities}
-      value={selectedCity}
-      onChange={onCityChange}
-      onInputChange={onInputChange}
-      placeholder="Chọn hoặc nhập Tỉnh/Thành phố"
-      isClearable
-      isSearchable
-    />
-    <button
-      className="px-4 py-2 text-white bg-orange-500 rounded"
-      onClick={onSearch}
-    >
-      Tìm kiếm
-    </button>
+  <div className="sticky top-0 z-10 flex items-center gap-4 p-4 bg-white shadow">
+    <div className="flex-grow">
+      <input
+        type="text"
+        placeholder="Tìm kiếm theo tên hoặc kỹ năng..."
+        className="w-full p-2 border rounded focus:ring-2 focus:ring-orange-500"
+        value={searchTerm}
+        onChange={(e) => onSearchTermChange(e.target.value)}
+      />
+    </div>
+    <div className="w-64">
+      <Select
+        options={cities}
+        value={selectedCity}
+        onChange={onCityChange}
+        onInputChange={onInputChange}
+        placeholder="Chọn tỉnh/thành phố"
+        className="text-sm"
+        isClearable
+        isSearchable
+      />
+    </div>
   </div>
 );
 
-const HosoxemList = ({ hosoxem, onFavorite, onView }) => (
-  <div className="p-4">
-    <h2 className="mb-4 text-lg font-semibold">
-      Kết quả tìm thấy: {hosoxem.length} hồ sơ
-    </h2>
-    {hosoxem.map((hs) => (
-      <div
-        key={hs.id}
-        className="p-4 mb-4 bg-white border rounded shadow-sm flex justify-between items-center"
-      >
-        <div>
-          <h3 className="text-lg font-bold">{hs.hoVaTen}</h3>
-          <p>{hs.tenhoso}</p>
-          <p className="text-gray-500">{hs.trinhDoHocVan}</p>
-          <p className="text-gray-500">{hs.kinhNghiemLamViec}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-gray-400">
-            {new Date(hs.ngayCapNhat).toLocaleDateString()}
+const ProfileCard = React.memo(({ profile, onFavorite, onView }) => (
+  <div className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+    <div className="flex justify-between">
+      <div>
+        <h3 className="text-lg font-semibold">{profile.hoVaTen}</h3>
+        <p className="text-gray-600">{profile.tenhoso}</p>
+        <div className="mt-2 space-y-1">
+          <p className="text-sm text-gray-500">
+            <span className="font-medium">Học vấn:</span>{" "}
+            {profile.trinhDoHocVan}
           </p>
+          <p className="text-sm text-gray-500">
+            <span className="font-medium">Kinh nghiệm:</span>{" "}
+            {profile.kinhNghiemLamViec}
+          </p>
+          <p className="text-sm text-gray-500">
+            <span className="font-medium">Ngành nghề:</span> {profile.nganhNghe}
+          </p>
+        </div>
+      </div>
+      <div className="flex flex-col items-end">
+        <p className="text-sm text-gray-400">
+          Cập nhật: {new Date(profile.ngayCapNhat).toLocaleDateString()}
+        </p>
+        <div className="mt-2 space-x-2">
           <button
-            onClick={() => onFavorite(hs.id)}
-            className="text-gray-500 hover:text-red-500"
+            onClick={() => onFavorite(profile.id)}
+            className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+            title="Lưu hồ sơ"
           >
             ❤️
           </button>
           <button
-            onClick={() => onView(hs.id)}
-            className="ml-4 text-gray-500 hover:text-blue-500"
+            onClick={() => onView(profile.id)}
+            className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+            title="Xem hồ sơ"
           >
             👁
           </button>
         </div>
       </div>
-    ))}
+    </div>
   </div>
-);
+));
 
 function App() {
-  const [selectedhosoxem, setSelectedhosoxem] = useState([]);
-  const [filteredHosoxem, setFilteredHosoxem] = useState([]);
+  const [profiles, setProfiles] = useState([]);
+  const [filteredProfiles, setFilteredProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [cities, setCities] = useState([
     { value: "Hà Nội", label: "Hà Nội" },
     { value: "Đà Nẵng", label: "Đà Nẵng" },
@@ -147,77 +164,90 @@ function App() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [filters, setFilters] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
   useEffect(() => {
-    const fetchhoso = async () => {
-      try {
-        const response = await axios.get("/hoso");
-        setSelectedhosoxem(response.data);
-        setFilteredHosoxem(response.data);
-      } catch (error) {
-        console.error("Error fetching job seekers:", error);
-      }
-    };
-
-    fetchhoso();
+    fetchProfiles();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [debouncedSearchTerm, selectedCity, filters]);
+
+  const fetchProfiles = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/hoso");
+      setProfiles(response.data);
+      setFilteredProfiles(response.data);
+    } catch (err) {
+      setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+      console.error("Error fetching profiles:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterChange = useCallback((key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const handleCityChange = (selectedOption) => {
-    setSelectedCity(selectedOption);
-    if (selectedOption) {
-      const filtered = selectedhosoxem.filter(
-        (hs) => hs.nguoitimviec?.thanhPho === selectedOption.value
+  const applyFilters = useCallback(() => {
+    let filtered = profiles;
+
+    // Apply search term filter
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (profile) =>
+          profile.hoVaTen?.toLowerCase().includes(searchLower) ||
+          profile.tenhoso?.toLowerCase().includes(searchLower) ||
+          profile.kyNangLapTrinh?.toLowerCase().includes(searchLower)
       );
-      setFilteredHosoxem(filtered);
-    } else {
-      setFilteredHosoxem(selectedhosoxem);
     }
-  };
 
-  const handleInputChange = (inputValue) => {
-    if (inputValue && !cities.some((city) => city.value === inputValue)) {
-      const newCity = { value: inputValue, label: inputValue };
-      setCities((prev) => [...prev, newCity]);
+    // Apply city filter
+    if (selectedCity) {
+      filtered = filtered.filter(
+        (profile) => profile.nguoitimviec?.thanhPho === selectedCity.value
+      );
     }
-  };
 
-  const handleSearch = () => {
-    const filtered = selectedhosoxem.filter((hs) => {
-      const matchesSearch =
-        !searchTerm ||
-        hs.hoVaTen?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hs.tenhoso?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesFilters = Object.keys(filters).every((key) => {
-        return filters[key] === "" || hs[key]?.toString() === filters[key];
+    // Apply other filters
+    filtered = filtered.filter((profile) => {
+      return Object.entries(filters).every(([key, value]) => {
+        return !value || profile[key]?.toString() === value;
       });
-
-      return matchesSearch && matchesFilters;
     });
 
-    setFilteredHosoxem(filtered);
-  };
+    setFilteredProfiles(filtered);
+  }, [profiles, debouncedSearchTerm, selectedCity, filters]);
 
-  const handleFavorite = (id) => {
-    // Implement favorite logic
-    console.log(`Favorited profile with id: ${id}`);
-  };
+  const handleCityChange = useCallback((option) => {
+    setSelectedCity(option);
+  }, []);
 
-  const handleView = (id) => {
-    // Implement view profile logic
-    console.log(`Viewed profile with id: ${id}`);
-  };
+  const handleInputChange = useCallback(
+    (inputValue) => {
+      if (inputValue && !cities.some((city) => city.value === inputValue)) {
+        setCities((prev) => [
+          ...prev,
+          { value: inputValue, label: inputValue },
+        ]);
+      }
+    },
+    [cities]
+  );
+
+  if (loading) return <div className="p-8 text-center">Đang tải...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="flex">
-      <aside className="w-1/4 bg-gray-100">
+    <div className="flex min-h-screen bg-gray-50">
+      <aside className="w-1/4 border-r">
         <Filter filters={filters} onFilterChange={handleFilterChange} />
       </aside>
-      <main className="w-3/4">
+      <main className="flex-1">
         <SearchBar
           cities={cities}
           selectedCity={selectedCity}
@@ -225,13 +255,22 @@ function App() {
           onInputChange={handleInputChange}
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
-          onSearch={handleSearch}
         />
-        <HosoxemList
-          hosoxem={filteredHosoxem}
-          onFavorite={handleFavorite}
-          onView={handleView}
-        />
+        <div className="p-4">
+          <h2 className="mb-4 text-lg font-semibold">
+            Kết quả tìm thấy: {filteredProfiles.length} hồ sơ
+          </h2>
+          <div className="space-y-4">
+            {filteredProfiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                onFavorite={(id) => console.log(`Favorited profile: ${id}`)}
+                onView={(id) => console.log(`Viewed profile: ${id}`)}
+              />
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );
