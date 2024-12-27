@@ -230,7 +230,7 @@ function EmployerManagement() {
             </label>
             <div>
               <Editor
-                apiKey="hmiu80d3r5jkhc7nvtrs6d0v221yd3esxb0cc9qo6owjail8"
+                apiKey="0quscvfjqhtejntlhe93sbs0lzvm10e4lx8eg0yogzutv8jh"
                 value={employer.thongtin}
                 onEditorChange={handleEditorChange}
                 init={{
@@ -249,8 +249,6 @@ function EmployerManagement() {
               />
             </div>
           </div>
-
-          {/* Action Buttons */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"

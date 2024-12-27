@@ -1263,7 +1263,7 @@ function TTDNTD() {
                     </label>
                     <div>
                       <Editor
-                        apiKey="hmiu80d3r5jkhc7nvtrs6d0v221yd3esxb0cc9qo6owjail8"
+                        apiKey="0quscvfjqhtejntlhe93sbs0lzvm10e4lx8eg0yogzutv8jh"
                         value={selectedPostcs.mota}
                         onEditorChange={handleEditorChange}
                         init={{
@@ -1326,7 +1326,7 @@ function TTDNTD() {
                   Nội dung phản hồi
                 </label>
                 <Editor
-                  apiKey="hmiu80d3r5jkhc7nvtrs6d0v221yd3esxb0cc9qo6owjail8"
+                  apiKey="0quscvfjqhtejntlhe93sbs0lzvm10e4lx8eg0yogzutv8jh"
                   value={formData.noiDung}
                   onEditorChange={handleEditorChange1}
                   init={{

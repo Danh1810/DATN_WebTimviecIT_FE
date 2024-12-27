@@ -135,7 +135,7 @@ function App() {
         Ma: id,
       });
 
-      toast.success("Job post submitted successfully!");
+      toast.success(response.messages);
     } catch (error) {
       toast.error("Error submitting job post");
     }
@@ -308,7 +308,7 @@ function App() {
           <div>
             <label className="block font-semibold mb-1">Mô tả</label>
             <Editor
-              apiKey="hmiu80d3r5jkhc7nvtrs6d0v221yd3esxb0cc9qo6owjail8"
+              apiKey="0quscvfjqhtejntlhe93sbs0lzvm10e4lx8eg0yogzutv8jh"
               value={jobPost.mota}
               onEditorChange={handleEditorChange}
               init={{
