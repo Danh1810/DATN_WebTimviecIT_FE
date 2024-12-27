@@ -143,22 +143,22 @@ function TTDNTD() {
   const currentPosts = jobPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages1 = Math.ceil(jobPosts.length / postsPerPage);
 
-  const toggleStatus = (id) => {
-    setJobPosts((posts) =>
-      posts.map((post) => {
-        if (post.id === id) {
-          const newStatus =
-            post.trangthai === "Đang tuyển" ? "Tạm dừng" : "Đang tuyển";
-          return { ...post, trangthai: newStatus };
-        }
-        return post;
-      })
-    );
-    toast({
-      title: "Cập nhật trạng thái",
-      description: "Đã thay đổi trạng thái bài đăng",
-    });
-  };
+  // const toggleStatus = (id) => {
+  //   setJobPosts((posts) =>
+  //     posts.map((post) => {
+  //       if (post.id === id) {
+  //         const newStatus =
+  //           post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Đang tuyển";
+  //         return { ...post, trangthai: newStatus };
+  //       }
+  //       return post;
+  //     })
+  //   );
+  //   toast({
+  //     title: "Cập nhật trạng thái",
+  //     description: "Đã thay đổi trạng thái bài đăng",
+  //   });
+  // };
   const fetchJobSeekers = async () => {
     try {
       const response = await axios.get("/ngtviec");
@@ -254,9 +254,11 @@ function TTDNTD() {
   };
   const handleSua = async () => {
     try {
-      const response = await axios.put("/tintd/update", selectedPostcs);
+      const updatedPost = { ...selectedPostcs, trangthai: "Chờ duyệt" };
+      const response = await axios.put("/tintd/update", updatedPost);
       if (response.code === 0) {
         alert("Cập nhật thành công!");
+        fetchJobPosts();
         setSelectedPostcs(null);
       } else {
         alert("Đã xảy ra lỗi khi cập nhật.");
@@ -569,7 +571,7 @@ function TTDNTD() {
                   <td className="px-4 py-2 text-left">
                     <span
                       className={`px-2 py-1 rounded-full text-sm ${
-                        post.trangthai === "Đang tuyển"
+                        post.trangthai === "Đã duyệt"
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
@@ -596,12 +598,12 @@ function TTDNTD() {
                     >
                       Xem hồ sơ
                     </button>
-                    <button
+                    {/* <button
                       className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                       onClick={() => toggleStatus(post.id)}
                     >
                       {post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Mở lại"}
-                    </button>
+                    </button> */}
                     <button
                       className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
                       onClick={() => handleDelete(post.id)}

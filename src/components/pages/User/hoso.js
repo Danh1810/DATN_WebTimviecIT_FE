@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { toast } from "react-toastify";
-
+import Select from "react-select";
 const CVManagement = () => {
   const [isOpen, setIsOpen] = useState(false);
   const id = localStorage.getItem("id");
@@ -17,6 +17,8 @@ const CVManagement = () => {
     fileHoso: "",
     ngayCapNhat: "",
     kinhNghiemLamViec: "",
+    Mucluongmongmuon: "",
+    hinhThuclamviec: "",
   });
   const [selectedNTV, setSelectedNTV] = useState(null);
   const [editId, setEditId] = useState(null);
@@ -46,31 +48,33 @@ const CVManagement = () => {
     }
   };
   const programmingSkills = [
-    { value: "javascript", label: "JavaScript" },
-    { value: "python", label: "Python" },
-    { value: "java", label: "Java" },
-    { value: "csharp", label: "C#" },
-    { value: "php", label: "PHP" },
-    { value: "ruby", label: "Ruby" },
-    { value: "golang", label: "Golang" },
-    { value: "swift", label: "Swift" },
-    { value: "kotlin", label: "Kotlin" },
+    { value: "Javascript", label: "JavaScript" },
+    { value: "Python", label: "Python" },
+    { value: "Java", label: "Java" },
+    { value: "Csharp", label: "C#" },
+    { value: "Php", label: "PHP" },
+    { value: "Ruby", label: "Ruby" },
+    { value: "Golang", label: "Golang" },
+    { value: "Swift", label: "Swift" },
+    { value: "Kotlin", label: "Kotlin" },
   ];
-
+  const options = programmingSkills.map((skill) => ({
+    value: skill.value,
+    label: skill.label,
+  }));
   const workTypes = [
-    { value: "fulltime", label: "Toàn thời gian" },
-    { value: "parttime", label: "Bán thời gian" },
-    { value: "remote", label: "Từ xa" },
-    { value: "hybrid", label: "Hybrid" },
+    { value: "Toàn thời gian", label: "Toàn thời gian" },
+    { value: "Bán thời gian", label: "Bán thời gian" },
+    { value: "Hợp đồng thời vụ", label: "Hợp đồng thời vụ" },
   ];
 
   const levels = [
-    { value: "fresher", label: "Fresher" },
-    { value: "junior", label: "Junior" },
-    { value: "middle", label: "Middle" },
-    { value: "senior", label: "Senior" },
-    { value: "teamlead", label: "Team Lead" },
-    { value: "manager", label: "Manager" },
+    { value: "Fresher", label: "Fresher" },
+    { value: "Junior", label: "Junior" },
+    { value: "Middle", label: "Middle" },
+    { value: "Senior", label: "Senior" },
+    { value: "Teamlead", label: "Team Lead" },
+    { value: "Manager", label: "Manager" },
   ];
   const [selectedhosoNTV, setSelectedhoNTV] = useState(null);
   const handleSkillsChange = (selectedSkills) => {
@@ -361,32 +365,29 @@ const CVManagement = () => {
                 <label className="block font-medium mb-2">
                   Kỹ năng lập trình
                 </label>
-                <select
-                  multiple
+                <Select
+                  isMulti
                   name="kyNangLapTrinh"
-                  value={formData.kyNangLapTrinh}
-                  onChange={(e) => {
-                    const values = Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    );
-                    handleSkillsChange(values);
+                  options={options}
+                  className="w-full"
+                  value={options.filter((option) =>
+                    formData.kyNangLapTrinh.includes(option.value)
+                  )}
+                  onChange={(selectedOptions) => {
+                    const selectedValues = selectedOptions
+                      ? selectedOptions.map((option) => option.value)
+                      : [];
+                    handleSkillsChange(selectedValues);
                   }}
-                  className="w-full border rounded px-2 py-1 h-32 overflow-auto"
-                >
-                  {programmingSkills.map((skill) => (
-                    <option key={skill.value} value={skill.value}>
-                      {skill.label}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Chọn kỹ năng lập trình..."
+                  noOptionsMessage={() => "Không có lựa chọn nào"}
+                />
               </div>
-              ;
               <div className="mb-4">
                 <label className="block font-medium">Hình thức làm việc</label>
                 <select
-                  name="hinhThucLamViec"
-                  value={formData.hinhThucLamViec}
+                  name="hinhThuclamviec"
+                  value={formData.hinhThuclamviec}
                   onChange={handleChange}
                   className="w-full border rounded px-2 py-1"
                 >
@@ -428,24 +429,55 @@ const CVManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block font-medium">Trình độ học vấn</label>
-                <input
-                  type="text"
+                <select
                   name="trinhDoHocVan"
                   value={formData.trinhDoHocVan}
                   onChange={handleChange}
                   className="w-full border rounded px-2 py-1"
-                />
+                >
+                  <option value="">-- Chọn trình độ học vấn --</option>
+                  <option value="Trung cấp">Trung cấp</option>
+                  <option value="Cao đẳng">Cao đẳng</option>
+                  <option value="Đại học">Đại học</option>
+                  <option value="Thạc sĩ">Thạc sĩ</option>
+                  <option value="Tiến sĩ">Tiến sĩ</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block font-medium">Mức lương mong muốn</label>
+                <select
+                  name="Mucluongmongmuon"
+                  value={formData.Mucluongmongmuon}
+                  onChange={handleChange}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  <option value="">-- Chọn mức lương mong muốn --</option>
+                  <option value="5000000">Dưới 5 triệu</option>
+                  <option value="10000000">5 - 10 triệu</option>
+                  <option value="20000000">10 - 20 triệu</option>
+                  <option value="30000000">20 - 30 triệu</option>
+                  <option value="30000001">Trên 30 triệu</option>
+                </select>
               </div>
               <div className="mb-4">
                 <label className="block font-medium">
                   Kinh nghiệm làm việc
                 </label>
-                <textarea
+                <select
                   name="kinhNghiemLamViec"
                   value={formData.kinhNghiemLamViec}
                   onChange={handleChange}
                   className="w-full border rounded px-2 py-1"
-                />
+                >
+                  <option value="">-- Chọn kinh nghiệm làm việc --</option>
+                  <option value="Chưa có kinh nghiệm">
+                    Chưa có kinh nghiệm
+                  </option>
+                  <option value="Dưới 1 năm">Dưới 1 năm</option>
+                  <option value="1-3 năm">1-3 năm</option>
+                  <option value="3-5 năm">3-5 năm</option>
+                  <option value="Trên 5 năm">Trên 5 năm</option>
+                </select>
               </div>
               <div className="mb-4">
                 <label className="block font-medium">Dự án đã tham gia</label>
@@ -631,7 +663,11 @@ const CVManagement = () => {
                         Kỹ năng lập trình:
                       </label>
                       <p className="text-gray-900">
-                        {selectedhosoNTV.kyNangLapTrinh || "Chưa nhập"}
+                        {selectedhosoNTV.kyNangLapTrinh
+                          ? Array.isArray(selectedhosoNTV.kyNangLapTrinh)
+                            ? selectedhosoNTV.kyNangLapTrinh.join(", ")
+                            : selectedhosoNTV.kyNangLapTrinh
+                          : "Chưa nhập"}
                       </p>
                     </div>
                     <div>
