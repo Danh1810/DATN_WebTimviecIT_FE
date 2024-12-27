@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 
 const Luucongviec = () => {
   const id = localStorage.getItem("id");
-
   const [jobSeekers, setJobSeekers] = useState([]);
-
-  const [lcv, setlcv] = useState([]); // Danh sách hồ sơ
+  const [lcv, setlcv] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const fetchJobSeekers = async () => {
     try {
@@ -28,23 +30,21 @@ const Luucongviec = () => {
       console.error("Error fetching job posts:", error);
     }
   };
+
   const fetchlcv = async () => {
     try {
       const response = await axios.get("/ngtviec/lcv", { params: { id: id } });
-      console.log("🚀 ~ fetchlcv ~ response:", response);
-      const lcv = response.data[0]?.LCV_NTV || []; // Safely access the nested `hoso` array
+      const lcv = response.data[0]?.LCV_NTV || [];
       setlcv(lcv);
-      console.log("🚀 ~ fetchlcv ~ lcv:", lcv);
     } catch (error) {
       console.error("Error fetching CV data:", error);
     }
   };
+
   const XoaTinTD = async (id) => {
     try {
       await axios.delete("/lcv", {
-        params: {
-          id: id,
-        },
+        params: { id: id },
       });
       toast.success("Xóa thành công");
       fetchlcv();
@@ -52,36 +52,44 @@ const Luucongviec = () => {
       toast.error(`Lỗi xóa: ${error.message}`);
     }
   };
+
   useEffect(() => {
     fetchlcv();
     fetchJobSeekers();
     fetchJobPosts();
   }, []);
 
+  // Get current items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = lcv.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(lcv.length / itemsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+
   return (
     <div>
       <div className="container mx-auto p-4 min-h-screen">
-        {lcv.map((item) => {
-          // Tìm tin tuyển dụng tương ứng
+        {currentItems.map((item) => {
           const jobPost = jobPosts.find((rec) => rec.id === item.MaTTD);
-
-          // Kiểm tra nếu không tìm thấy tin tuyển dụng
           if (!jobPost) return null;
 
           return (
             <Link key={jobPost.id} to={`/tintuyendung/${jobPost.id}`}>
-              <div className="border rounded-lg p-4 shadow-md flex items-center justify-between hover:shadow-lg transition-shadow">
-                {/* Nội dung bên trong div */}
+              <div className="border rounded-lg p-4 mb-4 shadow-md flex items-center justify-between hover:shadow-lg transition-shadow">
                 <div className="flex items-start">
-                  {/* Logo */}
                   <div className="mr-4">
                     <img
-                      src={jobPost.employer?.logo || "/default-logo.png"} // Thay "N/A" bằng logo mặc định
+                      src={jobPost.employer?.logo || "/default-logo.png"}
                       alt="Company Logo"
                       className="w-12 h-12 object-contain rounded"
                     />
                   </div>
-                  {/* Nội dung chính */}
                   <div>
                     <h2 className="text-lg font-bold">
                       {jobPost.tieude || "Không có tiêu đề"}
@@ -89,7 +97,6 @@ const Luucongviec = () => {
                     <p className="text-gray-600 text-sm">
                       {jobPost.employer?.ten || "Tên nhà tuyển dụng không có"}
                     </p>
-                    {/* Thông tin khác */}
                     <div className="flex items-center text-sm text-gray-500 mt-2">
                       <span className="mr-4">
                         💰{" "}
@@ -109,12 +116,11 @@ const Luucongviec = () => {
                     </div>
                   </div>
                 </div>
-                {/* Phần bên phải */}
                 <div>
                   <button
                     onClick={(e) => {
-                      e.preventDefault(); // Prevent link navigation when clicking the button
-                      XoaTinTD(item.id); // Pass the product ID to the function
+                      e.preventDefault();
+                      XoaTinTD(item.id);
                     }}
                     className="flex items-center text-red-500 hover:text-red-600 font-medium"
                   >
@@ -125,6 +131,39 @@ const Luucongviec = () => {
             </Link>
           );
         })}
+
+        {/* Pagination */}
+        <div className="flex justify-center mt-4">
+          <nav className="inline-flex rounded-md shadow">
+            <button
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+            {pageNumbers.map((number) => (
+              <button
+                key={number}
+                onClick={() => paginate(number)}
+                className={`px-3 py-2 border border-gray-300 text-sm font-medium ${
+                  currentPage === number
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {number}
+              </button>
+            ))}
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === Math.ceil(lcv.length / itemsPerPage)}
+              className="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   );
