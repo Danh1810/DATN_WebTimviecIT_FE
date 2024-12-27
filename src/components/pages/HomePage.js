@@ -15,7 +15,8 @@ export default function Example() {
   const userid = localStorage.getItem("id");
   const auth = useSelector((state) => state.auth);
   console.log("🚀 ~ Example ~ auth:", auth.isAuth);
-
+  const [currentBottomPage, setCurrentBottomPage] = useState(1);
+  const bottomItemsPerPage = 6;
   const handleSearchcv = () => {
     if (keyword.trim()) {
       // Điều hướng tới trang /results và truyền từ khóa qua query parameter
@@ -85,16 +86,23 @@ export default function Example() {
 
   // Calculate total pages
   const totalPages = Math.ceil(jobPosts.length / itemsPerPage);
-
+  const totalBottomPages = Math.ceil(jobPosts.length / bottomItemsPerPage);
   // Get the items for the current page
   const currentItems = jobPosts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
+  const currentBottomItems = jobPosts.slice(
+    (currentBottomPage - 1) * bottomItemsPerPage,
+    currentBottomPage * bottomItemsPerPage
+  );
   // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleBottomPageChange = (page) => {
+    setCurrentBottomPage(page);
   };
   useEffect(() => {
     fetchEmployers();
@@ -238,7 +246,7 @@ export default function Example() {
         </a>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {jobPosts.map((product) => (
+          {currentBottomItems.map((product) => (
             <Link key={product.id} to={`/tintuyendung/${product.id}`}>
               <div
                 className={`border rounded-lg p-5 shadow-md ${
@@ -261,8 +269,8 @@ export default function Example() {
                     className="text-gray-400 hover:text-blue-500"
                     aria-label="Save Job"
                     onClick={(e) => {
-                      e.preventDefault(); // Prevent link navigation when clicking the button
-                      handleSearch(product.id); // Pass the product ID to the function
+                      e.preventDefault();
+                      handleSearch(product.id);
                     }}
                   >
                     <svg
@@ -292,45 +300,6 @@ export default function Example() {
                     {product.employer.ten}
                   </p>
                 </div>
-
-                {/* <div className="flex items-center text-blue-600 font-medium text-lg mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 mr-2"
-                  aria-label="Salary"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 1.75c3.5 0 6.25 2.75 6.25 6.25s-2.75 6.25-6.25 6.25S5.75 11.5 5.75 8 8.5 1.75 12 1.75z"
-                  />
-                </svg>
-                {product.mucluong}
-              </div> */}
-
-                {/* <div className="flex items-center text-gray-600 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 mr-2"
-                  aria-label="Location"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 12l7.5 7.5L21 7.5"
-                  />
-                </svg>
-                {product.diachi}
-              </div> */}
-
                 <div className="flex justify-between items-center text-gray-500 text-sm mb-4">
                   <span className="flex items-center">
                     <svg
@@ -352,7 +321,6 @@ export default function Example() {
                   </span>
                 </div>
 
-                {/* Skills/Tags Section */}
                 <div className="flex flex-wrap gap-2">
                   {product.levels.map((skill, index) => (
                     <span
@@ -365,6 +333,23 @@ export default function Example() {
                 </div>
               </div>
             </Link>
+          ))}
+        </div>
+
+        {/* Bottom Section Pagination */}
+        <div className="mt-8 flex justify-center">
+          {Array.from({ length: totalBottomPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handleBottomPageChange(index + 1)}
+              className={`mx-1 px-4 py-2 border rounded ${
+                currentBottomPage === index + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              {index + 1}
+            </button>
           ))}
         </div>
       </div>

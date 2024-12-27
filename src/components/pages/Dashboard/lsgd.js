@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-// import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
 
 function PaymentHistory() {
@@ -11,6 +10,7 @@ function PaymentHistory() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [error, setError] = useState(null);
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -30,15 +30,17 @@ function PaymentHistory() {
       ],
     ];
     const rows = filteredData.map((record) => [
-      record.users.username,
-      record.goimua,
-      record.trangthai,
+      record.users?.username ?? "N/A",
+      record.goimua ?? "Không có",
+      record.trangthai ?? "N/A",
       new Intl.NumberFormat("vi-VN", {
         style: "currency",
         currency: "VND",
-      }).format(record.sotien),
-      new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN"),
-      record.Soluongmua,
+      }).format(parseFloat(record.sotien) ?? 0),
+      record.Ngaythanhtoan
+        ? new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN")
+        : "N/A",
+      record.Soluongmua ?? 0,
     ]);
 
     doc.autoTable({
@@ -62,8 +64,10 @@ function PaymentHistory() {
     try {
       const response = await axios.get("/lstt");
       setPaymentHistory(response.data);
+      setError(null);
     } catch (error) {
       console.error("Error fetching payment history:", error);
+      setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
     }
   };
 
@@ -72,11 +76,20 @@ function PaymentHistory() {
   }, []);
 
   const filteredData = paymentHistory.filter((record) => {
+    // Search in username (if user exists) and payment package (if exists)
+    const username = record.users?.username?.toLowerCase() ?? "";
+    const goimua = record.goimua?.toLowerCase() ?? "không có";
+    const searchTermLower = searchTerm.toLowerCase();
+
     const matchesSearch =
-      record.users.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.goimua.toLowerCase().includes(searchTerm.toLowerCase());
+      searchTerm === "" ||
+      username.includes(searchTermLower) ||
+      goimua.includes(searchTermLower);
+
+    // Filter by status if a status is selected
     const matchesStatus =
       filterStatus === "" || record.trangthai === filterStatus;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -84,6 +97,14 @@ function PaymentHistory() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-center text-red-600">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -149,10 +170,10 @@ function PaymentHistory() {
                 className="hover:bg-gray-50 transition-colors duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.users.username}
+                  {record.users?.username ?? "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.goimua}
+                  {record.goimua ?? "Không có"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span
@@ -165,20 +186,22 @@ function PaymentHistory() {
                         : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {record.trangthai}
+                    {record.trangthai ?? "N/A"}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
-                  }).format(record.sotien)}
+                  }).format(parseFloat(record.sotien) ?? 0)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN")}
+                  {record.Ngaythanhtoan
+                    ? new Date(record.Ngaythanhtoan).toLocaleDateString("vi-VN")
+                    : "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.Soluongmua}
+                  {record.Soluongmua ?? 0}
                 </td>
               </tr>
             ))}
@@ -210,7 +233,7 @@ function PaymentHistory() {
             Trước
           </button>
           <span className="px-3 py-1">
-            Trang {currentPage} / {totalPages}
+            Trang {currentPage} / {totalPages || 1}
           </span>
           <button
             onClick={() =>

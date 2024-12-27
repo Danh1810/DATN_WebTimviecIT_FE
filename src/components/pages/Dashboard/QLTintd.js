@@ -5,7 +5,15 @@ import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
 import { Editor } from "@tinymce/tinymce-react";
-import { Loader2, Eye, Check, Trash2, X } from "lucide-react";
+import {
+  Loader2,
+  Eye,
+  Check,
+  Trash2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 function App() {
   const [jobPosts, setJobPosts] = useState([]); // Danh sách bài đăng
   const [recruiters, setRecruiters] = useState([]); // Danh sách nhà tuyển dụng
@@ -14,15 +22,38 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null); // Bài đăng được chọn
   const [loading, setLoading] = useState(false); // Trạng thái loading
   const [users, setUsers] = useState([]);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Calculate pagination values
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredJobPosts.slice(
+    indexOfFirstPost,
+    indexOfLastPost
+  );
+
+  // Handle page changes
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
   // Lọc theo trạng thái
   const handleStatusFilterChange = (status) => {
     setStatusFilter(status);
+    setCurrentPage(1); // Reset to first page when filter changes
     if (status === "all") {
       setFilteredJobPosts(jobPosts);
     } else {
       setFilteredJobPosts(jobPosts.filter((post) => post.trangthai === status));
     }
   };
+
+  // Update total pages when filtered posts change
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredJobPosts.length / postsPerPage));
+  }, [filteredJobPosts, postsPerPage]);
 
   const fetchUsers = async () => {
     try {
@@ -192,6 +223,77 @@ function App() {
       );
     }
   };
+  const Pagination = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    return (
+      <div className="flex items-center justify-center mt-4 gap-2">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        {startPage > 1 && (
+          <>
+            <button
+              onClick={() => handlePageChange(1)}
+              className={`px-3 py-1 rounded-md border hover:bg-gray-100
+                ${currentPage === 1 ? "bg-blue-500 text-white" : ""}`}
+            >
+              1
+            </button>
+            {startPage > 2 && <span className="px-2">...</span>}
+          </>
+        )}
+
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            onClick={() => handlePageChange(number)}
+            className={`px-3 py-1 rounded-md border hover:bg-gray-100
+              ${currentPage === number ? "bg-blue-500 text-white" : ""}`}
+          >
+            {number}
+          </button>
+        ))}
+
+        {endPage < totalPages && (
+          <>
+            {endPage < totalPages - 1 && <span className="px-2">...</span>}
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              className={`px-3 py-1 rounded-md border hover:bg-gray-100
+                ${currentPage === totalPages ? "bg-blue-500 text-white" : ""}`}
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+    );
+  };
 
   useEffect(() => {
     fetchRecruiters();
@@ -204,25 +306,24 @@ function App() {
       <h1 className="text-2xl font-bold text-center mb-6">
         Quản lý tin tuyển dụng
       </h1>
-      {/* Bộ lọc */}
-      <div className="flex items-center mb-4">
-        <label htmlFor="filterStatus" className="mr-2 font-semibold">
-          Lọc theo trạng thái:
-        </label>
-        <select
-          id="filterStatus"
-          className="border rounded px-4 py-2"
-          onChange={(e) => handleStatusFilterChange(e.target.value)}
-        >
-          <option value="all">Tất cả</option>
-          <option value="Đã duyệt">Đã duyệt</option>
-          <option value="Chờ duyệt">Chờ duyệt</option>
-          <option value="Đã từ chối">Đã từ chối</option>
-          <option value="Đã hết hạn">Đã hết hạn</option>
-        </select>
-      </div>
-      {/* Export PDF */}
-      <div className="text-right mb-4">
+      {/* Existing filters and export button */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <label htmlFor="filterStatus" className="mr-2 font-semibold">
+            Lọc theo trạng thái:
+          </label>
+          <select
+            id="filterStatus"
+            className="border rounded px-4 py-2"
+            onChange={(e) => handleStatusFilterChange(e.target.value)}
+          >
+            <option value="all">Tất cả</option>
+            <option value="Đã duyệt">Đã duyệt</option>
+            <option value="Chờ duyệt">Chờ duyệt</option>
+            <option value="Đã từ chối">Đã từ chối</option>
+            <option value="Đã hết hạn">Đã hết hạn</option>
+          </select>
+        </div>
         <button
           onClick={exportToPDF}
           className="bg-green-500 text-white px-4 py-2 rounded"
@@ -230,80 +331,108 @@ function App() {
           Export to PDF
         </button>
       </div>
-      {/* Bảng danh sách bài đăng */}
+
+      {/* Table with paginated data */}
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="text-center">Đang tải dữ liệu...</div>
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+            <p>Đang tải dữ liệu...</p>
+          </div>
         ) : (
-          <table className="min-w-full bg-white border rounded-lg mt-6 shadow-md">
-            <thead>
-              <tr className="border-b bg-gray-100">
-                <th className="px-4 py-2 w-1/5 text-left">Người đăng</th>
-                <th className="px-4 py-2 w-1/5 text-left">Tiêu đề</th>
-                <th className="px-4 py-2 w-1/5 text-left">Nhà tuyển dụng</th>
-                <th className="px-4 py-2 w-1/10 text-center">Trạng thái</th>
-                <th className="px-4 py-2 w-1/10 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredJobPosts.map((post) => (
-                <tr key={post.id} className="border-b">
-                  <td className="px-4 py-2 w-1/5">
-                    {users.find((rec) => rec.id === post.employer.MaND)
-                      ?.username || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 w-1/5">{post.tieude}</td>
-                  <td className="px-4 py-2 w-1/5">
-                    {recruiters.find((rec) => rec.id === post.MaNTD)?.ten ||
-                      "N/A"}
-                  </td>
-                  <td className="px-4 py-2 w-1/10 text-center">
-                    {post.trangthai}
-                  </td>
-                  <td className="px-4 py-3 w-1/10">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                        onClick={() => xemChiTiet(post.id)}
-                        title="Xem chi tiết"
-                      >
-                        <Eye className="h-5 w-5" />
-                      </button>
-                      <button
-                        className="p-2 text-green-600 hover:bg-green-50 rounded"
-                        onClick={() => handleSubmit(post.id)}
-                        title="Duyệt tin"
-                      >
-                        <Check className="h-5 w-5" />
-                      </button>
-                      <button
-                        className="p-2 text-orange-600 hover:bg-orange-50 rounded"
-                        onClick={() => openRejectModal(post.id)}
-                        title="Từ chối"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                      <button
-                        className="p-2 text-red-600 hover:bg-red-50 rounded"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Bạn có chắc chắn muốn xóa tin tuyển dụng này?"
-                            )
-                          ) {
-                            XoaTinTD(post.id);
-                          }
-                        }}
-                        title="Xóa tin"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
+          <>
+            <table className="min-w-full bg-white border rounded-lg shadow-md">
+              <thead>
+                <tr className="border-b bg-gray-100">
+                  <th className="px-4 py-2 w-1/5 text-left">Người đăng</th>
+                  <th className="px-4 py-2 w-1/5 text-left">Tiêu đề</th>
+                  <th className="px-4 py-2 w-1/5 text-left">Nhà tuyển dụng</th>
+                  <th className="px-4 py-2 w-1/10 text-center">Trạng thái</th>
+                  <th className="px-4 py-2 w-1/10 text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentPosts.map((post) => (
+                  <tr key={post.id} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-2 w-1/5">
+                      {users.find((rec) => rec.id === post.employer.MaND)
+                        ?.username || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 w-1/5">{post.tieude}</td>
+                    <td className="px-4 py-2 w-1/5">
+                      {recruiters.find((rec) => rec.id === post.MaNTD)?.ten ||
+                        "N/A"}
+                    </td>
+                    <td className="px-4 py-2 w-1/10 text-center">
+                      <span
+                        className={`px-2 py-1 rounded-full text-sm ${
+                          post.trangthai === "Đã duyệt"
+                            ? "bg-green-100 text-green-800"
+                            : post.trangthai === "Chờ duyệt"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : post.trangthai === "Đã từ chối"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {post.trangthai}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 w-1/10">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                          onClick={() => xemChiTiet(post.id)}
+                          title="Xem chi tiết"
+                        >
+                          <Eye className="h-5 w-5" />
+                        </button>
+                        <button
+                          className="p-2 text-green-600 hover:bg-green-50 rounded"
+                          onClick={() => handleSubmit(post.id)}
+                          title="Duyệt tin"
+                        >
+                          <Check className="h-5 w-5" />
+                        </button>
+                        <button
+                          className="p-2 text-orange-600 hover:bg-orange-50 rounded"
+                          onClick={() => openRejectModal(post.id)}
+                          title="Từ chối"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                        <button
+                          className="p-2 text-red-600 hover:bg-red-50 rounded"
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Bạn có chắc chắn muốn xóa tin tuyển dụng này?"
+                              )
+                            ) {
+                              XoaTinTD(post.id);
+                            }
+                          }}
+                          title="Xóa tin"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination component */}
+            <Pagination />
+
+            {/* Posts per page info */}
+            <div className="text-center text-sm text-gray-600 mt-2">
+              Hiển thị {indexOfFirstPost + 1} -{" "}
+              {Math.min(indexOfLastPost, filteredJobPosts.length)} /{" "}
+              {filteredJobPosts.length} tin tuyển dụng
+            </div>
+          </>
         )}
       </div>
       {rejectModalOpen && (
