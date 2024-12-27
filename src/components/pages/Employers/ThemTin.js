@@ -107,7 +107,7 @@ function App() {
     }
 
     if (!jobPost.tieude || !jobPost.mota || !jobPost.mucluong) {
-      toast.error("Please fill in all required fields");
+      toast.error("Vui lòng không bỏ trống");
       return;
     }
 
@@ -135,9 +135,9 @@ function App() {
         Ma: id,
       });
 
-      toast.success(response.messages);
+      toast.success(response.message);
     } catch (error) {
-      toast.error("Error submitting job post");
+      toast.error("Bài đăng đã được đăng rồi");
     }
   };
   useEffect(() => {

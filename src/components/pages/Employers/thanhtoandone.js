@@ -36,10 +36,10 @@ const TransactionHistory = () => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Công ty thanh toán
+            Người thanh toán
           </label>
           <div className="mt-1 text-gray-900">
-            {transaction.employer ? transaction.employer.ten : "N/A"}
+            {transaction.users ? transaction.users.username : "N/A"}
           </div>
         </div>
 
@@ -82,7 +82,7 @@ const TransactionHistory = () => {
         onClick={handleButtonClick}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
       >
-        Click Me
+        Trở lại
       </button>
     </div>
   );
