@@ -8,6 +8,7 @@ import Luucongviec from "../pages/User/Luucongviec";
 import JobApplicationForm from "../pages/User/Congviecungtuyen";
 import SearchBar from "../pages/TimkiemPage";
 import Thanhtoan from "../pages/User/Mua";
+import TransactionHistory from "../pages/Employers/thanhtoandone";
 export const NtvRoutes = [
   {
     path: "/profile",
@@ -43,6 +44,11 @@ export const NtvRoutes = [
   {
     path: "/tt",
     component: Thanhtoan,
+    layout: Layout,
+  },
+  {
+    path: "ntd/thanhcong/:id",
+    component: TransactionHistory,
     layout: Layout,
   },
 ];
