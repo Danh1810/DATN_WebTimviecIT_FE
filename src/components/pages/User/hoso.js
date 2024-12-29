@@ -97,6 +97,7 @@ const CVManagement = () => {
       console.error("Error fetching job seekers:", error);
     }
   };
+  const [fileError, setFileError] = useState("");
 
   const handleAddhoso = async (e) => {
     e.preventDefault();
@@ -202,9 +203,20 @@ const CVManagement = () => {
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
+
     if (files[0]) {
-      setFormData((prev) => ({ ...prev, [name]: files[0] }));
-      setPreviewImage(URL.createObjectURL(files[0]));
+      const file = files[0];
+
+      // Kiểm tra kích thước file
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB in bytes
+        setFileError("Kích thước file không được vượt quá 5MB.");
+        e.target.value = null; // Reset file input
+      } else {
+        setFileError(""); // Clear any previous error messages
+        setFormData((prev) => ({ ...prev, [name]: file }));
+        setPreviewImage(URL.createObjectURL(file));
+      }
     }
   };
 
@@ -496,6 +508,9 @@ const CVManagement = () => {
                   onChange={handleFileChange}
                   className="w-full border rounded px-2 py-1"
                 />
+                {fileError && (
+                  <p className="text-red-500 text-sm">{fileError}</p>
+                )}
               </div>
               <div className="mt-4 flex justify-end space-x-4">
                 <button

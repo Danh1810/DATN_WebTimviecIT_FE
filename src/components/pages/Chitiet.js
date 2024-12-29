@@ -103,6 +103,7 @@ function JobDetails() {
 
     try {
       await axios.post("/Ut", formData);
+      setIsModalOpen(false);
       toast.success("Bạn đã ứng tuyển thành công hãy chú ý mail nhé");
     } catch (error) {
       toast.error("Bạn cần tạo hồ sơ");

@@ -23,7 +23,11 @@ const TransactionHistory = () => {
     fetchTransaction();
   }, []);
   const handleButtonClick = () => {
-    navigate("/ntd/muabaidang");
+    if (transaction.users.MaQuyen === 2) {
+      navigate("/ntd/muabaidang");
+    } else {
+      navigate("/tt");
+    }
   };
   if (!transaction) {
     return <div>Loading...</div>;
@@ -32,7 +36,7 @@ const TransactionHistory = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Transaction Details</h1>
+      <h1 className="text-2xl font-bold mb-4">Thanh toán thành công</h1>
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">

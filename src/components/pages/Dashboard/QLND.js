@@ -127,6 +127,7 @@ function UserManagement() {
       console.log("🚀 ~ handleSua ~ response:", response);
       if (response.code === 0) {
         fetchUsers();
+        setUsers2(null);
         alert("Cập nhật thành công!");
       } else {
         alert("Đã xảy ra lỗi khi cập nhật.");

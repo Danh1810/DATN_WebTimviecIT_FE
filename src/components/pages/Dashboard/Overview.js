@@ -82,7 +82,7 @@ const PlatformDashboard = () => {
       console.error("Error fetching employers:", error);
     }
   };
-  function countByField(companies, field = "linhvuc") {
+  function countByField(companies, field = "linhVucCNTT") {
     const countMap = {};
 
     companies.forEach((company) => {
@@ -96,7 +96,7 @@ const PlatformDashboard = () => {
       count: countMap[key],
     }));
   }
-  const count = countByField(employers, "linhvuc");
+  const count = countByField(jobPosts, "linhVucCNTT");
   console.log(count);
 
   const COLORS = [
@@ -131,7 +131,29 @@ const PlatformDashboard = () => {
       value: value,
     }));
   }
+  function countByLoaiHopDongWithNameValue(data) {
+    const counts = {};
+
+    // Đếm số lượng LoaiHopDong
+    data.forEach((item) => {
+      if (counts[item.loaiHopdong]) {
+        counts[item.loaiHopdong]++;
+      } else {
+        counts[item.loaiHopdong] = 1;
+      }
+    });
+
+    // Chuyển đổi kết quả thành mảng name-value
+    return Object.entries(counts).map(([key, value]) => ({
+      name: key, // LoaiHopDong là chuỗi, sử dụng nó trực tiếp làm name
+      value: value,
+    }));
+  }
+  const loaiHD = countByLoaiHopDongWithNameValue(jobPosts);
+  console.log("🚀 ~ PlatformDashboard ~ loaiHD:", loaiHD);
+
   const result = countByMaQuyenWithNameValue(users);
+  console.log("🚀 ~ PlatformDashboard ~ result:", result);
   function countJobsByLocation(jobsData) {
     const locationCount = {};
 
@@ -551,7 +573,7 @@ const PlatformDashboard = () => {
                     className="flex items-center justify-between"
                   >
                     <div>
-                      <h3 className="font-medium">{region.linhvuc}</h3>
+                      <h3 className="font-medium">{region.linhVucCNTT}</h3>
                     </div>
                     <span className="text-green-600">
                       {region.count} việc làm
@@ -573,6 +595,52 @@ const PlatformDashboard = () => {
                     <span className="font-medium">{tech.name}</span>
                     <div className="text-right">
                       <div className="text-blue-600">{tech.jobs} việc làm</div>
+                      {/* <div className="text-sm text-gray-500">
+                        {tech.candidates} ứng viên
+                      </div> */}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white shadow-md rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                Phân Bố Hình thức làm việc
+              </h2>
+              <PieChart width={350} height={250}>
+                <Pie
+                  data={loaiHD}
+                  cx={175}
+                  cy={125}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name} (${(percent * 100).toFixed(0)}%)`
+                  }
+                  style={{ fontSize: "12px" }} // Giảm kích thước font
+                >
+                  {result.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </div>
+            <div className="bg-white shadow-md rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Các Skills Yêu Cầu</h2>
+              <div className="space-y-3">
+                {loaiHD.map((tech, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="font-medium">{tech.name}</span>
+                    <div className="text-right">
+                      <div className="text-blue-600">{tech.value} việc làm</div>
                       {/* <div className="text-sm text-gray-500">
                         {tech.candidates} ứng viên
                       </div> */}

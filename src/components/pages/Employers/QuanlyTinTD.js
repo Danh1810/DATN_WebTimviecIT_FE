@@ -104,6 +104,7 @@ function TTDNTD() {
     try {
       const response = await axios.get("/tintd/ntd", { params: { id: id } });
       setJobPosts(response.data);
+      console.log("🚀 ~ fetchJobPosts ~ response.data:", response.data);
       setAllJobPosts(response.data);
     } catch (error) {
       console.error("Error fetching job posts:", error);

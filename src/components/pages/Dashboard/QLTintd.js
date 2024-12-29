@@ -13,6 +13,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Search,
 } from "lucide-react";
 function App() {
   const [jobPosts, setJobPosts] = useState([]); // Danh sách bài đăng
@@ -22,6 +23,7 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null); // Bài đăng được chọn
   const [loading, setLoading] = useState(false); // Trạng thái loading
   const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(10);
@@ -34,21 +36,69 @@ function App() {
     indexOfFirstPost,
     indexOfLastPost
   );
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+
+    const filtered = jobPosts.filter((post) => {
+      const matchesStatus =
+        statusFilter === "all" || post.trangthai === statusFilter;
+      const matchesSearch =
+        post.tieude.toLowerCase().includes(value.toLowerCase()) ||
+        recruiters
+          .find((rec) => rec.id === post.MaNTD)
+          ?.ten.toLowerCase()
+          .includes(value.toLowerCase()) ||
+        users
+          .find((user) => user.id === post.employer.MaND)
+          ?.username.toLowerCase()
+          .includes(value.toLowerCase());
+
+      return matchesStatus && matchesSearch;
+    });
+
+    setFilteredJobPosts(filtered);
+  };
+
+  // Handle status filter
+  const handleStatusFilterChange = (status) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+
+    const filtered = jobPosts.filter((post) => {
+      const matchesStatus = status === "all" || post.trangthai === status;
+      const matchesSearch = searchTerm
+        ? post.tieude.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          recruiters
+            .find((rec) => rec.id === post.MaNTD)
+            ?.ten.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          users
+            .find((user) => user.id === post.employer.MaND)
+            ?.username.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        : true;
+
+      return matchesStatus && matchesSearch;
+    });
+
+    setFilteredJobPosts(filtered);
+  };
 
   // Handle page changes
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
   // Lọc theo trạng thái
-  const handleStatusFilterChange = (status) => {
-    setStatusFilter(status);
-    setCurrentPage(1); // Reset to first page when filter changes
-    if (status === "all") {
-      setFilteredJobPosts(jobPosts);
-    } else {
-      setFilteredJobPosts(jobPosts.filter((post) => post.trangthai === status));
-    }
-  };
+  // const handleStatusFilterChange = (status) => {
+  //   setStatusFilter(status);
+  //   setCurrentPage(1); // Reset to first page when filter changes
+  //   if (status === "all") {
+  //     setFilteredJobPosts(jobPosts);
+  //   } else {
+  //     setFilteredJobPosts(jobPosts.filter((post) => post.trangthai === status));
+  //   }
+  // };
 
   // Update total pages when filtered posts change
   useEffect(() => {
@@ -307,29 +357,48 @@ function App() {
         Quản lý tin tuyển dụng
       </h1>
       {/* Existing filters and export button */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <label htmlFor="filterStatus" className="mr-2 font-semibold">
-            Lọc theo trạng thái:
-          </label>
-          <select
-            id="filterStatus"
-            className="border rounded px-4 py-2"
-            onChange={(e) => handleStatusFilterChange(e.target.value)}
-          >
-            <option value="all">Tất cả</option>
-            <option value="Đã duyệt">Đã duyệt</option>
-            <option value="Chờ duyệt">Chờ duyệt</option>
-            <option value="Đã từ chối">Đã từ chối</option>
-            <option value="Đã hết hạn">Đã hết hạn</option>
-          </select>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+        <div className="flex items-center w-full md:w-auto">
+          <div className="relative flex-1 md:w-96">
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tiêu đề, nhà tuyển dụng, người đăng..."
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+          </div>
         </div>
-        <button
-          onClick={exportToPDF}
-          className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Export to PDF
-        </button>
+
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center">
+            <label
+              htmlFor="filterStatus"
+              className="mr-2 font-semibold whitespace-nowrap"
+            >
+              Lọc theo trạng thái:
+            </label>
+            <select
+              id="filterStatus"
+              className="border rounded px-4 py-2"
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
+            >
+              <option value="all">Tất cả</option>
+              <option value="Đã duyệt">Đã duyệt</option>
+              <option value="Chờ duyệt">Chờ duyệt</option>
+              <option value="Đã từ chối">Đã từ chối</option>
+              <option value="Đã hết hạn">Đã hết hạn</option>
+            </select>
+          </div>
+
+          <button
+            onClick={exportToPDF}
+            className="bg-green-500 text-white px-4 py-2 rounded whitespace-nowrap"
+          >
+            Export to PDF
+          </button>
+        </div>
       </div>
 
       {/* Table with paginated data */}

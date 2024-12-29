@@ -20,6 +20,7 @@ function App() {
     Capbac: [],
     Ma: id,
     noibatnline: "",
+    linhVucCNTT: "",
   });
 
   const [jobPosts, setJobPosts] = useState([]);
@@ -133,6 +134,7 @@ function App() {
         Kynang: [],
         Capbac: [],
         Ma: id,
+        linhVucCNTT: "",
       });
 
       toast.success(response.message);
@@ -243,6 +245,76 @@ function App() {
                 <option value="Hợp đồng thời vụ">Hợp đồng thời vụ</option>
               </select>
             </div>
+            <div>
+              <label className="block font-semibold mb-1">
+                Lĩnh vực ngành CNTT
+              </label>
+              <select
+                name="linhVucCNTT"
+                value={jobPost.linhVucCNTT}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Chọn lĩnh vực</option>
+                <option value="Phát triển phần mềm">Phát triển phần mềm</option>
+                <option value="Phát triển web">Phát triển web</option>
+                <option value="Phát triển ứng dụng di động">
+                  Phát triển ứng dụng di động
+                </option>
+                <option value="Quản trị hệ thống">Quản trị hệ thống</option>
+                <option value="Quản trị cơ sở dữ liệu">
+                  Quản trị cơ sở dữ liệu
+                </option>
+                <option value="An ninh mạng">An ninh mạng</option>
+                <option value="Khoa học dữ liệu">Khoa học dữ liệu</option>
+                <option value="Trí tuệ nhân tạo (AI)">
+                  Trí tuệ nhân tạo (AI)
+                </option>
+                <option value="Học máy (Machine Learning)">
+                  Học máy (Machine Learning)
+                </option>
+                <option value="Phân tích dữ liệu lớn (Big Data)">
+                  Phân tích dữ liệu lớn (Big Data)
+                </option>
+                <option value="IoT (Internet of Things)">
+                  IoT (Internet of Things)
+                </option>
+                <option value="Blockchain">Blockchain</option>
+                <option value="Thực tế ảo (VR)">Thực tế ảo (VR)</option>
+                <option value="Thực tế tăng cường (AR)">
+                  Thực tế tăng cường (AR)
+                </option>
+                <option value="Kiểm thử phần mềm (QA/QC)">
+                  Kiểm thử phần mềm (QA/QC)
+                </option>
+                <option value="Thiết kế giao diện (UI/UX)">
+                  Thiết kế giao diện (UI/UX)
+                </option>
+                <option value="Quản lý dự án CNTT">Quản lý dự án CNTT</option>
+                <option value="Phát triển game">Phát triển game</option>
+                <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
+                <option value="Điện toán đám mây (Cloud Computing)">
+                  Điện toán đám mây (Cloud Computing)
+                </option>
+                <option value="Hỗ trợ kỹ thuật (IT Support)">
+                  Hỗ trợ kỹ thuật (IT Support)
+                </option>
+                <option value="DevOps">DevOps</option>
+                <option value="Automation (Tự động hóa)">
+                  Automation (Tự động hóa)
+                </option>
+                <option value="ERP (Enterprise Resource Planning)">
+                  ERP (Enterprise Resource Planning)
+                </option>
+                <option value="Công nghệ giáo dục (EdTech)">
+                  Công nghệ giáo dục (EdTech)
+                </option>
+                <option value="Công nghệ tài chính (FinTech)">
+                  Công nghệ tài chính (FinTech)
+                </option>
+              </select>
+            </div>
+
             <div>
               <label className="block font-semibold mb-1">Kỹ năng</label>
               <div className="relative z-10">

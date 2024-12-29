@@ -211,14 +211,25 @@ const ProfileForm = () => {
             </div>
 
             <div>
-              <label className="block font-medium">Ngày Sinh</label>
+              <label className="block font-medium" htmlFor="ngaySinh">
+                Ngày Sinh
+              </label>
               <input
                 type="date"
+                id="ngaySinh"
                 name="ngaySinh"
                 value={formData.ngaySinh}
                 onChange={handleChange}
                 max={new Date().toISOString().split("T")[0]} // Prevents future dates
+                min={
+                  new Date(
+                    new Date().setFullYear(new Date().getFullYear() - 18)
+                  )
+                    .toISOString()
+                    .split("T")[0]
+                } // Ensures the user is at least 18 years old
                 className="w-full border rounded px-2 py-1"
+                aria-label="Ngày Sinh"
               />
             </div>
 
@@ -267,15 +278,26 @@ const ProfileForm = () => {
             </div>
 
             <div>
-              <label className="block font-medium">Số điện thoại</label>
+              <label className="block font-medium" htmlFor="soDienThoai">
+                Số điện thoại
+              </label>
               <input
                 type="text"
+                id="soDienThoai"
                 name="soDienThoai"
                 value={formData.soDienThoai}
                 onChange={handleChange}
                 className="w-full border rounded px-2 py-1"
                 required
+                pattern="^(0[3|5|7|8|9])[0-9]{8}$" // Regex pattern for Vietnamese phone numbers
+                title="Số điện thoại không hợp lệ, vui lòng nhập lại." // Title will show in browsers that support it
               />
+              {formData.soDienThoai &&
+                !/^(0[3|5|7|8|9])[0-9]{8}$/.test(formData.soDienThoai) && (
+                  <p className="text-red-500 text-sm mt-1">
+                    Số điện thoại không hợp lệ, vui lòng nhập lại.
+                  </p>
+                )}
             </div>
           </div>
 
