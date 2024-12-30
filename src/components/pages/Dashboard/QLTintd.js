@@ -456,20 +456,26 @@ function App() {
                         >
                           <Eye className="h-5 w-5" />
                         </button>
-                        <button
-                          className="p-2 text-green-600 hover:bg-green-50 rounded"
-                          onClick={() => handleSubmit(post.id)}
-                          title="Duyệt tin"
-                        >
-                          <Check className="h-5 w-5" />
-                        </button>
-                        <button
-                          className="p-2 text-orange-600 hover:bg-orange-50 rounded"
-                          onClick={() => openRejectModal(post.id)}
-                          title="Từ chối"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
+
+                        {post.trangthai === "Chờ duyệt" && (
+                          <>
+                            <button
+                              className="p-2 text-green-600 hover:bg-green-50 rounded"
+                              onClick={() => handleSubmit(post.id)}
+                              title="Duyệt tin"
+                            >
+                              <Check className="h-5 w-5" />
+                            </button>
+                            <button
+                              className="p-2 text-orange-600 hover:bg-orange-50 rounded"
+                              onClick={() => openRejectModal(post.id)}
+                              title="Từ chối"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </>
+                        )}
+
                         <button
                           className="p-2 text-red-600 hover:bg-red-50 rounded"
                           onClick={() => {

@@ -144,22 +144,32 @@ function TTDNTD() {
   const currentPosts = jobPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages1 = Math.ceil(jobPosts.length / postsPerPage);
 
-  // const toggleStatus = (id) => {
-  //   setJobPosts((posts) =>
-  //     posts.map((post) => {
-  //       if (post.id === id) {
-  //         const newStatus =
-  //           post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Đang tuyển";
-  //         return { ...post, trangthai: newStatus };
-  //       }
-  //       return post;
-  //     })
-  //   );
-  //   toast({
-  //     title: "Cập nhật trạng thái",
-  //     description: "Đã thay đổi trạng thái bài đăng",
-  //   });
-  // };
+  const toggleStatus = async (id) => {
+    const post = jobPosts.find((post) => post.id === id);
+
+    try {
+      // Toggle status before sending
+      post.trangthai = post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Đã duyệt";
+
+      const response = await axios.put("/tintd", {
+        ...post,
+        employer: post.employer,
+        tieude: post.tieude,
+      });
+
+      if (response.data.code === 0) {
+        fetchJobPosts();
+
+        toast.success(
+          post.trangthai === "Đã duyệt"
+            ? "Gia hạn thành công"
+            : "Đã tạm dừng bài đăng"
+        );
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra");
+    }
+  };
   const fetchJobSeekers = async () => {
     try {
       const response = await axios.get("/ngtviec");
@@ -599,12 +609,14 @@ function TTDNTD() {
                     >
                       Xem hồ sơ
                     </button>
-                    {/* <button
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                      onClick={() => toggleStatus(post.id)}
-                    >
-                      {post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Mở lại"}
-                    </button> */}
+                    {post.trangthai !== "Chờ duyệt" && (
+                      <button
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                        onClick={() => toggleStatus(post.id)}
+                      >
+                        {post.trangthai === "Đã duyệt" ? "Tạm dừng" : "Gia hạn"}
+                      </button>
+                    )}
                     <button
                       className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
                       onClick={() => handleDelete(post.id)}
