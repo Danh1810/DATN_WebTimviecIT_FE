@@ -134,6 +134,22 @@ function Layout({ children }) {
                     >
                       Thông tin cá nhân
                     </a>
+                    <a href="/ho" className="block px-4 py-2 hover:bg-gray-100">
+                      Hồ sơ
+                    </a>
+                    <a
+                      href="/vieclamut"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Việc làm đã ứng tuyển
+                    </a>
+                    <a
+                      href="/lcv"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      Việc làm đã lưu
+                    </a>
+
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 hover:bg-gray-100"

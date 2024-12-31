@@ -297,9 +297,13 @@ function JobDetails() {
                     <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                       Thông tin công ty
                     </h2>
-                    <p className="text-gray-700">
-                      {job?.employer.ten || "Thông tin không có sẵn."}
-                    </p>
+                    <p
+                      className="text-gray-700 "
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          job.employer?.thongtin || "Thông tin không có sẵn.",
+                      }}
+                    ></p>
                   </div>
                 )}
               </>

@@ -125,14 +125,31 @@ function Layout({ children }) {
                   <>
                     <a
                       href="/profile"
-                      className="block px-4 py-2 hover:bg-gray-100"
+                      className="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-500"
                     >
                       Thông tin cá nhân
                     </a>
-
+                    <a
+                      href="/ho"
+                      className="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-500"
+                    >
+                      Hồ sơ
+                    </a>
+                    <a
+                      href="/vieclamut"
+                      className="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-500"
+                    >
+                      Việc làm đã ứng tuyển
+                    </a>
+                    <a
+                      href="/lcv"
+                      className="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-500"
+                    >
+                      Việc làm đã lưu
+                    </a>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200"
                     >
                       Đăng xuất
                     </button>

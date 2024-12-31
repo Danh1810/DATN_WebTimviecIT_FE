@@ -4,9 +4,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const SearchBar = () => {
   const [jobPosts, setJobPosts] = useState([]);
-  const [originalJobPosts, setOriginalJobPosts] = useState([]); // Danh sách gốc
+  const [originalJobPosts, setOriginalJobPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const location = useLocation();
   const keyword = new URLSearchParams(location.search).get("keyword");
@@ -18,18 +20,16 @@ const SearchBar = () => {
     skill: "Tất cả kỹ năng",
   });
 
-  // Fetch dữ liệu từ API
   useEffect(() => {
     const fetchJobPosts = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const response = await axios.get(`/tintd/tk`, {
           params: { keyword: keyword },
         });
         setJobPosts(response.data);
-        setOriginalJobPosts(response.data); // Lưu danh sách gốc
+        setOriginalJobPosts(response.data);
       } catch (error) {
         setError("Lỗi khi tải danh sách công việc.");
       } finally {
@@ -42,12 +42,9 @@ const SearchBar = () => {
     }
   }, [keyword]);
 
-  // Lọc dữ liệu dựa trên filters
   const filteredJobPosts = useMemo(() => {
     return originalJobPosts.filter((job) => {
-      console.log("🚀 ~ returnoriginalJobPosts.filter ~ job:", job);
       const { diaChiLamviec, loaiHopdong, levels, skills } = job;
-
       const isMatch = [
         filters.diaChiLamviec === "Tất cả địa điểm" ||
           diaChiLamviec === filters.diaChiLamviec,
@@ -60,10 +57,20 @@ const SearchBar = () => {
           (Array.isArray(skills) &&
             skills.some(({ ten }) => ten === filters.skill)),
       ];
-
       return isMatch.every(Boolean);
     });
   }, [filters, originalJobPosts]);
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredJobPosts.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredJobPosts.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const resetFilters = () => {
     setFilters({
@@ -72,6 +79,7 @@ const SearchBar = () => {
       level: "Tất cả cấp bậc",
       skill: "Tất cả kỹ năng",
     });
+    setCurrentPage(1);
   };
 
   const handleFilterChange = (key, value) => {
@@ -79,12 +87,12 @@ const SearchBar = () => {
       ...prevFilters,
       [key]: value,
     }));
+    setCurrentPage(1);
   };
 
   return (
     <div className="min h-screen">
-      {/* Thanh tìm kiếm */}
-      <div className="bg-purple-700 p-4 rounded-lg shadow-md ">
+      <div className="bg-purple-700 p-4 rounded-lg shadow-md">
         <div className="flex items-center gap-2 h-16">
           <input
             type="text"
@@ -97,7 +105,6 @@ const SearchBar = () => {
         </div>
       </div>
 
-      {/* Bộ lọc */}
       <div className="flex items-center gap-2 h-16 bg-white p-2 rounded-lg shadow-md">
         {[
           {
@@ -175,62 +182,86 @@ const SearchBar = () => {
         </button>
       </div>
 
-      {/* Danh sách công việc */}
       <div className="space-y-4">
         {loading ? (
           <p>Đang tải...</p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
-        ) : filteredJobPosts.length === 0 ? (
+        ) : currentItems.length === 0 ? (
           <p className="text-gray-500">Không có kết quả phù hợp.</p>
         ) : (
-          filteredJobPosts.map((job) => (
-            <Link key={job.id} to={`/tintuyendung/${job.id}`}>
-              <div className="flex items-start justify-between p-4 bg-white border rounded-lg shadow-md hover:shadow-lg">
-                {/* Nội dung bên trái */}
-                <div className="flex items-start gap-4">
-                  {/* Logo hoặc tag */}
-                  <div className="flex-shrink-0">
-                    <img
-                      src={job.employer.logo}
-                      alt="Company Logo"
-                      className="w-12 h-12 rounded-full"
-                    />
-                  </div>
-                  {/* Nội dung thông tin công việc */}
-                  <div>
-                    {/* Tiêu đề công việc */}
-                    <h2 className="text-lg font-semibold text-gray-800">
-                      {job.tieude}
-                    </h2>
-                    {/* Tên công ty */}
-                    <p className="text-sm text-gray-500">{job.employer.ten}</p>
-                    {/* Thông tin thêm */}
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                      <p className="flex items-center gap-1">
-                        💲 {job.mucluong}
+          <>
+            {currentItems.map((job) => (
+              <Link key={job.id} to={`/tintuyendung/${job.id}`}>
+                <div className="flex items-start justify-between p-4 bg-white border rounded-lg shadow-md hover:shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={job.employer.logo}
+                        alt="Company Logo"
+                        className="w-12 h-12 rounded-full"
+                      />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-800">
+                        {job.tieude}
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        {job.employer.ten}
                       </p>
-                      <p className="flex items-center gap-1">
-                        📍 {job.diaChiLamviec}
-                      </p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <p className="flex items-center gap-1">
+                          💲 {job.mucluong}
+                        </p>
+                        <p className="flex items-center gap-1">
+                          📍 {job.diaChiLamviec}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex flex-col items-end">
+                    <button className="text-blue-500 hover:text-blue-700">
+                      ❤️
+                    </button>
+                    <p className="mt-auto text-sm text-gray-400">
+                      ⏳ {job.ngayHethan}
+                    </p>
+                  </div>
                 </div>
+              </Link>
+            ))}
 
-                {/* Nội dung bên phải */}
-                <div className="flex flex-col items-end">
-                  {/* Icon yêu thích */}
-                  <button className="text-blue-500 hover:text-blue-700">
-                    ❤️
-                  </button>
-                  {/* Thời gian còn lại */}
-                  <p className="mt-auto text-sm text-gray-400">
-                    ⏳ {job.ngayHethan}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))
+            {/* Pagination Controls */}
+            <div className="flex justify-center gap-2 mt-4">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm text-gray-600 bg-white border rounded-lg disabled:opacity-50"
+              >
+                Trước
+              </button>
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => paginate(index + 1)}
+                  className={`px-4 py-2 text-sm rounded-lg ${
+                    currentPage === index + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-white text-gray-600 border"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm text-gray-600 bg-white border rounded-lg disabled:opacity-50"
+              >
+                Sau
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
