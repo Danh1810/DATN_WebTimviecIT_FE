@@ -5,6 +5,7 @@ import { logout } from "../slice/authSlice";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
 
 export default function Example() {
   const [keyword, setKeyword] = useState("");
@@ -81,6 +82,30 @@ export default function Example() {
       console.error("Error fetching job posts:", error);
     }
   };
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const featuredJobs = jobPosts.filter((job) => job.noibat === true);
+  const totalSlides = Math.ceil(featuredJobs.length / 3);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [totalSlides]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  };
+
+  const handleJobClick = (jobId) => {
+    navigate(`/tintuyendung/${jobId}`);
+  };
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const itemsPerPage = 8; // Number of items per page
 
@@ -136,6 +161,99 @@ export default function Example() {
           </div>
         </div>
       </div>
+      <div className="w-full max-w-7xl mx-auto px-4 py-4 bg-red-300">
+        <div className="flex items-center gap-2 mb-6">
+          <Flame className="text-red-500" size={24} />
+          <h2 className="text-2xl font-bold text-gray-500">VIỆC LÀM NỔI BẬT</h2>
+        </div>
+
+        <div className="relative">
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+            >
+              {Array(totalSlides)
+                .fill()
+                .map((_, groupIndex) => (
+                  <div
+                    key={groupIndex}
+                    className="w-full flex-shrink-0 flex flex-col md:flex-row gap-4"
+                  >
+                    {featuredJobs
+                      .slice(groupIndex * 3, groupIndex * 3 + 3)
+                      .map((job, index) => (
+                        <div key={index} className="w-full md:w-1/3 px-2">
+                          <div
+                            onClick={() => handleJobClick(job.id)}
+                            className="bg-white rounded-lg shadow-md p-6 h-56 md:h-48 border-2 border-gray-100 hover:border-red-300 transition-all cursor-pointer hover:shadow-lg transform hover:-translate-y-1"
+                          >
+                            <div className="flex items-start gap-4 mb-4">
+                              <img
+                                src={job.employer.logo}
+                                alt={`${job.employer.ten || "Unknown"} logo`}
+                                className="w-12 h-12 rounded-lg object-contain border border-gray-200"
+                              />
+                              <div className="flex-1">
+                                <h3 className="text-gray-600 text-sm mb-1 truncate">
+                                  {job.employer.ten || "Unknown Employer"}
+                                </h3>
+                                <h4 className="font-semibold text-gray-900 text-lg line-clamp-2">
+                                  {job.tieude}
+                                </h4>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {job.skills.map((skill, i) => (
+                                <span
+                                  key={i}
+                                  className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs border border-blue-100"
+                                >
+                                  {skill.ten}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="text-gray-500 text-sm truncate">
+                              {job.employer.diachi || "Location unavailable"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* Nút di chuyển */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 border border-gray-200"
+          >
+            <ChevronLeft className="text-gray-600" size={24} />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 border border-gray-200"
+          >
+            <ChevronRight className="text-gray-600" size={24} />
+          </button>
+
+          {/* Thanh chỉ số */}
+          <div className="flex justify-center gap-2 mt-4">
+            {Array(totalSlides)
+              .fill()
+              .map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-3 h-3 rounded-full ${
+                    currentSlide === index ? "bg-red-500" : "bg-gray-300"
+                  } transition-all`}
+                />
+              ))}
+          </div>
+        </div>
+      </div>
       <div className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <a className="text-3xl font-semibold leading-6 text-blue-900">
           VIỆC LÀM MỚI NHẤT
@@ -149,11 +267,7 @@ export default function Example() {
               <Link
                 key={product.id}
                 to={`/tintuyendung/${product.id}`} // URL dẫn đến trang chi tiết
-                className={`group border border-gray-300 rounded-lg p-4 flex flex-col ${
-                  product.noibat === true
-                    ? "bg-red-100 border-red-500"
-                    : "bg-white border-gray-200"
-                }`}
+                className="group border border-gray-300 rounded-lg p-4 flex flex-col bg-white border-gray-200"
               >
                 <div className="flex justify-between items-start ">
                   <div className="flex justify-center items-center w-24 h-24 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
@@ -248,23 +362,11 @@ export default function Example() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {currentBottomItems.map((product) => (
             <Link key={product.id} to={`/tintuyendung/${product.id}`}>
-              <div
-                className={`border rounded-lg p-5 shadow-md ${
-                  product.id === 3
-                    ? "bg-red-100 border-red-500"
-                    : "bg-white border-gray-200"
-                }`}
-              >
+              <div className="border rounded-lg p-5 shadow-md bg-white border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-lg font-semibold text-gray-900 truncate">
                     {product.tieude}
                   </h3>
-                  {product.id === 3 && (
-                    <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      Nổi bật
-                    </span>
-                  )}
-
                   <button
                     className="text-gray-400 hover:text-blue-500"
                     aria-label="Save Job"

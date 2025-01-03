@@ -236,9 +236,6 @@ function EmployerManagement() {
                     >
                       Xem chi tiết
                     </button>
-                    <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
-                      Chỉnh sửa
-                    </button>
                     <button
                       className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
                       onClick={() => handleDelete(emp.id)}

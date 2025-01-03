@@ -53,9 +53,6 @@ function App() {
                 <span className="text-gray-700">
                   {jobPosts.length} vị trí tuyển dụng
                 </span>
-                <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
-                  Theo dõi
-                </button>
               </div>
             </div>
           </div>
