@@ -12,6 +12,8 @@ function PaymentHistory() {
   const [filterType, setFilterType] = useState("all"); // 'all', 'month', 'quarter', 'year'
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedQuarter, setSelectedQuarter] = useState(
     Math.floor((new Date().getMonth() + 3) / 3)
   );
@@ -43,6 +45,36 @@ function PaymentHistory() {
           return true;
       }
     });
+  };
+  const getPaginatedData = () => {
+    const filteredData = getFilteredPayments();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredData.slice(startIndex, endIndex);
+  };
+
+  // Calculate total pages
+  const totalPages = Math.ceil(getFilteredPayments().length / itemsPerPage);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const getPageNumbers = () => {
+    const totalPagesToShow = 5;
+    const pageNumbers = [];
+    let startPage = Math.max(1, currentPage - Math.floor(totalPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
+
+    if (endPage - startPage + 1 < totalPagesToShow) {
+      startPage = Math.max(1, endPage - totalPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers;
   };
 
   // Export payment history to PDF
@@ -77,7 +109,7 @@ function PaymentHistory() {
       // Add company name (left side)
       doc.setFontSize(14);
       doc.setFont("Roboto-Regular", "bold");
-      doc.text("IT JOBS COMPANY", 45, 20);
+      doc.text("VIỆC LÀM IT", 45, 20);
 
       // Center the invoice title
       doc.setFontSize(14);
@@ -244,6 +276,9 @@ function PaymentHistory() {
       console.error("Error fetching payment history:", error);
     }
   };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, selectedYear, selectedMonth, selectedQuarter]);
 
   useEffect(() => {
     fetchPaymentHistory();
@@ -346,8 +381,8 @@ function PaymentHistory() {
           </tr>
         </thead>
         <tbody>
-          {getFilteredPayments().map((record) => {
-            const totalAmount = parseFloat(record.sotien) || 0; // Assuming `sotien` already contains the total
+          {getPaginatedData().map((record) => {
+            const totalAmount = parseFloat(record.sotien) || 0;
             return (
               <tr key={record.MaNTT} className="border-b hover:bg-gray-50">
                 <td className="px-4 py-2">{record.goimua}</td>
@@ -378,6 +413,55 @@ function PaymentHistory() {
           </tr>
         </tfoot>
       </table>
+      <div className="mt-4 flex justify-center items-center space-x-2">
+        <button
+          onClick={() => handlePageChange(1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          {"<<"}
+        </button>
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          {"<"}
+        </button>
+
+        {getPageNumbers().map((pageNum) => (
+          <button
+            key={pageNum}
+            onClick={() => handlePageChange(pageNum)}
+            className={`px-3 py-1 rounded border ${
+              currentPage === pageNum
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            {pageNum}
+          </button>
+        ))}
+
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          {">"}
+        </button>
+        <button
+          onClick={() => handlePageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          {">>"}
+        </button>
+
+        <span className="ml-4">
+          Trang {currentPage} / {totalPages}
+        </span>
+      </div>
 
       {/* Export button */}
       <button

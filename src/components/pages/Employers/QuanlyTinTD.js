@@ -61,18 +61,10 @@ function TTDNTD() {
     doc.setFontSize(12);
 
     const headers = [
-      [
-        "Tiêu đề",
-        "Mô tả ",
-        "Mức lương",
-        "Ngày hết hạn",
-        "Trạng thái",
-        "Nhà tuyển dụng",
-      ],
+      ["Tiêu đề", "Mức lương", "Ngày hết hạn", "Trạng thái", "Nhà tuyển dụng"],
     ];
     const rows = jobPosts.map((post) => [
       post.tieude,
-      post.mota,
       post.mucluong,
       new Date(post.Ngayhethan).toLocaleDateString(),
       post.trangthai,
@@ -326,7 +318,7 @@ function TTDNTD() {
         },
       });
 
-      console.log("🚀 ~ handleFormSubmit ~ response:", response);
+      // console.log("🚀 ~ handleFormSubmit ~ response:", response);
       setFormData({
         idUngTuyen: null,
         noiDung: "",
@@ -364,7 +356,7 @@ function TTDNTD() {
     const intersection = candidateSkills.filter((skill) =>
       jobSkillNames.includes(skill)
     );
-    console.log("🚀 ~ calculateSkillMatch ~ intersection:", intersection);
+    // console.log("🚀 ~ calculateSkillMatch ~ intersection:", intersection);
     // Return match percentage
     return (intersection.length / jobSkillNames.length) * 100;
   }
@@ -409,7 +401,7 @@ function TTDNTD() {
       calculateSkillMatch(candidate.kyNangLapTrinh, job.skills) *
       weights.skills;
     totalMatch += skillsMatch;
-    console.log("🚀 ~ calculateMatchPercentage ~ skillsMatch:", skillsMatch);
+    // console.log("🚀 ~ calculateMatchPercentage ~ skillsMatch:", skillsMatch);
     // 2. Cấp bậc (Level)
     if (candidate.capBacHienTai && Array.isArray(job.levels)) {
       // Check if the candidate's level is included in any job level description
@@ -426,7 +418,7 @@ function TTDNTD() {
       totalMatch += levelMatch;
 
       // Log the level match for debugging
-      console.log("🚀 ~ calculateMatchPercentage ~ levelMatch:", levelMatch);
+      // console.log("🚀 ~ calculateMatchPercentage ~ levelMatch:", levelMatch);
     } else {
       console.log(
         "🚨 Missing or invalid data: candidate.capBacHienTai or job.levels is undefined or not an array."
@@ -437,17 +429,17 @@ function TTDNTD() {
       calculateSalaryMatch(candidate.Mucluongmongmuon, job.mucluong) *
       weights.salary;
     totalMatch += salaryMatch;
-    console.log("🚀 ~ calculateMatchPercentage ~ salaryMatch:", salaryMatch);
+    // console.log("🚀 ~ calculateMatchPercentage ~ salaryMatch:", salaryMatch);
     // // 4. Hình thức làm việc (Work Type)
     const workTypeMatch =
       candidate.hinhThuclamviec === job.loaiHopdong
         ? 100 * weights.workType
         : 0;
     totalMatch += workTypeMatch;
-    console.log(
-      "🚀 ~ calculateMatchPercentage ~ workTypeMatch:",
-      workTypeMatch
-    );
+    // console.log(
+    //   "🚀 ~ calculateMatchPercentage ~ workTypeMatch:",
+    //   workTypeMatch
+    // );
     // Trả về kết quả làm tròn đến 2 chữ số thập phân
     return Math.round(totalMatch * 100) / 100;
   }
@@ -483,13 +475,15 @@ function TTDNTD() {
     // Lọc theo trạng thái
     const statusMatch =
       statusFilter === "all" ||
-      (statusFilter === "pending" && !app?.trangthai) ||
-      (statusFilter === "responded" && app?.trangthai);
+      (statusFilter === "Chưa phản hồi" && !app?.trangthai) ||
+      (statusFilter === "Đã phản hồi" && app?.trangthai);
 
     // Lọc theo ngày nộp
     const appDate = new Date(app?.NgayNop);
+    console.log("🚀 ~ filteredData ~ appDate:", appDate);
     const today = new Date();
     const daysDiff = Math.floor((today - appDate) / (1000 * 60 * 60 * 24));
+    console.log("🚀 ~ filteredData ~ daysDiff:", daysDiff);
     const dateMatch =
       dateFilter === "all" ||
       (dateFilter === "today" && daysDiff === 0) ||
@@ -675,8 +669,8 @@ function TTDNTD() {
                       onChange={(e) => setStatusFilter(e.target.value)}
                     >
                       <option value="all">Tất cả trạng thái</option>
-                      <option value="pending">Chưa phản hồi</option>
-                      <option value="responded">Đã phản hồi</option>
+                      <option value="Chưa phản hồi">Chưa phản hồi</option>
+                      <option value="Đã phản hồi">Đã phản hồi</option>
                     </select>
 
                     {/* Lọc theo ngày nộp */}

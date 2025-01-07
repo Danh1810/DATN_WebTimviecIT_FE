@@ -1,93 +1,167 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "../../services/axios";
-import { useNavigate } from "react-router-dom";
 
 const TransactionHistory = () => {
   const navigate = useNavigate();
   const [transaction, setTransaction] = useState(null);
   const { id } = useParams();
+
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
         const response = await axios.get("/lstt/detail", {
           params: { id: id },
-        }); // URL API để lấy dữ liệu); // Adjust the URL to your API endpoint
+        });
         console.log("🚀 ~ fetchTransaction ~ response:", response);
-        setTransaction(response.data); // Assuming you are fetching only one transaction for this example
+        setTransaction(response.data);
       } catch (error) {
         console.error("There was an error fetching the transaction!", error);
       }
     };
 
     fetchTransaction();
-  }, []);
+  }, [id]);
+
   const handleButtonClick = () => {
-    if (transaction.users.MaQuyen === 2) {
+    if (transaction?.users?.MaQuyen === 2) {
       navigate("/ntd/muabaidang");
     } else {
       navigate("/tt");
     }
   };
+
   if (!transaction) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
-  console.log("🚀 ~ TransactionHistory ~ transaction:", transaction);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Thanh toán thành công</h1>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Người thanh toán
-          </label>
-          <div className="mt-1 text-gray-900">
-            {transaction.users ? transaction.users.username : "N/A"}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Header */}
+          <div className="bg-blue-500 text-white p-6 text-center">
+            <h1 className="text-2xl font-bold">Chi tiết giao dịch</h1>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700"></label>
-          <div className="mt-1 text-gray-900">{transaction.loaiThanhtoan}</div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Trạng thái
-          </label>
-          <div className="mt-1 text-gray-900">{transaction.trangthai}</div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Số tiền
-          </label>
-          <div className="mt-1 text-gray-900">{transaction.sotien}</div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Ngày thanh toán
-          </label>
-          <div className="mt-1 text-gray-900">
-            {new Date(transaction.Ngaythanhtoan).toLocaleDateString()}
+          {/* Package Info */}
+          <div className="bg-blue-50 p-6 border-b border-blue-100">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-blue-800 mb-2">
+                Thông tin gói
+              </h2>
+              <div className="inline-block bg-white rounded-lg p-4 shadow-sm">
+                <div className="text-3xl font-bold text-blue-600 mb-1">
+                  {transaction.goimua || "Gói tin tuyển dụng"}
+                </div>
+                <div className="text-gray-600">
+                  {transaction.Soluongmua} tin đăng
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Số lượng mua
-          </label>
-          <div className="mt-1 text-gray-900">{transaction.Soluongmua}</div>
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Người thanh toán */}
+            <div className="flex flex-col sm:flex-row sm:justify-between border-b border-gray-200 pb-4">
+              <label className="text-sm font-medium text-gray-600 mb-1 sm:mb-0">
+                Người thanh toán
+              </label>
+              <div className="text-gray-900">
+                {transaction.users ? transaction.users.username : "N/A"}
+              </div>
+            </div>
+
+            {/* Loại thanh toán */}
+            <div className="flex flex-col sm:flex-row sm:justify-between border-b border-gray-200 pb-4">
+              <label className="text-sm font-medium text-gray-600 mb-1 sm:mb-0">
+                Loại thanh toán
+              </label>
+              <div className="text-gray-900">{transaction.loaiThanhtoan}</div>
+            </div>
+
+            {/* Trạng thái */}
+            <div className="flex flex-col sm:flex-row sm:justify-between border-b border-gray-200 pb-4">
+              <label className="text-sm font-medium text-gray-600 mb-1 sm:mb-0">
+                Trạng thái
+              </label>
+              <div className="flex items-center">
+                <div
+                  className={`h-2.5 w-2.5 rounded-full ${
+                    transaction.trangthai === "Thành công"
+                      ? "bg-green-500"
+                      : "bg-gray-400"
+                  } mr-2`}
+                ></div>
+                <span
+                  className={
+                    transaction.trangthai === "Thành công"
+                      ? "text-green-600"
+                      : "text-gray-900"
+                  }
+                >
+                  {transaction.trangthai}
+                </span>
+              </div>
+            </div>
+
+            {/* Số tiền */}
+            <div className="flex flex-col sm:flex-row sm:justify-between border-b border-gray-200 pb-4">
+              <label className="text-sm font-medium text-gray-600 mb-1 sm:mb-0">
+                Số tiền
+              </label>
+              <div className="text-gray-900 font-semibold text-lg">
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(transaction.sotien)}
+              </div>
+            </div>
+
+            {/* Ngày thanh toán */}
+            <div className="flex flex-col sm:flex-row sm:justify-between border-b border-gray-200 pb-4">
+              <label className="text-sm font-medium text-gray-600 mb-1 sm:mb-0">
+                Ngày thanh toán
+              </label>
+              <div className="text-gray-900">
+                {new Date(transaction.Ngaythanhtoan).toLocaleDateString(
+                  "vi-VN",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
+              </div>
+            </div>
+
+            {/* Số lượng mua */}
+            <div className="flex flex-col sm:flex-row sm:justify-between border-b border-gray-200 pb-4">
+              <label className="text-sm font-medium text-gray-600 mb-1 sm:mb-0">
+                Số lượng tin đăng
+              </label>
+              <div className="text-gray-900">{transaction.Soluongmua} tin</div>
+            </div>
+
+            {/* Button */}
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={handleButtonClick}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                         transition-colors duration-200 focus:outline-none focus:ring-2 
+                         focus:ring-blue-300 focus:ring-offset-2 shadow-md"
+              >
+                Trở lại
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <button
-        onClick={handleButtonClick}
-        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-      >
-        Trở lại
-      </button>
     </div>
   );
 };

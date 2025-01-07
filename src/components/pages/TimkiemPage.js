@@ -112,7 +112,7 @@ const SearchBar = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-purple-700 p-4 rounded-lg shadow-md">
+      {/* <div className="bg-purple-700 p-4 rounded-lg shadow-md">
         <div className="flex items-center gap-2 h-16">
           <input
             type="text"
@@ -123,7 +123,7 @@ const SearchBar = () => {
             Tìm kiếm
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Tabs */}
       <div className="flex border-b mb-4 mt-4">

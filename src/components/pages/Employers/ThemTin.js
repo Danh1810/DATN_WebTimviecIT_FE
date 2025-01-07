@@ -198,14 +198,19 @@ function App() {
             </div>
             <div>
               <label className="block font-semibold mb-1">Mức lương</label>
-              <input
-                type="text"
+              <select
                 name="mucluong"
                 value={jobPost.mucluong}
                 onChange={handleChange}
-                className="w-full p-2 border rounded"
-                placeholder="Nhập mức lương"
-              />
+                className="w-full border rounded px-2 py-1"
+              >
+                <option value="">-- Chọn mức lương --</option>
+                <option value="5000000">Dưới 5 triệu</option>
+                <option value="10000000">5 - 10 triệu</option>
+                <option value="20000000">10 - 20 triệu</option>
+                <option value="30000000">20 - 30 triệu</option>
+                <option value="30000001">Trên 30 triệu</option>
+              </select>
             </div>
             <div>
               <label className="block font-semibold mb-1">Kinh nghiệm</label>
