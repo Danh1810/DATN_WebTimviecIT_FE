@@ -92,10 +92,17 @@ function App() {
   };
 
   const handleSubmit = async (e) => {
+    console.log(
+      "🚀 ~ handleSubmit ~ employers.Soluongnoibat:",
+      employers.Soluongnoibat
+    );
+    console.log(
+      "🚀 ~ handleSubmit ~ jobPosts.noibatnline:",
+      jobPosts.noibatnline
+    );
     e.preventDefault();
-    if (jobPosts.noibatnline === true) {
-      // Nếu bài đăng đã được đặt nổi bật, kiểm tra số lượng nổi bật
-      if (employers.Soluongnoibat === 0) {
+    if (jobPost.noibatnline === true) {
+      if (employers.Soluongnoibat <= 0) {
         toast.error("Bạn đã hết lượt nổi bật");
         return;
       }

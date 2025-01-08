@@ -23,6 +23,7 @@ function TTDNTD() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVisible1, setIsModalVisible1] = useState(false);
   const [searchTerm1, setSearchTerm1] = useState("");
+  const [timeFilter, setTimeFilter] = useState("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [currentPage1, setCurrentPage1] = useState(1);
@@ -102,10 +103,41 @@ function TTDNTD() {
       console.error("Error fetching job posts:", error);
     }
   }; // Original list of job posts
+  const filterPostsByTime = (posts, filter) => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const today = new Date(now.setHours(0, 0, 0, 0));
+
+    return posts.filter((post) => {
+      const postDate = new Date(post.Ngayhethan);
+      switch (filter) {
+        case "today":
+          return postDate >= today;
+        case "week":
+          return postDate >= sevenDaysAgo;
+        case "month":
+          return postDate >= thirtyDaysAgo;
+        default:
+          return true;
+      }
+    });
+  };
+  const [selectedFilterText, setSelectedFilterText] =
+    useState("Tất cả thời gian");
+  const filterOptions = [
+    { value: "all", label: "Tất cả thời gian" },
+    { value: "today", label: "Hôm nay" },
+    { value: "thisWeek", label: "Tuần này" },
+    { value: "thisMonth", label: "Tháng này" },
+    { value: "expired", label: "Đã hết hạn" },
+    { value: "upcoming", label: "Sắp hết hạn" },
+  ];
+
   const handleSearch = (event) => {
     const searchValue = event.target.value;
     setSearchTerm1(searchValue);
-
+    filterPosts(searchValue, timeFilter);
     if (searchValue.trim() === "") {
       // Reset to the original unfiltered list
       setJobPosts(allJobPosts);
@@ -118,6 +150,78 @@ function TTDNTD() {
     }
     setCurrentPage1(1); // Reset to the first page
   };
+  const filterPosts = (searchValue, filterType) => {
+    let filtered = [...allJobPosts]; // Start with all posts
+
+    // Apply search filter first
+    if (searchValue.trim() !== "") {
+      filtered = filtered.filter((post) =>
+        post.tieude.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+
+    // Only apply date filtering if not "all"
+    if (filterType !== "all") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      switch (filterType) {
+        case "today":
+          filtered = filtered.filter((post) => {
+            const postDate = new Date(post.Ngayhethan);
+            postDate.setHours(0, 0, 0, 0);
+            return postDate.getTime() === today.getTime();
+          });
+          break;
+        case "thisWeek":
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay());
+          const weekEnd = new Date(today);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          filtered = filtered.filter((post) => {
+            const postDate = new Date(post.Ngayhethan);
+            return postDate >= weekStart && postDate <= weekEnd;
+          });
+          break;
+        case "thisMonth":
+          filtered = filtered.filter((post) => {
+            const postDate = new Date(post.Ngayhethan);
+            return (
+              postDate.getMonth() === today.getMonth() &&
+              postDate.getFullYear() === today.getFullYear()
+            );
+          });
+          break;
+        case "expired":
+          filtered = filtered.filter((post) => {
+            const postDate = new Date(post.Ngayhethan);
+            return postDate < today;
+          });
+          break;
+        case "upcoming":
+          filtered = filtered.filter((post) => {
+            const postDate = new Date(post.Ngayhethan);
+            return postDate > today;
+          });
+          break;
+      }
+    }
+
+    setJobPosts(filtered);
+    setCurrentPage1(1);
+  };
+  const handleDateFilter = (filterType) => {
+    const selectedOption = filterOptions.find(
+      (option) => option.value === filterType
+    );
+    setTimeFilter(filterType);
+    setSelectedFilterText(selectedOption.label);
+    filterPosts(searchTerm1, filterType);
+  };
+
+  // Add this state at the top with your other state declarations
+  const [showTodayOnly, setShowTodayOnly] = useState(false);
+
   const handleDelete = async (id) => {
     try {
       await axios.delete("/tintd", {
@@ -148,10 +252,9 @@ function TTDNTD() {
         employer: post.employer,
         tieude: post.tieude,
       });
-
-      if (response.data.code === 0) {
+      console.log("🚀 ~ toggleStatus ~ response.data.code :", response.code);
+      if (response.code === 0) {
         fetchJobPosts();
-
         toast.success(
           post.trangthai === "Đã duyệt"
             ? "Gia hạn thành công"
@@ -538,15 +641,45 @@ function TTDNTD() {
       </div>
 
       <>
-        <div className="mb-4 relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm bài đăng..."
-            className="pl-10 pr-4 py-2 w-full border rounded-lg"
-            value={searchTerm1}
-            onChange={handleSearch}
-          />
+        <div className="mb-4 flex space-x-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm bài đăng..."
+              className="pl-10 pr-4 py-2 w-full border rounded-lg"
+              value={searchTerm1}
+              onChange={handleSearch}
+            />
+          </div>
+          <div className="relative">
+            <select
+              value={timeFilter}
+              onChange={(e) => handleDateFilter(e.target.value)}
+              className="appearance-none px-4 py-2 border rounded-lg bg-white pr-10"
+            >
+              {filterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </span>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border rounded-lg shadow-md">
