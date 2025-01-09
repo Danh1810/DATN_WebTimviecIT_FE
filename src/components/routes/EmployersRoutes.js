@@ -9,6 +9,7 @@ import Layout from "../layouts/AuthLayout";
 import App1 from "../pages/Employers/TKUV";
 import PaymentHistory from "../pages/Employers/Lstt";
 import EmployerDashboard from "../pages/Employers/Dashboard";
+import Luuhoso from "../pages/Employers/luuhoso";
 
 export const EmployersRoutes = [
   {
@@ -49,6 +50,11 @@ export const EmployersRoutes = [
   {
     path: "/ntd/db",
     component: EmployerDashboard,
+    layout: EmployerLayout,
+  },
+  {
+    path: "/ntd/luuhs",
+    component: Luuhoso,
     layout: EmployerLayout,
   },
 ];

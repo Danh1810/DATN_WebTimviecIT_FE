@@ -7,6 +7,7 @@ const CVManagement = () => {
   const id = localStorage.getItem("id");
   const [jobSeekers, setJobSeekers] = useState([]);
   const [hoso, sethoso] = useState([]);
+  const [loading, setLoading] = useState({});
   const [formData, setFormData] = useState({
     tenhoso: "",
     kyNangLapTrinh: [],
@@ -42,6 +43,7 @@ const CVManagement = () => {
     try {
       const response = await axios.get("/ngtviec/hoso", { params: { id } });
       const hoso = response.data[0]?.hoso || [];
+      console.log("🚀 ~ fetchhoso ~ hoso:", hoso);
       sethoso(hoso);
     } catch (error) {
       console.error("Error fetching CV data:", error);
@@ -274,6 +276,70 @@ const CVManagement = () => {
       console.error("Lỗi xóa", error);
     }
   };
+  const togglePublic = async (id, currentStatus) => {
+    console.log("🚀 ~ togglePublic ~ currentStatus:", currentStatus);
+    // Đặt trạng thái loading cho CV cụ thể
+    setLoading((prev) => ({ ...prev, [id]: true }));
+
+    try {
+      // Gọi API để cập nhật trạng thái
+      const response = await axios.put("/hoso/tt", {
+        id: id,
+        timkiem: !currentStatus,
+      });
+      console.log("🚀 ~ togglePublic ~ response.status:", response);
+      if (response.code === 0) {
+        // Cập nhật state local sau khi API thành công
+        sethoso((prevHoso) =>
+          prevHoso.map((cv) =>
+            cv.id === id ? { ...cv, timkiem: !currentStatus } : cv
+          )
+        );
+
+        // Hiển thị thông báo thành công
+        toast.success(
+          `CV đã được ${!currentStatus ? "công khai" : "ẩn"} thành công`
+        );
+      }
+    } catch (error) {
+      // Xử lý các loại lỗi
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+
+      let errorMessage = "Đã có lỗi xảy ra khi cập nhật trạng thái";
+
+      if (error.response) {
+        // Lỗi từ server
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "Yêu cầu không hợp lệ";
+            break;
+          case 401:
+            errorMessage = "Bạn cần đăng nhập lại";
+            break;
+          case 403:
+            errorMessage = "Bạn không có quyền thực hiện thao tác này";
+            break;
+          case 404:
+            errorMessage = "Không tìm thấy CV";
+            break;
+          default:
+            errorMessage = "Lỗi server, vui lòng thử lại sau";
+        }
+      }
+
+      toast.error(errorMessage);
+
+      // Rollback trạng thái nếu có lỗi
+      sethoso((prevHoso) =>
+        prevHoso.map((cv) =>
+          cv.id === id ? { ...cv, timkiem: currentStatus } : cv
+        )
+      );
+    } finally {
+      // Tắt trạng thái loading
+      setLoading((prev) => ({ ...prev, [id]: false }));
+    }
+  };
   const closeModal1 = () => {
     setSelectedhoNTV(null);
   };
@@ -299,6 +365,7 @@ const CVManagement = () => {
               <th className="px-4 py-2">Tên CV</th>
               <th className="px-4 py-2">Trạng thái CV</th>
               <th className="px-4 py-2">Lần chỉnh sửa cuối</th>
+              <th className="px-4 py-2">Hiển thị cho NTD</th>
               <th className="px-4 py-2">Tùy chọn</th>
             </tr>
           </thead>
@@ -307,7 +374,7 @@ const CVManagement = () => {
               <tr>
                 <td
                   className="px-4 py-4 text-center text-gray-500 bg-gray-50"
-                  colSpan="4"
+                  colSpan="5"
                 >
                   Bạn chưa có CV
                 </td>
@@ -322,6 +389,26 @@ const CVManagement = () => {
                   <td className="border-t px-4 py-3">{hs.trangthai}</td>
                   <td className="border-t px-4 py-3">
                     {new Date(hs.ngayCapNhat).toLocaleDateString()}
+                  </td>
+                  <td className="border-t px-4 py-3">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={hs.timkiem}
+                        onChange={() => togglePublic(hs.id, hs.timkiem)}
+                      />
+                      <div
+                        className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer 
+                                  peer-checked:after:translate-x-full after:content-[''] 
+                                  after:absolute after:top-0.5 after:left-[2px] after:bg-white 
+                                  after:border-gray-300 after:border after:rounded-full after:h-5 
+                                  after:w-5 after:transition-all peer-checked:bg-blue-600"
+                      ></div>
+                      <span className="ml-2 text-sm text-gray-600">
+                        {hs.timkiem ? "Công khai" : "Riêng tư"}
+                      </span>
+                    </label>
                   </td>
                   <td className="border-t px-4 py-3">
                     <div className="flex space-x-3">
@@ -349,8 +436,7 @@ const CVManagement = () => {
               ))
             )}
           </tbody>
-        </table>{" "}
-        *
+        </table>
       </div>
 
       {isOpen && (

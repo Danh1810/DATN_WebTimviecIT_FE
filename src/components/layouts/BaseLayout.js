@@ -1,19 +1,24 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDownIcon, BellIcon } from "@heroicons/react/20/solid";
 import { Logout } from "../services/auth/logout";
 import { logout } from "../slice/authSlice";
+import { ToastContainer, toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import axios from "../services/axios";
 
 function Layout({ children }) {
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
   const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const [skills, setSkills] = useState([]);
+  const [levels, setLevels] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
   const auth = useSelector((state) => state.auth);
+  const [activeTab, setActiveTab] = useState("skills");
   const user = { name: "Nguyễn Văn A" };
   const handleLogout = async () => {
     const res = await Logout();
@@ -30,6 +35,84 @@ function Layout({ children }) {
       navigate("/login");
     }
   };
+  const fetchSkills = async () => {
+    try {
+      const response = await axios.get("/kynang");
+      const formattedSkills = response.data.map((skill) => ({
+        value: skill.id,
+        label: skill.ten,
+      }));
+      setSkills(formattedSkills);
+    } catch (error) {
+      toast.error("Error fetching skills");
+    }
+  };
+  const fetchLevels = async () => {
+    try {
+      const response = await axios.get("/capbac");
+      const formattedLevels = response.data.map((level) => ({
+        value: level.id,
+        label: level.ten,
+      }));
+      setLevels(formattedLevels);
+    } catch (error) {
+      toast.error("Error fetching levels");
+    }
+  };
+  useEffect(() => {
+    // fetchJobPosts();
+    fetchSkills();
+    fetchLevels();
+    // fetchData();
+  }, []);
+  const OpportunityDropdown = () => (
+    <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-72">
+      <div className="flex border-b border-gray-200">
+        <button
+          className={`flex-1 py-2 px-4 ${
+            activeTab === "skills"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-500"
+          }`}
+          onClick={() => setActiveTab("skills")}
+        >
+          Theo kỹ năng
+        </button>
+        <button
+          className={`flex-1 py-2 px-4 ${
+            activeTab === "levels"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-500"
+          }`}
+          onClick={() => setActiveTab("levels")}
+        >
+          Theo cấp bậc
+        </button>
+      </div>
+
+      <div className="mt-2 max-h-64 overflow-y-auto">
+        {activeTab === "skills"
+          ? skills.map((skill) => (
+              <a
+                key={skill.value}
+                href={`/ser?keyword=${skill.label}`}
+                className="block px-4 py-2 hover:bg-gray-100 text-sm"
+              >
+                {skill.label}
+              </a>
+            ))
+          : levels.map((level) => (
+              <a
+                key={level.value}
+                href={`/ser?keyword=${level.label}`}
+                className="block px-4 py-2 hover:bg-gray-100 text-sm"
+              >
+                {level.label}
+              </a>
+            ))}
+      </div>
+    </div>
+  );
   return (
     <div>
       <nav className="bg-gray-700 text-white flex items-center justify-between p-4">
@@ -57,16 +140,7 @@ function Layout({ children }) {
               <span className="font-extrabold">Việc Làm</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
-            {isOpportunityOpen && (
-              <div className="absolute bg-white text-black mt-2 p-2 rounded shadow-lg z-20 w-48">
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Theo kỹ năng
-                </a>
-                <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                  Theo cấp bậc
-                </a>
-              </div>
-            )}
+            {isOpportunityOpen && <OpportunityDropdown />}
           </div>
 
           {/* Menu Dropdown 2 */}
@@ -130,7 +204,7 @@ function Layout({ children }) {
                       Thông tin cá nhân
                     </a>
                     <a
-                      href="/ho"
+                      href="/hoso"
                       className="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-500"
                     >
                       Hồ sơ
@@ -142,7 +216,7 @@ function Layout({ children }) {
                       Việc làm đã ứng tuyển
                     </a>
                     <a
-                      href="/lcv"
+                      href="/luucv"
                       className="block px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-500"
                     >
                       Việc làm đã lưu

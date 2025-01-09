@@ -30,6 +30,15 @@ const PlatformDashboard = () => {
   const [employers1, setEmployers1] = useState([]);
   const [jobSeekers, setJobSeekers] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
+  const [recruiters, setRecruiters] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+  const [expandedCompany, setExpandedCompany] = useState(null);
+  const [expandedPayment, setExpandedPayment] = useState(null);
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [salaryRange, setSalaryRange] = useState({ min: "", max: "" });
+  const [selectedField, setSelectedField] = useState("");
+  const [filteredData, setFilteredData] = useState(recruiters);
   const fetchJobPosts = async () => {
     try {
       const response = await axios.get("/tintd/admin");
@@ -38,6 +47,30 @@ const PlatformDashboard = () => {
     } catch (error) {
       toast.error("Lỗi tải danh sách bài đăng");
     }
+  };
+  const fetchRecruiters = async () => {
+    try {
+      const response = await axios.get("/nhatd/tka");
+      setRecruiters(response.data);
+      console.log("🚀 ~ fetchRecruiters ~ response.data:", response.data);
+    } catch (error) {
+      console.error("Error fetching recruiters:", error);
+    }
+  };
+  const formatDate = (dateString) => {
+    if (!dateString) return "Chưa có";
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
+  const getTotalSalary = (jobPosts) => {
+    return jobPosts.reduce((total, job) => total + parseFloat(job.mucluong), 0);
   };
   const fetchPaymentHistory = async () => {
     try {
@@ -150,10 +183,102 @@ const PlatformDashboard = () => {
     }));
   }
   const loaiHD = countByLoaiHopDongWithNameValue(jobPosts);
-  console.log("🚀 ~ PlatformDashboard ~ loaiHD:", loaiHD);
+  const calculateTotalPayment = (payments) => {
+    if (!payments || !Array.isArray(payments)) return 0;
+    return payments.reduce((total, payment) => {
+      const amount = parseFloat(payment?.sotien || 0);
+      if (payment?.trangthai === "Thành công") {
+        return total + amount;
+      }
+      return total;
+    }, 0);
+  };
 
+  const renderPaymentInfo = (user) => {
+    if (
+      !user ||
+      !user.ND_lstt ||
+      !Array.isArray(user.ND_lstt) ||
+      user.ND_lstt.length === 0
+    ) {
+      return (
+        <div className="text-center text-sm text-gray-500">
+          Chưa có thông tin thanh toán
+        </div>
+      );
+    }
+
+    const isExpanded = expandedPayment === user.id;
+    const totalAmount = calculateTotalPayment(user.ND_lstt);
+
+    return (
+      <div>
+        <div className="text-center mb-3 p-2 bg-gray-50 rounded">
+          <div className="text-sm font-medium text-gray-600">
+            Tổng thanh toán:
+          </div>
+          <div className="text-lg font-semibold text-green-600">
+            {formatCurrency(totalAmount)}
+          </div>
+        </div>
+
+        <button
+          onClick={() => setExpandedPayment(isExpanded ? null : user.id)}
+          className="text-blue-600 hover:text-blue-800 font-medium text-sm mb-2 flex items-center justify-center w-full"
+        >
+          {user.ND_lstt.length} giao dịch
+          <svg
+            className={`w-4 h-4 ml-1 transform transition-transform ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        {isExpanded && (
+          <div className="space-y-3 mt-2">
+            {user.ND_lstt.map((payment) => (
+              <div
+                key={payment?.id || "unknown"}
+                className="text-sm bg-gray-50 p-3 rounded"
+              >
+                <div className="font-medium text-gray-900">
+                  {formatCurrency(payment?.sotien)}
+                </div>
+                <div
+                  className={`${
+                    payment?.trangthai === "Thành công"
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {payment?.trangthai || "Chưa có trạng thái"}
+                </div>
+                <div className="text-gray-500">
+                  Ngày: {formatDate(payment?.Ngaythanhtoan)}
+                </div>
+                {payment?.loaiThanhtoan && (
+                  <div className="text-gray-600">
+                    Loại: {payment.loaiThanhtoan}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
   const result = countByMaQuyenWithNameValue(users);
-  console.log("🚀 ~ PlatformDashboard ~ result:", result);
   function countJobsByLocation(jobsData) {
     const locationCount = {};
 
@@ -235,6 +360,249 @@ const PlatformDashboard = () => {
       return total + amount;
     }, 0); // Bắt đầu từ tổng là 0
   }
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(recruiters.length / itemsPerPage);
+
+  const renderJobPosts = (company) => {
+    if (
+      !company?.jobPosts ||
+      !Array.isArray(company.jobPosts) ||
+      company.jobPosts.length === 0
+    ) {
+      return (
+        <div className="text-sm text-gray-500">Chưa có tin tuyển dụng</div>
+      );
+    }
+
+    const isExpanded = expandedCompany === company.id;
+
+    return (
+      <div>
+        <button
+          onClick={() => setExpandedCompany(isExpanded ? null : company.id)}
+          className="text-blue-600 hover:text-blue-800 font-medium text-sm mb-2 flex items-center"
+        >
+          {company.jobPosts.length} tin tuyển dụng
+          <svg
+            className={`w-4 h-4 ml-1 transform transition-transform ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        {isExpanded && (
+          <div className="space-y-3 mt-2">
+            {company.jobPosts.map((job) => (
+              <div
+                key={job?.id || "unknown"}
+                className="text-sm bg-gray-50 p-3 rounded"
+              >
+                <div className="font-medium text-gray-900">
+                  {job?.tieude || "Không có tiêu đề"}
+                </div>
+                <div className="text-gray-600">
+                  Mức lương: {formatCurrency(job?.mucluong)}
+                </div>
+                <div className="text-gray-600">
+                  Hết hạn: {formatDate(job?.Ngayhethan)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+  const renderPagination = () => {
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Trước
+        </button>
+        <span className="text-gray-600">
+          Trang {currentPage} / {totalPages}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Sau
+        </button>
+      </div>
+    );
+  };
+  const uniqueFields = [
+    ...new Set(
+      recruiters.flatMap((company) =>
+        company.jobPosts.map((job) => job.linhVucCNTT)
+      )
+    ),
+  ];
+
+  // Filter functions
+  const applyFilters = () => {
+    let result = [...recruiters];
+
+    // Date range filter
+    if (dateRange.start && dateRange.end) {
+      const startDate = new Date(dateRange.start);
+      const endDate = new Date(dateRange.end);
+      result = result.filter((company) => {
+        return company.user?.ND_lstt?.some((payment) => {
+          const paymentDate = new Date(payment.Ngaythanhtoan);
+          return paymentDate >= startDate && paymentDate <= endDate;
+        });
+      });
+    }
+
+    // Salary range filter
+    if (salaryRange.min || salaryRange.max) {
+      result = result.filter((company) => {
+        return company.jobPosts.some((job) => {
+          const salary = parseFloat(job.mucluong);
+          const minOk =
+            !salaryRange.min || salary >= parseFloat(salaryRange.min);
+          const maxOk =
+            !salaryRange.max || salary <= parseFloat(salaryRange.max);
+          return minOk && maxOk;
+        });
+      });
+    }
+
+    // Field filter
+    if (selectedField) {
+      result = result.filter((company) => {
+        return company.jobPosts.some(
+          (job) => job.linhVucCNTT === selectedField
+        );
+      });
+    }
+
+    setFilteredData(result);
+    setCurrentPage(1); // Reset to first page after filtering
+  };
+
+  // Apply filters when filter values change
+  useEffect(() => {
+    applyFilters();
+  }, [dateRange, salaryRange, selectedField]);
+
+  // Reset filters
+  const resetFilters = () => {
+    setDateRange({ start: "", end: "" });
+    setSalaryRange({ min: "", max: "" });
+    setSelectedField("");
+    setFilteredData(recruiters);
+    setCurrentPage(1);
+  };
+  const renderFilters = () => {
+    return (
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <h3 className="text-lg font-semibold mb-4 text-gray-700">Bộ lọc</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Date Range Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Thời gian thanh toán
+            </label>
+            <div className="space-y-2">
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) =>
+                  setDateRange((prev) => ({ ...prev, start: e.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) =>
+                  setDateRange((prev) => ({ ...prev, end: e.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+          </div>
+
+          {/* Salary Range Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Khoảng lương
+            </label>
+            <div className="space-y-2">
+              <input
+                type="number"
+                placeholder="Lương tối thiểu"
+                value={salaryRange.min}
+                onChange={(e) =>
+                  setSalaryRange((prev) => ({ ...prev, min: e.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <input
+                type="number"
+                placeholder="Lương tối đa"
+                value={salaryRange.max}
+                onChange={(e) =>
+                  setSalaryRange((prev) => ({ ...prev, max: e.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+          </div>
+
+          {/* Field Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Lĩnh vực
+            </label>
+            <select
+              value={selectedField}
+              onChange={(e) => setSelectedField(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+            >
+              <option value="">Tất cả lĩnh vực</option>
+              {uniqueFields.map((field) => (
+                <option key={field} value={field}>
+                  {field}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reset Button */}
+          <div className="flex items-end">
+            <button
+              onClick={resetFilters}
+              className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-700 transition-colors"
+            >
+              Đặt lại bộ lọc
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
   const totalAmount = calculateTotalAmount(paymentHistory);
   useEffect(() => {
     fetchJobPosts();
@@ -242,6 +610,7 @@ const PlatformDashboard = () => {
     fetchUsers();
     fetchEmployers();
     fetchPaymentHistory();
+    fetchRecruiters();
   }, []);
 
   return (
@@ -262,7 +631,7 @@ const PlatformDashboard = () => {
             >
               Tổng Quan
             </button>
-            {/* <button
+            <button
               className={`px-4 py-2 rounded ${
                 activeTab === "trends"
                   ? "bg-blue-600 text-white"
@@ -270,7 +639,7 @@ const PlatformDashboard = () => {
               }`}
               onClick={() => setActiveTab("trends")}
             >
-              Xu Hướng
+              Thống kê Nhà tuyển dụng
             </button>
             <button
               className={`px-4 py-2 rounded ${
@@ -281,7 +650,7 @@ const PlatformDashboard = () => {
               onClick={() => setActiveTab("time-stats")}
             >
               Thống Kê Thời Gian
-            </button> */}
+            </button>
           </div>
         </header>
         {/* {activeTab === "time-stats" && (
@@ -652,96 +1021,77 @@ const PlatformDashboard = () => {
           </div>
         )}
 
-        {/* {activeTab === "trends" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         
-            <div className="bg-white shadow-md rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Xu Hướng Công Nghệ Hot
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-3">
-                    Top Framework/Library
-                  </h3>
-                  <div className="space-y-2">
-                    {[
-                      { name: "React", percent: 85 },
-                      { name: "Vue.js", percent: 65 },
-                      { name: "Angular", percent: 55 },
-                      { name: "Next.js", percent: 45 },
-                    ].map((tech, index) => (
-                      <div key={index} className="flex items-center">
-                        <div className="w-24">{tech.name}</div>
-                        <div className="flex-1 h-4 bg-gray-200 rounded">
-                          <div
-                            className="h-4 bg-blue-600 rounded"
-                            style={{ width: `${tech.percent}%` }}
-                          ></div>
+        {activeTab === "trends" && (
+          <div className="w-full bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              Thống kê nhà tuyển dụng
+            </h2>
+            {renderFilters()}
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">
+                      Thông tin công ty
+                    </th>
+                    <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">
+                      Tin tuyển dụng
+                    </th>
+                    <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">
+                      Thông tin tài khoản
+                    </th>
+                    <th className="px-4 py-3 border-b border-gray-200 text-center text-sm font-semibold text-gray-700">
+                      Thanh toán
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {currentItems.map((company) => (
+                    <tr
+                      key={company.id}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-4 py-4">
+                        <div className="font-medium text-gray-900">
+                          {company.ten}
                         </div>
-                        <div className="w-16 text-right">{tech.percent}%</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          {company.diachi}
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          <div>Email: {company.email}</div>
+                          <div>SĐT: {company.sdt}</div>
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          Trạng thái:{" "}
+                          <span className="text-yellow-600">
+                            {company.trangthai}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">{renderJobPosts(company)}</td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm">
+                          <div>
+                            Username: {company.user?.username || "Chưa có"}
+                          </div>
+                          <div>Email: {company.user?.email || "Chưa có"}</div>
+                          <div>
+                            Trạng thái: {company.user?.Trangthai || "Chưa có"}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        {renderPaymentInfo(company?.user)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-        
-            <div className="bg-white shadow-md rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Mức Lương Trung Bình Theo Vị Trí
-              </h2>
-              <div className="space-y-4">
-                {[
-                  {
-                    position: "Frontend Developer",
-                    range: "15-35M",
-                    demand: "Cao",
-                  },
-                  {
-                    position: "Backend Developer",
-                    range: "18-40M",
-                    demand: "Rất cao",
-                  },
-                  {
-                    position: "DevOps Engineer",
-                    range: "25-50M",
-                    demand: "Cao",
-                  },
-                  {
-                    position: "Mobile Developer",
-                    range: "15-35M",
-                    demand: "Trung bình",
-                  },
-                  { position: "Data Engineer", range: "20-45M", demand: "Cao" },
-                ].map((job, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">{job.position}</h3>
-                        <p className="text-sm text-gray-500">
-                          Mức lương: {job.range}
-                        </p>
-                      </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          job.demand === "Rất cao"
-                            ? "bg-red-100 text-red-800"
-                            : job.demand === "Cao"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {job.demand}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {renderPagination()}
           </div>
-        )} */}
+        )}
       </div>
     </div>
   );

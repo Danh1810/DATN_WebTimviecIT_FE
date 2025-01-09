@@ -31,6 +31,7 @@ function Layout({ children }) {
       ],
     },
     { label: "Tìm kiếm ứng viên", key: "tkuv", path: "/ntd/tkuv" },
+    { label: "Hồ sơ đã lưu", key: "lhs", path: "/ntd/luuhs" },
     { label: "Lịch sử thanh toán", key: "lstt", path: "/ntd/lstt" },
   ];
 

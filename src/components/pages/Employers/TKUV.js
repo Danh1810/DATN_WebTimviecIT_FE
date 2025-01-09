@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../../services/axios";
 import Select from "react-select";
 import { useDebounce } from "use-debounce";
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const FILTERS = [
   {
@@ -246,7 +250,9 @@ function App() {
   const [filteredProfiles, setFilteredProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [paginatedProfiles, setPaginatedProfiles] = useState([]);
+  const [selectedhosoNTV, setSelectedhoNTV] = useState(null);
   const [error, setError] = useState(null);
+
   const [cities, setCities] = useState([
     { value: "Hà Nội", label: "Hà Nội" },
     { value: "Đà Nẵng", label: "Đà Nẵng" },
@@ -257,41 +263,15 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  useEffect(() => {
-    fetchProfiles();
-  }, []); // Refetch when page changes
-
-  useEffect(() => {
-    // Reset to first page when filters change
-    setCurrentPage(1);
-    applyFilters();
-  }, [debouncedSearchTerm, selectedCity, filters]);
-  useEffect(() => {
-    // Update paginated data when filtered data or page changes
-    updatePaginatedData();
-  }, [filteredProfiles, currentPage]);
-  const updatePaginatedData = () => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setPaginatedProfiles(
-      filteredProfiles.slice(indexOfFirstItem, indexOfLastItem)
-    );
-  };
-
-  const getTotalPages = () => Math.ceil(filteredProfiles.length / itemsPerPage);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const [itemsPerPage] = useState(7);
+  const userid = localStorage.getItem("id");
   const fetchProfiles = async () => {
     try {
       setLoading(true);
       const response = await axios.get("/hoso");
       setProfiles(response.data);
       console.log("🚀 ~ fetchProfiles ~ response.data:", response.data);
-      setFilteredProfiles(response.data);
+      setFilteredProfiles(response.data.filter((job) => job.timkiem === true));
     } catch (err) {
       setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
       console.error("Error fetching profiles:", err);
@@ -299,13 +279,21 @@ function App() {
       setLoading(false);
     }
   };
-
+  const xemChiTiet1 = (id) => {
+    const post = featuredJobs.find((post) => post.id === id);
+    setSelectedhoNTV(post); // Lưu bài đăng được chọn vào state
+    console.log("🚀 ~ CVManagement ~ selectedhosoNTV:", selectedhosoNTV);
+  };
+  const featuredJobs = profiles.filter((job) => job.timkiem === true);
+  const closeModal1 = () => {
+    setSelectedhoNTV(null);
+  };
   const handleFilterChange = useCallback((key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   const applyFilters = useCallback(() => {
-    let filtered = profiles;
+    let filtered = featuredJobs;
 
     // Apply search term filter
     if (debouncedSearchTerm) {
@@ -378,7 +366,7 @@ function App() {
     });
 
     setFilteredProfiles(filtered);
-  }, [profiles, debouncedSearchTerm, selectedCity, filters]);
+  }, [featuredJobs, debouncedSearchTerm, selectedCity, filters]);
 
   const handleCityChange = useCallback((option) => {
     setSelectedCity(option);
@@ -395,6 +383,71 @@ function App() {
     },
     [cities]
   );
+  useEffect(() => {
+    fetchProfiles();
+  }, []); // Refetch when page changes
+
+  useEffect(() => {
+    // Reset to first page when filters change
+    setCurrentPage(1);
+    applyFilters();
+  }, [debouncedSearchTerm, selectedCity, filters]);
+  useEffect(() => {
+    // Update paginated data when filtered data or page changes
+    updatePaginatedData();
+  }, [filteredProfiles, currentPage]);
+  const updatePaginatedData = () => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    setPaginatedProfiles(
+      filteredProfiles.slice(indexOfFirstItem, indexOfLastItem)
+    );
+  };
+  const handleSearch = async (id) => {
+    // Dữ liệu cần gửi
+    const dataToSend = {
+      MaHS: id,
+      Userid: userid,
+    };
+
+    console.log("🚀 ~ handleSearch ~ Data to send:", dataToSend);
+
+    try {
+      // Gửi yêu cầu POST đến API
+      const response = await axios.post("/luuhs", dataToSend, {
+        headers: {
+          "Content-Type": "application/json", // Đảm bảo gửi dữ liệu dưới dạng JSON
+        },
+      });
+
+      // Kiểm tra trạng thái phản hồi
+      if (response.status === 200 || response.status === 201) {
+        console.log("Đã gọi handleSearch thành công");
+        toast.success("Lưu hồ sơ thành công!"); // Thông báo thành công
+        console.log("🚀 ~ handleSearch ~ response:", response.data);
+      } else {
+        // Nếu trạng thái không phải 200 hoặc 201
+        const errorMessage = response.data?.message || "Lỗi không xác định";
+        toast.error(`Không thể lưu hồ sơ: ${errorMessage}`);
+      }
+    } catch (error) {
+      // Xử lý lỗi từ axios hoặc máy chủ
+      console.error("🚀 ~ handleSearch ~ error:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Đã xảy ra lỗi không xác định";
+      toast.error(`Lỗi khi lưu hồ sơ: ${errorMessage}`); // Thông báo lỗi
+    }
+  };
+
+  const getTotalPages = () => Math.ceil(filteredProfiles.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (loading) return <div className="p-8 text-center">Đang tải...</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
@@ -428,8 +481,8 @@ function App() {
                   <ProfileCard
                     key={profile.id}
                     profile={profile}
-                    onFavorite={(id) => console.log(`Favorited profile: ${id}`)}
-                    onView={(id) => console.log(`Viewed profile: ${id}`)}
+                    onFavorite={() => xemChiTiet1(profile.id)}
+                    onView={() => handleSearch(profile.id)}
                   />
                 ))}
               </div>
@@ -444,6 +497,225 @@ function App() {
             </>
           )}
         </div>
+        {selectedhosoNTV && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+              {/* Header */}
+              <div className="bg-gray-100 p-5 border-b flex justify-between items-center rounded-t-xl">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {selectedhosoNTV.tenhoso}
+                </h2>
+                <button
+                  onClick={closeModal1}
+                  className="text-gray-600 hover:text-red-500 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content Container */}
+              <div className="p-6">
+                {/* Profile Header */}
+                <div className="flex items-center space-x-6 mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
+                    <img
+                      src={selectedhosoNTV.nguoitimviec.anhDaiDien}
+                      alt="Avatar"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      {selectedhosoNTV.nguoitimviec.hoVaTen || "N/A"}
+                    </h3>
+                    <p className="text-gray-600">
+                      {selectedhosoNTV.capBacHienTai || "Chưa xác định"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Profile Details Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Personal Information */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Thông Tin Cá Nhân
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Ngày Sinh:
+                        </label>
+                        <p className="text-gray-900">
+                          {(() => {
+                            const ngaySinh =
+                              selectedhosoNTV.nguoitimviec.ngaySinh;
+
+                            return ngaySinh
+                              ? new Date(ngaySinh).toLocaleDateString("vi-VN", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })
+                              : "N/A";
+                          })()}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Giới Tính:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.nguoitimviec.gioiTinh || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Địa chỉ:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.nguoitimviec.diaChi || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Thông Tin Liên Hệ
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Số điện thoại:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.nguoitimviec.soDienThoai || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Tỉnh/Thành phố:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.nguoitimviec.thanhPho || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Professional Skills */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Kỹ Năng Nghề Nghiệp
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Kỹ năng lập trình:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.kyNangLapTrinh
+                            ? Array.isArray(selectedhosoNTV.kyNangLapTrinh)
+                              ? selectedhosoNTV.kyNangLapTrinh.join(", ")
+                              : selectedhosoNTV.kyNangLapTrinh
+                            : "Chưa nhập"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Chứng chỉ nghề nghiệp:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.chungChiNgheNghiep || "Chưa nhập"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Trình độ học vấn:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.trinhDoHocVan || "Chưa nhập"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Experience and Projects */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      Kinh Nghiệm & Dự Án
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Kinh nghiệm làm việc:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.kinhNghiemLamViec || "Chưa nhập"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600">
+                          Dự án đã tham gia:
+                        </label>
+                        <p className="text-gray-900">
+                          {selectedhosoNTV.duAnDaThamGia || "Chưa nhập"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Career Objective */}
+                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                    Mục Tiêu Nghề Nghiệp
+                  </h4>
+                  <p className="text-gray-900">
+                    {selectedhosoNTV.mucTieuNgheNghiep || "Chưa nhập"}
+                  </p>
+                </div>
+
+                {/* Online Profile */}
+                <div className="mt-4 bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">
+                      Hồ sơ trực tuyến
+                    </label>
+                    <p className="text-gray-900">
+                      {selectedhosoNTV.fileHoso ? "Có" : "Không"}
+                    </p>
+                  </div>
+                  {selectedhosoNTV.fileHoso && (
+                    <button
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                      onClick={() =>
+                        window.open(selectedhosoNTV.fileHoso, "_blank")
+                      }
+                    >
+                      Xem hồ sơ
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
