@@ -134,7 +134,10 @@ function Layout({ children }) {
                     >
                       Thông tin cá nhân
                     </a>
-                    <a href="/ho" className="block px-4 py-2 hover:bg-gray-100">
+                    <a
+                      href="/hoso"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
                       Hồ sơ
                     </a>
                     <a
@@ -144,7 +147,7 @@ function Layout({ children }) {
                       Việc làm đã ứng tuyển
                     </a>
                     <a
-                      href="/lcv"
+                      href="/luucv"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Việc làm đã lưu
