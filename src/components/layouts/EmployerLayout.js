@@ -22,11 +22,11 @@ function Layout({ children }) {
       key: "qlntd",
       children: [
         {
-          label: "Tạo bài đăng",
+          label: "Tạo tin tuyển dụng",
           key: "Createttd",
           path: "/ntd/qlttd/tao-bai-dang",
         },
-        { label: "Các bài đăng", key: "ttd", path: "/ntd/qlttd/cac-bai-dang" },
+        { label: "Các tin", key: "ttd", path: "/ntd/qlttd/cac-bai-dang" },
         { label: "Mua", key: "mua", path: "/ntd/muabaidang" },
       ],
     },

@@ -374,11 +374,14 @@ function TTDNTD() {
     }
   };
   const [currentApplicant, setCurrentApplicant] = useState(null);
-  const handleOpenModal = (id) => {
-    const post = selectedhoso.find((post) => post.id === id);
-    setCurrentApplicant(post);
-    setIsModalVisible1(true);
-  };
+  const handleOpenModal = useCallback(
+    (id) => {
+      const post = selectedhoso.find((post) => post.id === id);
+      setCurrentApplicant(post);
+      setIsModalVisible1(true);
+    },
+    [selectedhoso]
+  );
   const [formData, setFormData] = useState({
     idUngTuyen: null,
     noiDung: "",
@@ -393,45 +396,66 @@ function TTDNTD() {
     }
   }, [currentApplicant]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    if (files[0]) {
-      setFormData((prev) => ({ ...prev, [name]: files[0] }));
-      setSelectedFile(files[0]); // Corrected this line
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, filedinhkem: file }));
+      setSelectedFile(file);
     }
   };
+
   const handleCloseModal = () => {
     setIsModalVisible1(false);
+    // Reset form khi đóng modal
+    setFormData({
+      idUngTuyen: null,
+      noiDung: "",
+      filedinhkem: null,
+    });
+    setSelectedFile(null);
   };
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      // Tạo FormData object
       const data = new FormData();
-      data.append("idUngTuyen", formData.idUngTuyen);
-      data.append("noiDung", formData.noiDung);
+
+      // Chỉ append những giá trị không null
+      if (formData.idUngTuyen) {
+        data.append("idUngTuyen", formData.idUngTuyen);
+      }
+      if (formData.noiDung) {
+        data.append("noiDung", formData.noiDung);
+      }
       if (formData.filedinhkem) {
-        data.append("filedinhkem", formData.filedinhkem); // Thêm file nếu có
+        data.append("filedinhkem", formData.filedinhkem);
       }
 
-      setIsModalVisible1(false);
       const response = await axios.post("/phanhoi", data, {
         headers: {
-          "Content-Type": "multipart/form-data", // Đảm bảo header đúng
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      // console.log("🚀 ~ handleFormSubmit ~ response:", response);
+      // Reset form sau khi gửi thành công
       setFormData({
         idUngTuyen: null,
         noiDung: "",
-        filedinhkem: null, // Reset filedinhkem về null
+        filedinhkem: null,
       });
       setSelectedFile(null);
+      setIsModalVisible1(false);
       toast.success("Phản hồi thành công.");
     } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi gửi phản hồi!";
+      toast.error(errorMessage);
       console.error("Error adding feedback:", error);
-      toast.error("Có lỗi xảy ra khi gửi phản hồi!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const Chinhsua = (id) => {
@@ -1446,18 +1470,15 @@ function TTDNTD() {
           title="Phản hồi ứng tuyển"
           visible={isModalVisible1}
           onCancel={handleCloseModal}
-          width={900} /* Tăng kích thước Modal */
+          width={900}
           footer={null}
         >
           <div className="max-w-4xl mx-auto bg-white p-8 rounded-md shadow-lg">
-            {/* Tiêu đề Modal */}
             <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
               Phản hồi ứng tuyển
             </h2>
 
-            {/* Form */}
             <form onSubmit={handleFormSubmit}>
-              {/* Nội dung Editor */}
               <div className="mb-6">
                 <label
                   htmlFor="noiDung"
@@ -1470,7 +1491,7 @@ function TTDNTD() {
                   value={formData.noiDung}
                   onEditorChange={handleEditorChange1}
                   init={{
-                    height: 400 /* Tăng chiều cao Editor */,
+                    height: 400,
                     menubar: true,
                     plugins: [
                       "advlist autolink lists link image charmap print preview anchor",
@@ -1485,7 +1506,6 @@ function TTDNTD() {
                 />
               </div>
 
-              {/* File Upload */}
               <div className="mb-6">
                 <label
                   htmlFor="fileUpload"
@@ -1497,12 +1517,14 @@ function TTDNTD() {
                   type="file"
                   name="filedinhkem"
                   onChange={handleFileChange}
+                  disabled={isSubmitting}
                   className="w-full text-lg text-gray-600 
             file:mr-4 file:py-3 file:px-6
             file:rounded-md file:border-0
             file:text-lg file:font-semibold
             file:bg-blue-100 file:text-blue-800
-            hover:file:bg-blue-200"
+            hover:file:bg-blue-200
+            disabled:opacity-50"
                 />
                 {selectedFile && (
                   <p className="text-md text-gray-600 mt-2">
@@ -1511,12 +1533,14 @@ function TTDNTD() {
                 )}
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white text-lg py-3 px-6 rounded-md hover:bg-blue-700 transition-colors"
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 text-white text-lg py-3 px-6 
+                 rounded-md hover:bg-blue-700 transition-colors
+                 disabled:bg-blue-300 disabled:cursor-not-allowed"
               >
-                Gửi Phản Hồi
+                {isSubmitting ? "Đang gửi..." : "Gửi Phản Hồi"}
               </button>
             </form>
           </div>

@@ -1,170 +1,168 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "../../services/axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
+// Constants
+const ITEMS_PER_PAGE = 5;
+const DEFAULT_LOGO = "/default-logo.png";
+
+// Separate JobCard component
+const JobCard = ({ jobPost, onDelete, itemId }) => {
+  const handleDelete = (e) => {
+    e.preventDefault();
+    onDelete(itemId);
+  };
+
+  return (
+    <Link to={`/tintuyendung/${jobPost.id}`}>
+      <div className="border rounded-lg p-4 mb-4 shadow-md flex items-center justify-between hover:shadow-lg transition-shadow">
+        <div className="flex items-start">
+          <div className="mr-4">
+            <img
+              src={jobPost.employer?.logo || DEFAULT_LOGO}
+              alt="Company Logo"
+              className="w-12 h-12 object-contain rounded"
+            />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold">
+              {jobPost.tieude || "Không có tiêu đề"}
+            </h2>
+            <p className="text-gray-600 text-sm">
+              {jobPost.employer?.ten || "Tên nhà tuyển dụng không có"}
+            </p>
+            <div className="flex items-center text-sm text-gray-500 mt-2">
+              <span className="mr-4">
+                💰{" "}
+                <span className="font-medium">
+                  {jobPost.mucluong || "Thỏa thuận"}
+                </span>
+              </span>
+              <span className="mr-4">
+                📍 {jobPost.diaChiLamviec || "Địa chỉ không có"}
+              </span>
+              <span>
+                📅{" "}
+                {jobPost.Ngayhethan
+                  ? new Date(jobPost.Ngayhethan).toLocaleDateString()
+                  : "Không xác định"}
+              </span>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={handleDelete}
+          className="flex items-center text-red-500 hover:text-red-600 font-medium"
+        >
+          ❤️ Hủy lưu
+        </button>
+      </div>
+    </Link>
+  );
+};
+
+// Pagination component
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <div className="flex justify-center mt-4">
+      <nav className="inline-flex rounded-md shadow">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          Trước
+        </button>
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            onClick={() => onPageChange(number)}
+            className={`px-3 py-2 border border-gray-300 text-sm font-medium ${
+              currentPage === number
+                ? "bg-blue-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            {number}
+          </button>
+        ))}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          Sau
+        </button>
+      </nav>
+    </div>
+  );
+};
+
 const Luucongviec = () => {
   const id = localStorage.getItem("id");
-  const [jobSeekers, setJobSeekers] = useState([]);
-  const [lcv, setlcv] = useState([]);
   const [jobPosts, setJobPosts] = useState([]);
-
-  // Pagination states
+  const [savedJobs, setSavedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
 
-  const fetchJobSeekers = async () => {
+  const fetchJobPosts = useCallback(async () => {
     try {
-      const response = await axios.get("/ngtviec");
-      setJobSeekers(response.data);
+      const [jobPostsRes, savedJobsRes] = await Promise.all([
+        axios.get("/tintd"),
+        axios.get("/ngtviec/lcv", { params: { id } }),
+      ]);
+
+      setJobPosts(jobPostsRes.data);
+      setSavedJobs(savedJobsRes.data[0]?.LCV_NTV || []);
     } catch (error) {
-      console.error("Error fetching job seekers:", error);
+      console.error("Error fetching data:", error);
+      toast.error("Không thể tải dữ liệu. Vui lòng thử lại sau.");
     }
-  };
+  }, [id]);
 
-  const fetchJobPosts = async () => {
+  const handleDelete = async (itemId) => {
     try {
-      const response = await axios.get("/tintd");
-      setJobPosts(response.data);
-    } catch (error) {
-      console.error("Error fetching job posts:", error);
-    }
-  };
-
-  const fetchlcv = async () => {
-    try {
-      const response = await axios.get("/ngtviec/lcv", { params: { id: id } });
-      const lcv = response.data[0]?.LCV_NTV || [];
-      setlcv(lcv);
-    } catch (error) {
-      console.error("Error fetching CV data:", error);
-    }
-  };
-
-  const XoaTinTD = async (id) => {
-    try {
-      await axios.delete("/lcv", {
-        params: { id: id },
-      });
+      await axios.delete("/lcv", { params: { id: itemId } });
       toast.success("Xóa thành công");
-      fetchlcv();
+      fetchJobPosts();
     } catch (error) {
-      toast.error(`Lỗi xóa: ${error.message}`);
+      toast.error("Không thể xóa. Vui lòng thử lại sau.");
     }
   };
 
   useEffect(() => {
-    fetchlcv();
-    fetchJobSeekers();
     fetchJobPosts();
-  }, []);
+  }, [fetchJobPosts]);
 
-  // Get current items
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = lcv.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(lcv.length / itemsPerPage); i++) {
-    pageNumbers.push(i);
-  }
+  // Pagination logic
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentItems = savedJobs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(savedJobs.length / ITEMS_PER_PAGE);
 
   return (
-    <div>
-      <div className="container mx-auto p-4 min-h-screen">
-        {currentItems.map((item) => {
-          const jobPost = jobPosts.find((rec) => rec.id === item.MaTTD);
-          if (!jobPost) return null;
+    <div className="container mx-auto p-4 min-h-screen">
+      {currentItems.map((item) => {
+        const jobPost = jobPosts.find((job) => job.id === item.MaTTD);
+        if (!jobPost) return null;
 
-          return (
-            <Link key={jobPost.id} to={`/tintuyendung/${jobPost.id}`}>
-              <div className="border rounded-lg p-4 mb-4 shadow-md flex items-center justify-between hover:shadow-lg transition-shadow">
-                <div className="flex items-start">
-                  <div className="mr-4">
-                    <img
-                      src={jobPost.employer?.logo || "/default-logo.png"}
-                      alt="Company Logo"
-                      className="w-12 h-12 object-contain rounded"
-                    />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold">
-                      {jobPost.tieude || "Không có tiêu đề"}
-                    </h2>
-                    <p className="text-gray-600 text-sm">
-                      {jobPost.employer?.ten || "Tên nhà tuyển dụng không có"}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500 mt-2">
-                      <span className="mr-4">
-                        💰{" "}
-                        <span className="font-medium">
-                          {jobPost.mucluong || "Thỏa thuận"}
-                        </span>
-                      </span>
-                      <span className="mr-4">
-                        📍 {jobPost.diaChiLamviec || "Địa chỉ không có"}
-                      </span>
-                      <span>
-                        📅{" "}
-                        {jobPost.Ngayhethan
-                          ? new Date(jobPost.Ngayhethan).toLocaleDateString()
-                          : "Không xác định"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      XoaTinTD(item.id);
-                    }}
-                    className="flex items-center text-red-500 hover:text-red-600 font-medium"
-                  >
-                    ❤️ Hủy lưu
-                  </button>
-                </div>
-              </div>
-            </Link>
-          );
-        })}
+        return (
+          <JobCard
+            key={jobPost.id}
+            jobPost={jobPost}
+            onDelete={handleDelete}
+            itemId={item.id}
+          />
+        );
+      })}
 
-        {/* Pagination */}
-        <div className="flex justify-center mt-4">
-          <nav className="inline-flex rounded-md shadow">
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              Trước
-            </button>
-            {pageNumbers.map((number) => (
-              <button
-                key={number}
-                onClick={() => paginate(number)}
-                className={`px-3 py-2 border border-gray-300 text-sm font-medium ${
-                  currentPage === number
-                    ? "bg-blue-500 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                {number}
-              </button>
-            ))}
-            <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === Math.ceil(lcv.length / itemsPerPage)}
-              className="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              Sau
-            </button>
-          </nav>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

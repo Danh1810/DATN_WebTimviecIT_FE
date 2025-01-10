@@ -5,6 +5,8 @@ import { Modal, Button } from "antd";
 import { getTintdbyID } from "../services/jb.service";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 function JobDetails() {
   const [activeTab, setActiveTab] = useState("details");
@@ -18,11 +20,13 @@ function JobDetails() {
   const isAuth = localStorage.getItem("isAuth");
   console.log("🚀 ~ JobDetails ~ isAuth:", isAuth);
   const userid = localStorage.getItem("id");
+  const auth = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [jobSeekers, setJobSeekers] = useState([]);
   const [isXem, setisxem] = useState([id]);
   const [hoso, sethoso] = useState([]);
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
@@ -109,6 +113,37 @@ function JobDetails() {
       toast.error("Bạn cần tạo hồ sơ");
     }
   };
+  const handleSearch = async (id) => {
+    if (!auth.isAuth) {
+      navigate("/login"); // Redirect to login if not authenticated
+      return;
+    }
+
+    const dataToSend = {
+      MaTTD: id,
+      Userid: userid,
+    };
+
+    console.log("🚀 ~ handleSearch ~ Data to send:", dataToSend);
+
+    try {
+      const response = await axios.post("/lcv", dataToSend, {
+        headers: {
+          "Content-Type": "application/json", // Set header to handle JSON payload
+        },
+      });
+      toast.success("Lưu thành công"); // Notify success
+      fetchJobPosts(); // Reload the job posts
+      console.log("🚀 ~ handleSearch ~ response:", response.data);
+    } catch (error) {
+      console.error("🚀 ~ handleSearch ~ error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unknown error occurred";
+      toast.error(`Lỗi duyệt: ${errorMessage}`);
+    }
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -122,6 +157,13 @@ function JobDetails() {
   // Handle pagination
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      currencyDisplay: "code",
+    }).format(amount);
   };
 
   useEffect(() => {
@@ -196,7 +238,7 @@ function JobDetails() {
               </div>
               <div className="mt-4">
                 <p className="text-sm font-medium text-red-500">
-                  Mức Lương : {job.mucluong}
+                  Mức Lương : {formatCurrency(job.mucluong)}
                 </p>
               </div>
               <div className="flex justify-end space-x-4 mt-6">
@@ -206,7 +248,10 @@ function JobDetails() {
                 >
                   Nộp hồ sơ
                 </button>
-                <button className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
+                <button
+                  className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300"
+                  onClick={() => handleSearch(id)}
+                >
                   Lưu
                 </button>
               </div>

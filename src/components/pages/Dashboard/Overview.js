@@ -641,7 +641,7 @@ const PlatformDashboard = () => {
             >
               Thống kê Nhà tuyển dụng
             </button>
-            <button
+            {/* <button
               className={`px-4 py-2 rounded ${
                 activeTab === "time-stats"
                   ? "bg-blue-600 text-white"
@@ -650,7 +650,7 @@ const PlatformDashboard = () => {
               onClick={() => setActiveTab("time-stats")}
             >
               Thống Kê Thời Gian
-            </button>
+            </button> */}
           </div>
         </header>
         {/* {activeTab === "time-stats" && (
