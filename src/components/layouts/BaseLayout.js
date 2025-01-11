@@ -188,7 +188,7 @@ function Layout({ children }) {
                 </>
               ) : (
                 <>
-                  <span>Đăng nhập / Đăng ký</span>
+                  <span>Người tìm việc Đăng nhập / Đăng ký</span>
                   <ChevronDownIcon className="h-4 w-4" />
                 </>
               )}
