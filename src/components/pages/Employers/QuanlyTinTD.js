@@ -1,19 +1,11 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Search } from "lucide-react";
 import axios from "../../services/axios";
 import { jsPDF } from "jspdf";
-import Select from "react-select";
 import "jspdf-autotable";
 import "../../slice/Roboto-Regular-normal.js";
 import { toast } from "react-toastify";
 import { Modal, Button } from "antd";
-import Quill from "quill";
 import "react-toastify/dist/ReactToastify.css";
 import "quill/dist/quill.snow.css";
 import { Editor } from "@tinymce/tinymce-react";
@@ -923,12 +915,12 @@ function TTDNTD() {
                             >
                               Xem chi tiết
                             </button>
-                            <button
+                            {/* <button
                               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
                               onClick={() => console.log("Từ chối:", app.id)}
                             >
                               Từ chối
-                            </button>
+                            </button> */}
                             <button
                               onClick={() => handleOpenModal(app.id)}
                               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition-colors"

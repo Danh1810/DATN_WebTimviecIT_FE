@@ -468,7 +468,7 @@ function PaymentHistory() {
         onClick={exportToPDF}
         className="bg-green-500 text-white px-4 py-2 rounded mt-4 hover:bg-green-600 transition-colors"
       >
-        Export to PDF
+        Xuất hóa đơn
       </button>
     </div>
   );

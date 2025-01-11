@@ -27,7 +27,11 @@ function Layout({ children }) {
           path: "/ntd/qlttd/tao-bai-dang",
         },
         { label: "Các tin", key: "ttd", path: "/ntd/qlttd/cac-bai-dang" },
-        { label: "Mua", key: "mua", path: "/ntd/muabaidang" },
+        {
+          label: "Mua thêm lượt đăng tin",
+          key: "mua",
+          path: "/ntd/muabaidang",
+        },
       ],
     },
     { label: "Tìm kiếm ứng viên", key: "tkuv", path: "/ntd/tkuv" },
