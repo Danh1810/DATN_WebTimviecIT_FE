@@ -431,7 +431,7 @@ function TTDNTD() {
           "Content-Type": "multipart/form-data",
         },
       });
-
+      toast.success("Phản hồi thành công.");
       // Reset form sau khi gửi thành công
       setFormData({
         idUngTuyen: null,
@@ -440,7 +440,6 @@ function TTDNTD() {
       });
       setSelectedFile(null);
       setIsModalVisible1(false);
-      toast.success("Phản hồi thành công.");
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Có lỗi xảy ra khi gửi phản hồi!";
@@ -1065,7 +1064,7 @@ function TTDNTD() {
                         <p className="text-gray-900">
                           {(() => {
                             const ngaySinh = jobSeekers.find(
-                              (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                              (rec) => rec.id === selectedhosoxem.NguoitimviecId
                             )?.ngaySinh;
 
                             return ngaySinh
