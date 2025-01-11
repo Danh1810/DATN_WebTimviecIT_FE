@@ -1140,7 +1140,11 @@ function TTDNTD() {
                           Kỹ năng lập trình:
                         </label>
                         <p className="text-gray-900">
-                          {selectedhosoxem.kyNangLapTrinh || "Chưa nhập"}
+                          {selectedhosoxem.kyNangLapTrinh
+                            ? Array.isArray(selectedhosoxem.kyNangLapTrinh)
+                              ? selectedhosoxem.kyNangLapTrinh.join(", ")
+                              : selectedhosoxem.kyNangLapTrinh
+                            : "Chưa nhập"}
                         </p>
                       </div>
                     </div>

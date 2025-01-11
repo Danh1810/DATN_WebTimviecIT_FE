@@ -26,7 +26,11 @@ function Layout({ children }) {
           key: "Createttd",
           path: "/ntd/qlttd/tao-bai-dang",
         },
-        { label: "Các tin", key: "ttd", path: "/ntd/qlttd/cac-bai-dang" },
+        {
+          label: "Các tin tuyển dụng",
+          key: "ttd",
+          path: "/ntd/qlttd/cac-bai-dang",
+        },
         {
           label: "Mua thêm lượt đăng tin",
           key: "mua",

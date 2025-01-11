@@ -669,14 +669,6 @@ function App() {
                           {selectedhosoNTV.kinhNghiemLamViec || "Chưa nhập"}
                         </p>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-600">
-                          Dự án đã tham gia:
-                        </label>
-                        <p className="text-gray-900">
-                          {selectedhosoNTV.duAnDaThamGia || "Chưa nhập"}
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>

@@ -447,7 +447,7 @@ const CVManagement = () => {
               onSubmit={editId ? handleUpdateCV : handleAddhoso}
             >
               <h2 className="text-xl font-semibold mb-4">
-                {formData.editId ? "Chỉnh sửa hồ sơ" : "Thêm mới hồ sơ"}
+                {editId ? "Chỉnh sửa hồ sơ" : "Thêm mới hồ sơ"}
               </h2>
               <div className="mb-4">
                 <label className="block font-medium">Tên hồ sơ</label>
@@ -610,7 +610,7 @@ const CVManagement = () => {
                   type="submit"
                   className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
-                  {formData.editId ? "Cập nhật" : "Thêm mới"}
+                  {editId ? "Cập nhật" : "Thêm mới"}
                 </button>
               </div>
             </form>
