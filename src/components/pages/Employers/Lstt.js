@@ -109,7 +109,7 @@ function PaymentHistory() {
       // Add company name (left side)
       doc.setFontSize(14);
       doc.setFont("Roboto-Regular", "bold");
-      doc.text("VIỆC LÀM IT", 45, 20);
+      doc.text("VIEC LAM IT", 45, 20);
 
       // Center the invoice title
       doc.setFontSize(14);

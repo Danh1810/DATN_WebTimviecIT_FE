@@ -183,7 +183,7 @@ function App() {
       )}
 
       {!canPostJob ? (
-        <label className="block text-center text-red-500">
+        <label className="block text-center text-3xl text-red-500">
           Doanh nghiệp chưa được kiểm duyệt
         </label>
       ) : (
