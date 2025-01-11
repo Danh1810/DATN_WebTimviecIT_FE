@@ -481,8 +481,8 @@ function App() {
                   <ProfileCard
                     key={profile.id}
                     profile={profile}
-                    onFavorite={() => xemChiTiet1(profile.id)}
-                    onView={() => handleSearch(profile.id)}
+                    onFavorite={() => handleSearch(profile.id)}
+                    onView={() => xemChiTiet1(profile.id)}
                   />
                 ))}
               </div>
