@@ -1063,9 +1063,19 @@ function TTDNTD() {
                           Ngày Sinh:
                         </label>
                         <p className="text-gray-900">
-                          {jobSeekers.find(
-                            (rec) => rec.id === selectedhosoxem.NguoitimviecId
-                          )?.ngaySinh || "N/A"}
+                          {(() => {
+                            const ngaySinh = jobSeekers.find(
+                              (rec) => rec.id === selectedhosoNTV.NguoitimviecId
+                            )?.ngaySinh;
+
+                            return ngaySinh
+                              ? new Date(ngaySinh).toLocaleDateString("vi-VN", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })
+                              : "N/A";
+                          })()}
                         </p>
                       </div>
                       <div>
