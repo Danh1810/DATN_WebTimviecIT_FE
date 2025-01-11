@@ -1158,14 +1158,6 @@ function TTDNTD() {
                     <div className="space-y-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-600">
-                          Dự án đã tham gia:
-                        </label>
-                        <p className="text-gray-900">
-                          {selectedhosoxem.duAnDaThamGia || "Chưa nhập"}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-600">
                           Mục tiêu nghề nghiệp:
                         </label>
                         <p className="text-gray-900">

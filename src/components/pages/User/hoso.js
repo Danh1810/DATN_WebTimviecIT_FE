@@ -14,7 +14,6 @@ const CVManagement = () => {
     capBacHienTai: "",
     mucTieuNgheNghiep: "",
     trinhDoHocVan: "",
-    duAnDaThamGia: "",
     fileHoso: "",
     ngayCapNhat: "",
     kinhNghiemLamViec: "",
@@ -153,7 +152,6 @@ const CVManagement = () => {
         kyNangLapTrinh: "",
         capBacHienTai: "",
         mucTieuNgheNghiep: "",
-        duAnDaThamGia: "",
         fileHoso: null,
         trinhDoHocVan: "",
         kinhNghiemLamViec: "",
@@ -253,7 +251,6 @@ const CVManagement = () => {
       capBacHienTai: "",
       mucTieuNgheNghiep: "",
       trinhDoHocVan: "",
-      duAnDaThamGia: "",
       fileHoso: "",
       ngayCapNhat: "",
       kinhNghiemLamViec: "",
@@ -578,15 +575,6 @@ const CVManagement = () => {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block font-medium">Dự án đã tham gia</label>
-                <textarea
-                  name="duAnDaThamGia"
-                  value={formData.duAnDaThamGia}
-                  onChange={handleChange}
-                  className="w-full border rounded px-2 py-1"
-                />
-              </div>
-              <div className="mb-4">
                 <label className="block font-medium">Tải lên CV</label>
                 <input
                   type="file"
@@ -789,8 +777,6 @@ const CVManagement = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Experience and Projects */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
                     Kinh Nghiệm & Dự Án
@@ -802,14 +788,6 @@ const CVManagement = () => {
                       </label>
                       <p className="text-gray-900">
                         {selectedhosoNTV.kinhNghiemLamViec || "Chưa nhập"}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600">
-                        Dự án đã tham gia:
-                      </label>
-                      <p className="text-gray-900">
-                        {selectedhosoNTV.duAnDaThamGia || "Chưa nhập"}
                       </p>
                     </div>
                   </div>
