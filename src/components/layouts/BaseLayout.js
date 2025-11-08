@@ -166,7 +166,7 @@ function Layout({ children }) {
 
           {/* New Employer Registration Link */}
           <a
-            href="/se"
+            href="https://google.com"
             className="text-white hover:text-gray-200 font-extrabold flex items-center"
           >
             Đăng Ký Nhà Tuyển Dụng
